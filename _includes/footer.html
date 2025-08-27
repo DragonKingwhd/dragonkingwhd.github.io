@@ -1,0 +1,53 @@
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h3>{{ site.title }}</h3>
+            <p>{{ site.description }}</p>
+        </div>
+        
+        <div class="footer-section">
+            <h3>快速链接</h3>
+            <ul>
+                {% for item in site.navigation %}
+                <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h3>关注我</h3>
+            <div class="social-links">
+                {% if site.social.github %}
+                <a href="https://github.com/{{ site.social.github }}" target="_blank">
+                    <i class="fab fa-github"></i>
+                </a>
+                {% endif %}
+                
+                {% if site.social.twitter %}
+                <a href="https://twitter.com/{{ site.social.twitter }}" target="_blank">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                {% endif %}
+                
+                {% if site.social.linkedin %}
+                <a href="https://linkedin.com/in/{{ site.social.linkedin }}" target="_blank">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                {% endif %}
+                
+                {% if site.social.email %}
+                <a href="mailto:{{ site.social.email }}">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. 
+           使用 <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> 构建，
+           托管于 <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>
+        </p>
+    </div>
+</footer>
