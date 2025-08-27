@@ -1,0 +1,71 @@
+---
+layout: default
+title: 我的项目
+permalink: /projects/
+---
+
+<section class="projects-header">
+    <div class="container">
+        <h1>我的项目</h1>
+        <p>展示我开发的一些有趣项目和工具</p>
+    </div>
+</section>
+
+<section class="projects-content">
+    <div class="container">
+        <div class="projects-grid">
+            {% for project in site.projects %}
+            <div class="project-card">
+                {% if project.image %}
+                <div class="project-image">
+                    <img src="{{ project.image | relative_url }}" alt="{{ project.title }}">
+                </div>
+                {% endif %}
+                
+                <div class="project-content">
+                    <h3><a href="{{ project.url | relative_url }}">{{ project.title }}</a></h3>
+                    <p>{{ project.description | default: project.excerpt | strip_html | truncatewords: 30 }}</p>
+                    
+                    {% if project.tech_stack %}
+                    <div class="tech-stack">
+                        {% for tech in project.tech_stack %}
+                        <span class="tech-tag">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="project-links">
+                        <a href="{{ project.url | relative_url }}" class="btn btn-sm">
+                            <i class="fas fa-info-circle"></i> 详情
+                        </a>
+                        {% if project.demo_url %}
+                        <a href="{{ project.demo_url }}" class="btn btn-sm" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                        {% endif %}
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" class="btn btn-sm" target="_blank">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if project.status %}
+                <div class="project-status">
+                    <span class="status {{ project.status | slugify }}">{{ project.status }}</span>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if site.projects.size == 0 %}
+        <div class="no-projects">
+            <i class="fas fa-code"></i>
+            <h3>还没有项目</h3>
+            <p>快来添加第一个项目吧！</p>
+        </div>
+        {% endif %}
+    </div>
+</section>

@@ -1,0 +1,97 @@
+---
+layout: default
+---
+
+<article class="post">
+    <header class="post-header">
+        <div class="container">
+            <h1>{{ page.title }}</h1>
+            <div class="post-meta">
+                <span class="post-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ page.date | date: site.date_format }}
+                </span>
+                
+                {% if page.author %}
+                <span class="post-author">
+                    <i class="fas fa-user"></i>
+                    {{ page.author }}
+                </span>
+                {% endif %}
+                
+                {% if page.categories.size > 0 %}
+                <span class="post-categories">
+                    <i class="fas fa-folder"></i>
+                    {% for category in page.categories %}
+                    <a href="/categories/{{ category | slugify }}">{{ category }}</a>
+                    {% unless forloop.last %}, {% endunless %}
+                    {% endfor %}
+                </span>
+                {% endif %}
+                
+                {% if page.tags.size > 0 %}
+                <div class="post-tags">
+                    <i class="fas fa-tags"></i>
+                    {% for tag in page.tags %}
+                    <a href="/tags/{{ tag | slugify }}" class="tag">#{{ tag }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    <div class="post-content">
+        <div class="container">
+            {{ content }}
+        </div>
+    </div>
+    
+    <footer class="post-footer">
+        <div class="container">
+            <div class="post-navigation">
+                {% if page.previous %}
+                <div class="nav-previous">
+                    <a href="{{ page.previous.url | relative_url }}">
+                        <i class="fas fa-arrow-left"></i>
+                        <div>
+                            <span>上一篇</span>
+                            <h4>{{ page.previous.title }}</h4>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if page.next %}
+                <div class="nav-next">
+                    <a href="{{ page.next.url | relative_url }}">
+                        <div>
+                            <span>下一篇</span>
+                            <h4>{{ page.next.title }}</h4>
+                        </div>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="post-share">
+                <h4>分享这篇文章</h4>
+                <div class="share-buttons">
+                    <a href="https://twitter.com/intent/tweet?text={{ page.title | uri_escape }}&url={{ page.url | absolute_url }}" 
+                       target="_blank" class="share-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | absolute_url }}" 
+                       target="_blank" class="share-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url }}" 
+                       target="_blank" class="share-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</article>

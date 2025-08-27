@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLOT.tab 曲线图工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script>
+        // 检查Chart.js是否加载成功，如果失败则尝试备用CDN
+        window.addEventListener('load', function() {
+            if (typeof Chart === 'undefined') {
+                console.log('主CDN失败，尝试备用CDN...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js';
+                script.onload = function() {
+                    console.log('备用CDN加载成功');
+                    if (typeof Chart === 'undefined') {
+                        showChartError();
+                    }
+                };
+                script.onerror = function() {
+                    console.log('备用CDN也失败，显示错误信息');
+                    showChartError();
+                };
+                document.head.appendChild(script);
+            }
+        });
+        
+        function showChartError() {
+            const errorDiv = document.getElementById('errorDiv');
+            errorDiv.innerHTML = `
+                <strong>图表库加载失败</strong><br>
+                请检查网络连接，或下载离线版本使用。<br>
+                <a href="https://github.com/chartjs/Chart.js/releases" target="_blank">下载Chart.js离线版本</a>
+            `;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .drop-zone {
+            border: 3px dashed #4CAF50;
+            border-radius: 10px;
+            padding: 60px 20px;
+            text-align: center;
+            background-color: white;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #45a049;
+            background-color: #f9f9f9;
+            transform: scale(1.02);
+        }
+        
+        .drop-zone p {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .drop-zone .icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .controls h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .file-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .help-button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .help-button:hover {
+            background: #1976D2;
+        }
+        
+        .help-panel {
+            display: none;
+            background: #f0f8ff;
+            border: 1px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .help-panel h4 {
+            margin: 0 0 10px 0;
+            color: #1976D2;
+        }
+        
+        .help-panel p {
+            margin: 8px 0;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+        
+        .help-panel .filter-info {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .help-panel .filter-info:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .help-panel .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 数据曲线图工具</h1>
+        <p>将您的数据文件拖拽到下方区域，自动生成曲线图</p>
+        <p><small>支持格式：.tab, .txt, .csv, .tsv, .dat</small></p>
+    </div>
+
+    <div class="drop-zone" id="dropZone">
+        <div class="icon">📁</div>
+        <p><strong>拖拽数据文件到这里</strong></p>
+        <p>支持 .tab/.txt/.csv/.tsv/.dat 格式</p>
+        <p>或点击选择文件</p>
+        <input type="file" id="fileInput" accept=".tab,.txt,.csv,.tsv,.dat" style="display: none;">
+    </div>
+
+    <div class="error" id="errorDiv"></div>
+    
+    <div class="file-info" id="fileInfo"></div>
+
+    <div class="controls" id="controls">
+        <h3>图表设置</h3>
+        
+        <div class="control-group">
+            <label>选择要显示的数据列：
+                <button type="button" class="help-button" onclick="toggleSelectAll()" id="selectAllBtn">✓ 全选</button>
+            </label>
+            <div class="checkbox-group" id="columnCheckboxes"></div>
+        </div>
+
+        <div class="control-group">
+            <label for="lineStyle">曲线样式：</label>
+            <select id="lineStyle" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                <option value="smooth">平滑曲线 (推荐)</option>
+                <option value="linear">直线连接</option>
+                <option value="stepped">阶梯状</option>
+                <option value="points">仅显示数据点</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>数据滤波器：
+                <button type="button" class="help-button" onclick="toggleFilterHelp()">❓ 帮助</button>
+            </label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                <input type="checkbox" id="enableFilter">
+                <label for="enableFilter" style="margin: 0; font-weight: normal;">启用滤波</label>
+            </div>
+            <div id="filterControls" style="display: none; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">
+                <div style="margin-bottom: 10px;">
+                    <label for="filterType">滤波器类型：</label>
+                    <select id="filterType" style="width: 100%; padding: 5px; margin-top: 5px;" onchange="updateFilterHelp()">
+                        <option value="movingAverage">移动平均滤波</option>
+                        <option value="gaussian">高斯滤波</option>
+                        <option value="butterworth">巴特沃斯低通滤波</option>
+                        <option value="median">中值滤波</option>
+                        <option value="kalman">简单卡尔曼滤波</option>
+                    </select>
+                </div>
+                <div id="filterParams">
+                    <label for="windowSize">窗口大小/强度：</label>
+                    <input type="range" id="windowSize" min="3" max="50" value="5" style="width: 100%;">
+                    <span id="windowSizeValue">5</span>
+                </div>
+            </div>
+            
+            <!-- 滤波器帮助面板 -->
+            <div id="filterHelpPanel" class="help-panel">
+                <div id="movingAverageHelp" class="filter-info">
+                    <h4>📊 移动平均滤波</h4>
+                    <p><strong>特点：</strong>简单有效的噪声平滑算法，通过计算邻近点的平均值来减少随机噪声。</p>
+                    <p><strong>适用场景：</strong></p>
+                    <p>• 数据有随机噪声但趋势明显</p>
+                    <p>• 需要简单快速的平滑效果</p>
+                    <p>• 传感器数据预处理</p>
+                    <p><strong>窗口大小选择：</strong></p>
+                    <p>• <span class="highlight">3-7</span>：轻微平滑，保持细节</p>
+                    <p>• <span class="highlight">8-15</span>：中等平滑，平衡噪声和细节</p>
+                    <p>• <span class="highlight">16+</span>：强烈平滑，突出主要趋势</p>
+                </div>
+                
+                <div id="gaussianHelp" class="filter-info">
+                    <h4>🔔 高斯滤波</h4>
+                    <p><strong>特点：</strong>基于高斯分布的加权平均，能更好地保持信号的边缘特征，平滑效果自然。</p>
+                    <p><strong>适用场景：</strong></p>
+                    <p>• 需要保持信号边缘和特征点</p>
+                    <p>• 图像处理或精密测量数据</p>
+                    <p>• 要求高质量平滑效果</p>
+                    <p><strong>强度选择：</strong></p>
+                    <p>• <span class="highlight">3-8</span>：轻微平滑，保持原始特征</p>
+                    <p>• <span class="highlight">9-20</span>：适中平滑，去除中频噪声</p>
+                    <p>• <span class="highlight">21+</span>：强烈平滑，仅保留主要趋势</p>
+                </div>
+                
+                <div id="butterworthHelp" class="filter-info">
+                    <h4>🌊 巴特沃斯低通滤波</h4>
+                    <p><strong>特点：</strong>经典的频域滤波器，能有效去除高频噪声，保持低频信号完整性。</p>
+                    <p><strong>适用场景：</strong></p>
+                    <p>• 信号处理和频谱分析</p>
+                    <p>• 去除已知频率范围的噪声</p>
+                    <p>• 振动、声学数据处理</p>
+                    <p><strong>强度选择：</strong></p>
+                    <p>• <span class="highlight">5-15</span>：保留更多高频成分</p>
+                    <p>• <span class="highlight">16-30</span>：平衡的频率响应</p>
+                    <p>• <span class="highlight">31+</span>：强烈抑制高频噪声</p>
+                </div>
+                
+                <div id="medianHelp" class="filter-info">
+                    <h4>⚡ 中值滤波</h4>
+                    <p><strong>特点：</strong>取窗口内数值的中位数，能有效去除脉冲噪声和异常值，同时保持边缘。</p>
+                    <p><strong>适用场景：</strong></p>
+                    <p>• 数据有尖峰噪声或异常值</p>
+                    <p>• 需要保持信号跳变边缘</p>
+                    <p>• 数字图像去噪</p>
+                    <p><strong>窗口大小选择：</strong></p>
+                    <p>• <span class="highlight">3-5</span>：去除小的异常点</p>
+                    <p>• <span class="highlight">6-12</span>：处理中等脉冲噪声</p>
+                    <p>• <span class="highlight">13+</span>：去除大范围异常区域</p>
+                </div>
+                
+                <div id="kalmanHelp" class="filter-info">
+                    <h4>🎯 简单卡尔曼滤波</h4>
+                    <p><strong>特点：</strong>基于状态估计的自适应滤波器，能根据信号变化动态调整滤波强度。</p>
+                    <p><strong>适用场景：</strong></p>
+                    <p>• 动态系统状态估计</p>
+                    <p>• 传感器融合和导航</p>
+                    <p>• 需要跟踪信号变化趋势</p>
+                    <p><strong>过程噪声选择：</strong></p>
+                    <p>• <span class="highlight">5-15</span>：信号变化较慢</p>
+                    <p>• <span class="highlight">16-30</span>：中等动态特性</p>
+                    <p>• <span class="highlight">31+</span>：快速变化的动态信号</p>
+                </div>
+                
+                <div style="background: #e8f4f8; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                    <h4>💡 选择建议</h4>
+                    <p><strong>噪声类型识别：</strong></p>
+                    <p>• 随机噪声 → 移动平均或高斯滤波</p>
+                    <p>• 脉冲噪声 → 中值滤波</p>
+                    <p>• 高频噪声 → 巴特沃斯滤波</p>
+                    <p>• 动态信号 → 卡尔曼滤波</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="chartTitle">图表标题：</label>
+            <input type="text" id="chartTitle" value="数据曲线图" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+        </div>
+        
+        <button onclick="updateChart()">更新图表</button>
+    </div>
+
+    <div class="chart-container" id="chartContainer">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script>
+        let fileData = null;
+        let chart = null;
+        let originalData = null; // 保存原始数据
+        
+        // 滤波器实现
+        const Filters = {
+            // 移动平均滤波
+            movingAverage: function(data, windowSize) {
+                const result = [];
+                const halfWindow = Math.floor(windowSize / 2);
+                
+                for (let i = 0; i < data.length; i++) {
+                    let sum = 0;
+                    let count = 0;
+                    
+                    for (let j = Math.max(0, i - halfWindow); j <= Math.min(data.length - 1, i + halfWindow); j++) {
+                        sum += data[j];
+                        count++;
+                    }
+                    
+                    result.push(sum / count);
+                }
+                
+                return result;
+            },
+            
+            // 高斯滤波
+            gaussian: function(data, sigma) {
+                const kernelSize = Math.max(3, Math.ceil(sigma * 3) * 2 + 1);
+                const kernel = [];
+                const halfKernel = Math.floor(kernelSize / 2);
+                let kernelSum = 0;
+                
+                // 生成高斯核
+                for (let i = 0; i < kernelSize; i++) {
+                    const x = i - halfKernel;
+                    const value = Math.exp(-(x * x) / (2 * sigma * sigma));
+                    kernel.push(value);
+                    kernelSum += value;
+                }
+                
+                // 归一化核
+                for (let i = 0; i < kernel.length; i++) {
+                    kernel[i] /= kernelSum;
+                }
+                
+                const result = [];
+                for (let i = 0; i < data.length; i++) {
+                    let sum = 0;
+                    let weightSum = 0;
+                    
+                    for (let j = 0; j < kernelSize; j++) {
+                        const dataIndex = i - halfKernel + j;
+                        if (dataIndex >= 0 && dataIndex < data.length) {
+                            sum += data[dataIndex] * kernel[j];
+                            weightSum += kernel[j];
+                        }
+                    }
+                    
+                    result.push(sum / weightSum);
+                }
+                
+                return result;
+            },
+            
+            // 简单低通滤波器（巴特沃斯近似）
+            butterworth: function(data, alpha) {
+                alpha = Math.max(0.01, Math.min(0.99, alpha / 50)); // 调整参数范围
+                const result = [data[0]];
+                
+                for (let i = 1; i < data.length; i++) {
+                    result.push(alpha * data[i] + (1 - alpha) * result[i - 1]);
+                }
+                
+                return result;
+            },
+            
+            // 中值滤波
+            median: function(data, windowSize) {
+                const result = [];
+                const halfWindow = Math.floor(windowSize / 2);
+                
+                for (let i = 0; i < data.length; i++) {
+                    const window = [];
+                    
+                    for (let j = Math.max(0, i - halfWindow); j <= Math.min(data.length - 1, i + halfWindow); j++) {
+                        window.push(data[j]);
+                    }
+                    
+                    window.sort((a, b) => a - b);
+                    const median = window[Math.floor(window.length / 2)];
+                    result.push(median);
+                }
+                
+                return result;
+            },
+            
+            // 简单卡尔曼滤波
+            kalman: function(data, processNoise) {
+                processNoise = processNoise / 1000; // 调整噪声参数
+                const measurementNoise = 0.1;
+                
+                let estimate = data[0];
+                let errorEstimate = 1.0;
+                const result = [estimate];
+                
+                for (let i = 1; i < data.length; i++) {
+                    // 预测
+                    const prediction = estimate;
+                    const predictionError = errorEstimate + processNoise;
+                    
+                    // 更新
+                    const kalmanGain = predictionError / (predictionError + measurementNoise);
+                    estimate = prediction + kalmanGain * (data[i] - prediction);
+                    errorEstimate = (1 - kalmanGain) * predictionError;
+                    
+                    result.push(estimate);
+                }
+                
+                return result;
+            }
+        };
+        
+        // 初始化控制器
+        document.addEventListener('DOMContentLoaded', function() {
+            const enableFilter = document.getElementById('enableFilter');
+            const filterControls = document.getElementById('filterControls');
+            const windowSize = document.getElementById('windowSize');
+            const windowSizeValue = document.getElementById('windowSizeValue');
+            
+            enableFilter.addEventListener('change', function() {
+                filterControls.style.display = this.checked ? 'block' : 'none';
+            });
+            
+            windowSize.addEventListener('input', function() {
+                windowSizeValue.textContent = this.value;
+            });
+            
+            // 初始化帮助面板
+            updateFilterHelp();
+        });
+        
+        // 切换帮助面板显示
+        function toggleFilterHelp() {
+            const helpPanel = document.getElementById('filterHelpPanel');
+            const isVisible = helpPanel.style.display === 'block';
+            helpPanel.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                updateFilterHelp();
+            }
+        }
+        
+        // 全选/全不选功能
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            
+            if (checkboxes.length === 0) return;
+            
+            // 检查当前状态
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const shouldSelectAll = checkedCount < checkboxes.length;
+            
+            // 设置所有复选框状态
+            checkboxes.forEach(cb => {
+                cb.checked = shouldSelectAll;
+            });
+            
+            // 更新按钮文字
+            selectAllBtn.textContent = shouldSelectAll ? '✗ 全不选' : '✓ 全选';
+        }
+        
+        // 根据选择的滤波器更新帮助内容
+        function updateFilterHelp() {
+            const filterType = document.getElementById('filterType').value;
+            const allHelps = document.querySelectorAll('.filter-info');
+            
+            // 隐藏所有帮助信息
+            allHelps.forEach(help => {
+                help.style.display = 'none';
+            });
+            
+            // 显示当前选择滤波器的帮助
+            const currentHelp = document.getElementById(filterType + 'Help');
+            if (currentHelp) {
+                currentHelp.style.display = 'block';
+            }
+            
+            // 始终显示选择建议
+            const suggestions = document.querySelector('#filterHelpPanel > div:last-child');
+            if (suggestions) {
+                suggestions.style.display = 'block';
+            }
+        }
+        
+        // 拖拽处理
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorDiv');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('errorDiv').style.display = 'none';
+        }
+        
+        function handleFile(file) {
+            hideError();
+            
+            // 支持更多文件类型
+            const supportedExtensions = ['.tab', '.txt', '.csv', '.tsv', '.dat'];
+            const fileName = file.name.toLowerCase();
+            const isSupported = supportedExtensions.some(ext => fileName.endsWith(ext));
+            
+            if (!isSupported) {
+                showError(`不支持的文件类型。支持的格式: ${supportedExtensions.join(', ')}`);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    parseFile(e.target.result, file.name);
+                } catch (error) {
+                    showError('文件解析失败: ' + error.message);
+                    console.error('解析错误详情:', error);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function parseFile(content, filename) {
+            // 处理不同类型的换行符
+            const lines = content.trim().split(/\r?\n/);
+            
+            if (lines.length < 2) {
+                throw new Error('文件格式不正确，文件内容过少');
+            }
+            
+            let headerLine = -1;
+            let headers = [];
+            
+            // 智能检测表头行
+            for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                const line = lines[i].trim();
+                
+                // 跳过空行和纯数字行
+                if (!line || /^\d+$/.test(line) || line.startsWith('"HQ_') || line.startsWith('HQ_')) {
+                    continue;
+                }
+                
+                // 检测是否包含字母（可能是表头）
+                if (/[a-zA-Z]/.test(line)) {
+                    // 尝试解析这一行作为表头
+                    let potentialHeaders;
+                    
+                    // 先尝试制表符分隔
+                    if (line.includes('\t')) {
+                        potentialHeaders = line.split('\t');
+                    } else if (line.includes(',')) {
+                        // 尝试逗号分隔
+                        potentialHeaders = line.split(',');
+                    } else if (line.includes(' ')) {
+                        // 尝试空格分隔
+                        potentialHeaders = line.split(/\s+/);
+                    } else {
+                        continue;
+                    }
+                    
+                    // 清理表头：去除引号、空格等
+                    const cleanHeaders = potentialHeaders.map(h => {
+                        return h.trim()
+                                .replace(/^["']|["']$/g, '') // 去除开头结尾的引号
+                                .replace(/[^\w\s-_.]/g, '') // 去除特殊字符，保留字母数字下划线点横线
+                                .trim();
+                    }).filter(h => h.length > 0);
+                    
+                    if (cleanHeaders.length >= 2) {
+                        headerLine = i;
+                        headers = cleanHeaders;
+                        console.log(`检测到表头在第${i+1}行:`, headers);
+                        break;
+                    }
+                }
+            }
+            
+            if (headerLine === -1 || headers.length === 0) {
+                throw new Error('未找到有效的表头行，请确保文件包含列名');
+            }
+            
+            // 从表头行之后开始解析数据
+            const data = [];
+            let validDataCount = 0;
+            
+            for (let i = headerLine + 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // 跳过空行
+                if (!line) continue;
+                
+                // 智能检测分隔符
+                let values;
+                if (line.includes('\t')) {
+                    values = line.split('\t');
+                } else if (line.includes(',')) {
+                    values = line.split(',');
+                } else {
+                    values = line.split(/\s+/);
+                }
+                
+                // 检查数据行是否有效（至少包含一些数字）
+                const numericValues = values.filter(v => {
+                    const cleaned = v.trim().replace(/^["']|["']$/g, '');
+                    return !isNaN(parseFloat(cleaned)) && isFinite(cleaned);
+                });
+                
+                if (numericValues.length >= Math.min(2, headers.length)) {
+                    const row = {};
+                    let validColumns = 0;
+                    
+                    headers.forEach((header, index) => {
+                        if (index < values.length) {
+                            const cleanValue = values[index].trim().replace(/^["']|["']$/g, '');
+                            const numValue = parseFloat(cleanValue);
+                            
+                            if (!isNaN(numValue) && isFinite(numValue)) {
+                                row[header] = numValue;
+                                validColumns++;
+                            } else {
+                                row[header] = 0; // 默认值
+                            }
+                        } else {
+                            row[header] = 0;
+                        }
+                    });
+                    
+                    if (validColumns >= 1) {
+                        data.push(row);
+                        validDataCount++;
+                    }
+                }
+                
+                // 限制处理行数，避免过大文件卡顿
+                if (validDataCount > 10000) {
+                    console.warn('数据行数超过10000行，已截断显示');
+                    break;
+                }
+            }
+            
+            if (data.length === 0) {
+                throw new Error('没有找到有效的数据行，请检查文件格式');
+            }
+            
+            console.log(`成功解析: ${headers.length}列, ${data.length}行数据`);
+            
+            fileData = { headers, data, filename };
+            originalData = JSON.parse(JSON.stringify(data)); // 深拷贝原始数据
+            
+            // 显示文件信息
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.innerHTML = `
+                <strong>文件:</strong> ${filename}<br>
+                <strong>列数:</strong> ${headers.length}<br>
+                <strong>数据行数:</strong> ${data.length}<br>
+                <strong>列名:</strong> ${headers.join(', ')}
+            `;
+            fileInfo.style.display = 'block';
+            
+            // 创建列选择复选框
+            createColumnCheckboxes();
+            
+            // 显示控件和图表
+            document.getElementById('controls').style.display = 'block';
+            document.getElementById('chartContainer').style.display = 'block';
+            
+            // 生成初始图表
+            updateChart();
+        }
+        
+        function createColumnCheckboxes() {
+            const container = document.getElementById('columnCheckboxes');
+            container.innerHTML = '';
+            
+            // 假设第一列是时间/X轴，默认不显示在选项中
+            const timeColumn = fileData.headers[0];
+            
+            fileData.headers.slice(1).forEach((header, index) => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `col_${index}`;
+                checkbox.value = header;
+                checkbox.checked = true; // 默认全选
+                
+                // 添加状态变化监听器
+                checkbox.addEventListener('change', updateSelectAllButtonState);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `col_${index}`;
+                label.textContent = header;
+                label.style.fontWeight = 'normal';
+                label.style.marginBottom = '0';
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+            
+            // 初始化全选按钮状态
+            updateSelectAllButtonState();
+        }
+        
+        // 更新全选按钮状态
+        function updateSelectAllButtonState() {
+            const checkboxes = document.querySelectorAll('#columnCheckboxes input[type="checkbox"]');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            
+            if (checkboxes.length === 0) return;
+            
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const allSelected = checkedCount === checkboxes.length;
+            
+            selectAllBtn.textContent = allSelected ? '✗ 全不选' : '✓ 全选';
+        }
+        
+        function updateChart() {
+            if (!fileData) return;
+            
+            // 检查Chart.js是否可用
+            if (typeof Chart === 'undefined') {
+                showError('图表库未加载，请刷新页面或检查网络连接');
+                return;
+            }
+            
+            const selectedColumns = Array.from(document.querySelectorAll('#columnCheckboxes input:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedColumns.length === 0) {
+                showError('请至少选择一列数据');
+                return;
+            }
+            
+            hideError();
+            
+            const ctx = document.getElementById('chart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // 获取滤波设置
+            const enableFilter = document.getElementById('enableFilter').checked;
+            const filterType = document.getElementById('filterType').value;
+            const windowSize = parseInt(document.getElementById('windowSize').value);
+            
+            // 获取曲线样式
+            const lineStyle = document.getElementById('lineStyle').value;
+            
+            // 准备数据
+            const timeColumn = fileData.headers[0];
+            let currentData = originalData;
+            
+            // 应用滤波器
+            if (enableFilter) {
+                currentData = originalData.map(row => ({ ...row })); // 复制数据
+                
+                selectedColumns.forEach(column => {
+                    const originalValues = originalData.map(row => row[column]);
+                    let filteredValues;
+                    
+                    switch (filterType) {
+                        case 'movingAverage':
+                            filteredValues = Filters.movingAverage(originalValues, windowSize);
+                            break;
+                        case 'gaussian':
+                            filteredValues = Filters.gaussian(originalValues, windowSize / 3);
+                            break;
+                        case 'butterworth':
+                            filteredValues = Filters.butterworth(originalValues, windowSize);
+                            break;
+                        case 'median':
+                            filteredValues = Filters.median(originalValues, windowSize);
+                            break;
+                        case 'kalman':
+                            filteredValues = Filters.kalman(originalValues, windowSize);
+                            break;
+                        default:
+                            filteredValues = originalValues;
+                    }
+                    
+                    // 更新数据
+                    currentData.forEach((row, index) => {
+                        row[column] = filteredValues[index];
+                    });
+                });
+            }
+            
+            const labels = currentData.map(row => row[timeColumn]);
+            
+            // 根据曲线样式配置Chart.js选项
+            let chartType = 'line';
+            let pointRadius = 0;
+            let borderWidth = 2;
+            let tension = 0.4; // 平滑曲线
+            let stepped = false;
+            let showLine = true;
+            
+            switch (lineStyle) {
+                case 'smooth':
+                    tension = 0.4;
+                    pointRadius = 0;
+                    break;
+                case 'linear':
+                    tension = 0;
+                    pointRadius = 0;
+                    break;
+                case 'stepped':
+                    tension = 0;
+                    stepped = true;
+                    pointRadius = 0;
+                    break;
+                case 'points':
+                    pointRadius = 3;
+                    borderWidth = 0;
+                    showLine = false;
+                    break;
+            }
+            
+            const datasets = selectedColumns.map((column, index) => ({
+                label: column + (enableFilter ? ` (${getFilterName(filterType)})` : ''),
+                data: currentData.map(row => row[column]),
+                borderColor: getChartColor(index),
+                backgroundColor: getChartColor(index),
+                borderWidth: borderWidth,
+                pointRadius: pointRadius,
+                pointHoverRadius: pointRadius > 0 ? pointRadius + 2 : 4,
+                fill: false,
+                tension: tension,
+                stepped: stepped,
+                showLine: showLine
+            }));
+            
+            const chartTitle = document.getElementById('chartTitle').value || '数据曲线图';
+            
+            chart = new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: timeColumn
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '数值'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        function getFilterName(filterType) {
+            const names = {
+                'movingAverage': '移动平均',
+                'gaussian': '高斯',
+                'butterworth': '巴特沃斯',
+                'median': '中值',
+                'kalman': '卡尔曼'
+            };
+            return names[filterType] || filterType;
+        }
+        
+        function getChartColor(index) {
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+            ];
+            return colors[index % colors.length];
+        }
+    </script>
+</body>
+</html>
