@@ -1,38 +1,104 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
     <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines }}{% else %}{{ site.description }}{% endif %}">
     
-    <!-- CSS -->
-    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
-    
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
     
     <!-- Meta tags -->
     <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
     <meta property="og:description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines }}{% else %}{{ site.description }}{% endif %}">
     <meta property="og:type" content="{% if page.date %}article{% else %}website{% endif %}">
     <meta property="og:url" content="{{ page.url | absolute_url }}">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
 </head>
-<body>
-    {% include navigation.html %}
-    
-    <main>
+<body class="{% if page.layout == 'home' %}home-page{% endif %}">
+    <!-- Navigation -->
+    <nav class="navbar {% if page.layout == 'home' %}navbar-transparent{% endif %}" id="navbar">
+        <div class="nav-container">
+            <a href="{{ '/' | relative_url }}" class="nav-brand">
+                <i class="fas fa-dragon"></i>
+                <span>{{ site.title }}</span>
+            </a>
+            
+            <button class="nav-toggle" id="navToggle" aria-label="切换导航">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" id="navMenu">
+                {% for item in site.navigation %}
+                <li class="nav-item">
+                    <a href="{{ item.url | relative_url }}" 
+                       class="nav-link {% if page.url == item.url %}active{% endif %}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.title }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content {% if page.layout == 'home' %}main-fullscreen{% endif %}">
         {{ content }}
     </main>
-    
-    {% include footer.html %}
-    
+
+    <!-- Footer (only show if not home page) -->
+    {% unless page.layout == 'home' %}
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>{{ site.title }}</h4>
+                <p>{{ site.description }}</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4>快速链接</h4>
+                <ul>
+                    {% for item in site.navigation %}
+                    <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>联系方式</h4>
+                <div class="social-links">
+                    {% if site.social.github %}
+                    <a href="https://github.com/{{ site.social.github }}" target="_blank" rel="noopener">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if site.social.email %}
+                    <a href="mailto:{{ site.social.email }}">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. Powered by Jekyll & GitHub Pages</p>
+        </div>
+    </footer>
+    {% endunless %}
+
     <!-- JavaScript -->
     <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </body>

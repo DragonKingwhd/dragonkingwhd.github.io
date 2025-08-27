@@ -1,65 +1,87 @@
-# Site settings
-title: 的博客
+# Dragonking's Tech Blog Configuration
+title: Dragonking的博客
 email: dragonkingwhd@gmail.com
 description: >-
-  一个字：酷
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: dragonkingwhd@gmail.com
-github_username: dragonkingwhd@gmail.com
+  技术探索者 | 代码创造者 | 知识分享者
 
-# Build settings
+baseurl: ""
+url: "https://dragonkingwhd.github.io"
+
+# 构建设置
 markdown: kramdown
-theme: minima
+highlighter: rouge
+permalink: /:categories/:year/:month/:day/:title:output_ext
+
+# 插件
 plugins:
   - jekyll-feed
   - jekyll-sitemap
-  - jekyll-seo-tag
 
-# Pagination
-paginate: 5
-paginate_path: "/page:num/"
+# 排除文件
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor/
+
+# 作者信息
+author:
+  name: Dragonking
+  email: dragonkingwhd@gmail.com
+  github: DragonKingwhd
+
+# 导航菜单
+navigation:
+  - title: 工具
+    url: /tools/
+    icon: "fas fa-tools"
+  - title: 日记
+    url: /diary/
+    icon: "fas fa-book-open"
+  - title: 技能树
+    url: /skills/
+    icon: "fas fa-code-branch"
+  - title: 知识文档
+    url: /docs/
+    icon: "fas fa-file-code"
+
+# 社交链接
+social:
+  github: DragonKingwhd
+  email: dragonkingwhd@gmail.com
+
+# 网站主题配置
+theme_config:
+  primary_color: "#00d4ff"
+  secondary_color: "#ff6b6b"
+  dark_bg: "#0a0e27"
+  light_text: "#ffffff"
+  code_bg: "#1e1e2e"
 
 # Collections
 collections:
-  projects:
+  skills:
+    output: true
+    permalink: /:collection/:name/
+  docs:
     output: true
     permalink: /:collection/:name/
 
-# Defaults
+# 默认设置
 defaults:
   - scope:
       path: ""
       type: "posts"
     values:
       layout: "post"
-      author: "王哈哈"
+      author: "Dragonking"
   - scope:
       path: ""
-      type: "projects"
+      type: "skills"
     values:
-      layout: "project"
-
-# Custom settings
-show_excerpts: true
-date_format: "%Y年%m月%d日"
-
-# Navigation
-navigation:
-  - title: 首页
-    url: /
-  - title: 博客
-    url: /blog/
-  - title: 项目
-    url: /projects/
-  - title: 工具
-    url: /tools/
-  - title: 关于
-    url: /about/
-
-# Social links
-social:
-  github: dragonkingwhd@gmail.com
-  twitter: dragonkingwhd@gmail.com
-  email: dragonkingwhd@gmail.com
-  linkedin: dragonkingwhd@gmail.com
+      layout: "skill"
+  - scope:
+      path: ""
+      type: "docs"
+    values:
+      layout: "doc"

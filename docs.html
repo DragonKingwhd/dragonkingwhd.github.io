@@ -1,0 +1,162 @@
+---
+layout: default
+title: 知识文档
+permalink: /docs/
+---
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">知识文档</h1>
+        <p class="page-subtitle">技术文档集合和学习笔记整理</p>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="container">
+        {% if site.docs.size > 0 %}
+            <div class="docs-grid">
+                {% for doc in site.docs %}
+                    <div class="card">
+                        <div class="doc-header" style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            {% if doc.icon %}
+                                <i class="{{ doc.icon }}" style="font-size: 1.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-right: 1rem;"></i>
+                            {% else %}
+                                <i class="fas fa-file-code" style="font-size: 1.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-right: 1rem;"></i>
+                            {% endif %}
+                            <div>
+                                <h3 style="margin: 0;">
+                                    <a href="{{ doc.url | relative_url }}" style="color: var(--text-primary); text-decoration: none;">
+                                        {{ doc.title }}
+                                    </a>
+                                </h3>
+                                {% if doc.category %}
+                                    <span style="background: rgba(0, 212, 255, 0.1); color: var(--primary-color); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">{{ doc.category }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if doc.description %}
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+                                {{ doc.description }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if doc.excerpt %}
+                            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+                                {{ doc.excerpt | strip_html | truncatewords: 20 }}
+                            </p>
+                        {% endif %}
+                        
+                        <div class="doc-meta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(0, 212, 255, 0.1);">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                {% if doc.date %}
+                                    <i class="fas fa-calendar-alt" style="margin-right: 0.5rem;"></i>
+                                    {{ doc.date | date: "%Y年%m月%d日" }}
+                                {% endif %}
+                                {% if doc.difficulty %}
+                                    <span style="margin-left: 1rem;">
+                                        <i class="fas fa-layer-group" style="margin-right: 0.5rem;"></i>
+                                        {{ doc.difficulty }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{{ doc.url | relative_url }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> 查看文档
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- 文档分类预览 -->
+            <div class="docs-categories">
+                <div class="grid grid-3">
+                    <div class="card" style="text-align: center;">
+                        <i class="fas fa-code" style="font-size: 3rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1.5rem; display: block;"></i>
+                        <h3>编程基础</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            语言特性、语法规范、最佳实践
+                        </p>
+                        <div class="category-topics" style="text-align: left;">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                JavaScript 进阶
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                Python 技巧
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                算法实现
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="text-align: center;">
+                        <i class="fas fa-tools" style="font-size: 3rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1.5rem; display: block;"></i>
+                        <h3>开发工具</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            开发环境、工具配置、效率提升
+                        </p>
+                        <div class="category-topics" style="text-align: left;">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                Git 工作流
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                VS Code 配置
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                命令行技巧
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="text-align: center;">
+                        <i class="fas fa-rocket" style="font-size: 3rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1.5rem; display: block;"></i>
+                        <h3>项目实战</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            项目架构、部署方案、问题解决
+                        </p>
+                        <div class="category-topics" style="text-align: left;">
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                前端部署
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                性能优化
+                            </div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-circle" style="font-size: 0.5rem; margin-right: 0.5rem; color: var(--primary-color);"></i>
+                                错误处理
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="text-align: center; margin-top: 2rem; padding: 3rem 2rem;">
+                    <i class="fas fa-book-open" style="font-size: 4rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 2rem; display: block;"></i>
+                    <h3 style="margin-bottom: 1rem;">文档库建设中</h3>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+                        我正在整理和编写技术文档，敬请期待第一批文档上线！
+                    </p>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <div style="margin-bottom: 0.5rem;">
+                            <i class="fas fa-clock" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                            预计发布时间：即将上线
+                        </div>
+                        <div>
+                            <i class="fas fa-bookmark" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                            涵盖内容：编程基础、开发工具、项目实战
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
