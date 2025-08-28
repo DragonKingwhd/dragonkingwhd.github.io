@@ -643,7 +643,7 @@ code, pre, .code-font {
     align-items: center;
     min-height: 60vh;
     padding: 4rem 2rem;
-    background: var(--bg-primary);
+    /* 移除独立背景色，让它继承主背景 */
 }
 
 .quote-container {
@@ -702,8 +702,8 @@ code, pre, .code-font {
 
 @media (max-width: 768px) {
     .hero-quote {
-        min-height: 50vh;
-        padding: 3rem 1rem;
+        min-height: 40vh; /* 减小移动端高度 */
+        padding: 2rem 1rem; /* 减少内边距 */
     }
     
     .hero-quote blockquote {
@@ -722,8 +722,8 @@ code, pre, .code-font {
 
 /* Visitor Stats Styles */
 .visitor-stats {
-    padding: 4rem 2rem;
-    background: var(--bg-primary);
+    padding: 3rem 2rem; /* 减少默认内边距 */
+    /* 移除独立背景色，让它继承主背景 */
 }
 
 .stats-container {
@@ -780,7 +780,7 @@ code, pre, .code-font {
 
 @media (max-width: 768px) {
     .visitor-stats {
-        padding: 3rem 1rem;
+        padding: 2rem 1rem; /* 移动端进一步减少内边距 */
     }
     
     .stats-container {

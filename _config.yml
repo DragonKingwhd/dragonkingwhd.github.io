@@ -56,8 +56,8 @@ social:
 # Gitalk评论配置
 gitalk:
   enable: true
-  clientID: 'Ov23lieztwsFgq1qhD5a'    # GitHub OAuth App Client ID
-  clientSecret: '2ce1e694198c6480e75b52b0bc0604ad56f265ee'  # GitHub OAuth App Client Secret
+  clientID: 'your-github-oauth-app-client-id'    # GitHub OAuth App Client ID
+  clientSecret: 'your-github-oauth-app-client-secret'  # GitHub OAuth App Client Secret
   repo: 'dragonkingwhd.github.io'               # 存储评论的GitHub仓库
   owner: 'DragonKingwhd'                         # GitHub仓库的所有者
   admin: ['DragonKingwhd']                       # 管理员（可以初始化评论）
