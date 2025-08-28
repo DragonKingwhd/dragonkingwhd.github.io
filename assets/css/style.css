@@ -641,7 +641,7 @@ code, pre, .code-font {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 60vh;
+    min-height: 70vh; /* 增加高度让名言更突出 */
     padding: 4rem 2rem;
     /* 移除独立背景色，让它继承主背景 */
 }
@@ -702,28 +702,34 @@ code, pre, .code-font {
 
 @media (max-width: 768px) {
     .hero-quote {
-        min-height: 40vh; /* 减小移动端高度 */
+        min-height: 60vh; /* 手机端适中的高度 */
         padding: 2rem 1rem; /* 减少内边距 */
     }
     
     .hero-quote blockquote {
-        padding: 2rem 1.5rem 1.5rem;
+        padding: 1.5rem 1rem 1rem; /* 进一步减少内边距 */
     }
     
     .hero-quote blockquote p {
-        font-size: 1.1rem;
+        font-size: 1rem; /* 适合手机的字体大小 */
+        line-height: 1.5; /* 调整行高 */
     }
     
     .hero-quote blockquote::before {
-        font-size: 3rem;
-        left: 1.5rem;
+        font-size: 2.5rem; /* 减小引号大小 */
+        left: 1rem;
+    }
+    
+    .hero-quote cite {
+        font-size: 0.9rem; /* 减小作者名字体大小 */
     }
 }
 
 /* Visitor Stats Styles */
 .visitor-stats {
-    padding: 3rem 2rem; /* 减少默认内边距 */
+    padding: 2rem; /* 减少默认内边距，让它更紧凑 */
     /* 移除独立背景色，让它继承主背景 */
+    margin-top: 2rem; /* 添加上边距分隔 */
 }
 
 .stats-container {
@@ -780,23 +786,79 @@ code, pre, .code-font {
 
 @media (max-width: 768px) {
     .visitor-stats {
-        padding: 2rem 1rem; /* 移动端进一步减少内边距 */
+        padding: 1.5rem 1rem; /* 移动端更紧凑的内边距 */
+        margin-top: 1rem; /* 减少上边距 */
     }
     
     .stats-container {
-        gap: 1.5rem;
+        gap: 1rem; /* 减少卡片间距 */
     }
     
     .stat-card {
-        padding: 1.5rem;
+        padding: 1rem; /* 减少卡片内边距 */
     }
     
     .stat-icon i {
-        font-size: 2rem;
+        font-size: 1.5rem; /* 减小图标大小 */
     }
     
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.3rem; /* 减小数字大小 */
+    }
+    
+    .stat-label {
+        font-size: 0.8rem; /* 减小标签字体 */
+    }
+}
+
+/* 超小屏幕优化 */
+@media (max-width: 480px) {
+    .hero-quote {
+        min-height: 50vh; /* 进一步减小高度 */
+        padding: 1.5rem 0.5rem;
+    }
+    
+    .hero-quote blockquote {
+        padding: 1rem 0.8rem 0.8rem;
+        margin: 0 0.5rem;
+    }
+    
+    .hero-quote blockquote p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .hero-quote blockquote::before {
+        font-size: 2rem;
+        left: 0.8rem;
+    }
+    
+    .hero-quote cite {
+        font-size: 0.8rem;
+    }
+    
+    .visitor-stats {
+        padding: 1rem 0.5rem;
+    }
+    
+    .stats-container {
+        gap: 0.8rem;
+    }
+    
+    .stat-card {
+        padding: 0.8rem;
+    }
+    
+    .stat-icon i {
+        font-size: 1.2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
     }
 }
 
