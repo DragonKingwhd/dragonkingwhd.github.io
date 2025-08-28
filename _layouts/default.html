@@ -62,6 +62,9 @@
         {{ content }}
     </main>
 
+    <!-- 主题切换器 -->
+    {% include theme-switcher.html %}
+
     <!-- Footer (only show if not home page) -->
     {% unless page.layout == 'home' %}
     <footer class="site-footer">

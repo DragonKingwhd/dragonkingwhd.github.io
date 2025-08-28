@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Dragonking's Tech Blog - 极简技术风格
+   Dragonking's Tech Blog - 极简技术风格 + 主题切换
    ========================================================================== */
 
-/* CSS Variables */
+/* CSS Variables - 默认深色主题 */
 :root {
     /* 主色调 */
     --primary-color: #00d4ff;
@@ -42,6 +42,188 @@
     /* 渐变 */
     --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     --gradient-dark: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+}
+
+/* 浅色阅读模式 */
+[data-theme="light"] {
+    --primary-color: #0066cc;
+    --secondary-color: #dc2626;
+    --accent-color: #7c2d12;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #e2e8f0;
+    --bg-glass: rgba(248, 250, 252, 0.9);
+    
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    --shadow-sm: 0 2px 4px rgba(0, 102, 204, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 102, 204, 0.15);
+    --shadow-lg: 0 8px 25px rgba(0, 102, 204, 0.2);
+    --shadow-glow: 0 0 20px rgba(0, 102, 204, 0.3);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    --gradient-dark: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}
+
+/* 护眼模式（浅绿色背景） */
+[data-theme="eye-care"] {
+    --primary-color: #059669;
+    --secondary-color: #dc2626;
+    --accent-color: #7c2d12;
+    --success-color: #10b981;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    
+    --bg-primary: #f0fdf4;
+    --bg-secondary: #ecfdf5;
+    --bg-tertiary: #d1fae5;
+    --bg-glass: rgba(236, 253, 245, 0.9);
+    
+    --text-primary: #14532d;
+    --text-secondary: #166534;
+    --text-muted: #22c55e;
+    
+    --shadow-sm: 0 2px 4px rgba(5, 150, 105, 0.1);
+    --shadow-md: 0 4px 12px rgba(5, 150, 105, 0.15);
+    --shadow-lg: 0 8px 25px rgba(5, 150, 105, 0.2);
+    --shadow-glow: 0 0 20px rgba(5, 150, 105, 0.3);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    --gradient-dark: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}
+
+/* 暖色模式（米色背景） */
+[data-theme="warm"] {
+    --primary-color: #d97706;
+    --secondary-color: #dc2626;
+    --accent-color: #7c2d12;
+    --success-color: #059669;
+    --warning-color: #f59e0b;
+    --danger-color: #dc2626;
+    
+    --bg-primary: #fffbeb;
+    --bg-secondary: #fef3c7;
+    --bg-tertiary: #fde68a;
+    --bg-glass: rgba(254, 243, 199, 0.9);
+    
+    --text-primary: #451a03;
+    --text-secondary: #78350f;
+    --text-muted: #a16207;
+    
+    --shadow-sm: 0 2px 4px rgba(217, 119, 6, 0.1);
+    --shadow-md: 0 4px 12px rgba(217, 119, 6, 0.15);
+    --shadow-lg: 0 8px 25px rgba(217, 119, 6, 0.2);
+    --shadow-glow: 0 0 20px rgba(217, 119, 6, 0.3);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    --gradient-dark: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}
+
+/* 高对比度模式 */
+[data-theme="high-contrast"] {
+    --primary-color: #0000ff;
+    --secondary-color: #ff0000;
+    --accent-color: #8b5cf6;
+    --success-color: #00ff00;
+    --warning-color: #ffff00;
+    --danger-color: #ff0000;
+    
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #333333;
+    --bg-glass: rgba(26, 26, 26, 0.9);
+    
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-muted: #999999;
+    
+    --shadow-sm: 0 2px 4px rgba(255, 255, 255, 0.2);
+    --shadow-md: 0 4px 12px rgba(255, 255, 255, 0.3);
+    --shadow-lg: 0 8px 25px rgba(255, 255, 255, 0.4);
+    --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.5);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    --gradient-dark: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+}
+
+/* 主题切换器样式 */
+.theme-switcher {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 1000;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 30px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.theme-switcher:hover {
+    transform: translateY(-50%) translateX(-5px);
+    box-shadow: var(--shadow-glow);
+    border-color: rgba(0, 212, 255, 0.5);
+}
+
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.25rem 0;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    transform: scale(1.1);
+}
+
+.theme-toggle-btn.active {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+}
+
+.theme-name {
+    position: absolute;
+    right: 60px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.theme-toggle-btn:hover + .theme-name,
+.theme-toggle-btn:focus + .theme-name {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
 }
 
 /* Reset & Base */
@@ -1069,5 +1251,41 @@ code, pre, .code-font {
     
     .rules-grid {
         grid-template-columns: 1fr;
+    }
+    
+    /* 主题切换器移动端适配 */
+    .theme-switcher {
+        right: 10px;
+        padding: 0.3rem;
+    }
+    
+    .theme-toggle-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .theme-name {
+        right: 55px;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* 超小屏幕主题切换器优化 */
+@media (max-width: 480px) {
+    .theme-switcher {
+        right: 5px;
+        top: auto;
+        bottom: 80px;
+        transform: none;
+    }
+    
+    .theme-switcher:hover {
+        transform: translateX(-3px);
+    }
+    
+    .theme-name {
+        display: none; /* 超小屏幕隐藏提示文字 */
     }
 }

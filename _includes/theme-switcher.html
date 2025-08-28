@@ -1,0 +1,313 @@
+<!-- 主题切换器组件 -->
+<div class="theme-switcher" id="themeSwitcher">
+    <!-- 深色模式 -->
+    <button class="theme-toggle-btn active" onclick="setTheme('dark')" title="深色模式" data-theme="dark">
+        <i class="fas fa-moon"></i>
+    </button>
+    <div class="theme-name">深色模式</div>
+    
+    <!-- 浅色阅读模式 -->
+    <button class="theme-toggle-btn" onclick="setTheme('light')" title="浅色阅读模式" data-theme="light">
+        <i class="fas fa-sun"></i>
+    </button>
+    <div class="theme-name">浅色阅读</div>
+    
+    <!-- 护眼模式 -->
+    <button class="theme-toggle-btn" onclick="setTheme('eye-care')" title="护眼模式" data-theme="eye-care">
+        <i class="fas fa-leaf"></i>
+    </button>
+    <div class="theme-name">护眼模式</div>
+    
+    <!-- 暖色模式 -->
+    <button class="theme-toggle-btn" onclick="setTheme('warm')" title="暖色模式" data-theme="warm">
+        <i class="fas fa-fire"></i>
+    </button>
+    <div class="theme-name">暖色模式</div>
+    
+    <!-- 高对比度模式 -->
+    <button class="theme-toggle-btn" onclick="setTheme('high-contrast')" title="高对比度模式" data-theme="high-contrast">
+        <i class="fas fa-adjust"></i>
+    </button>
+    <div class="theme-name">高对比度</div>
+</div>
+
+<script>
+// 主题切换功能
+class ThemeSwitcher {
+    constructor() {
+        this.currentTheme = 'dark'; // 默认主题
+        this.init();
+    }
+    
+    init() {
+        // 从localStorage读取保存的主题
+        const savedTheme = localStorage.getItem('blog-theme');
+        if (savedTheme) {
+            this.setTheme(savedTheme);
+        } else {
+            // 检测系统主题偏好
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                this.setTheme('light');
+            }
+        }
+        
+        // 监听系统主题变化
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('blog-theme')) {
+                    this.setTheme(e.matches ? 'light' : 'dark');
+                }
+            });
+        }
+        
+        // 为每个主题按钮添加悬停提示
+        this.addHoverEffects();
+    }
+    
+    setTheme(themeName) {
+        // 更新HTML属性
+        document.documentElement.setAttribute('data-theme', themeName);
+        
+        // 更新当前主题
+        this.currentTheme = themeName;
+        
+        // 保存到localStorage
+        localStorage.setItem('blog-theme', themeName);
+        
+        // 更新按钮状态
+        this.updateButtonStates(themeName);
+        
+        // 显示切换提示
+        this.showThemeNotification(themeName);
+        
+        // 触发自定义事件，让其他组件知道主题已切换
+        window.dispatchEvent(new CustomEvent('themeChanged', { 
+            detail: { theme: themeName } 
+        }));
+    }
+    
+    updateButtonStates(activeTheme) {
+        const buttons = document.querySelectorAll('.theme-toggle-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-theme') === activeTheme) {
+                btn.classList.add('active');
+            }
+        });
+    }
+    
+    addHoverEffects() {
+        const buttons = document.querySelectorAll('.theme-toggle-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('mouseenter', (e) => {
+                const themeName = e.target.getAttribute('data-theme');
+                this.previewTheme(themeName);
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                this.previewTheme(this.currentTheme);
+            });
+        });
+    }
+    
+    previewTheme(themeName) {
+        // 临时预览主题（鼠标悬停时）
+        document.documentElement.style.transition = 'all 0.3s ease';
+        document.documentElement.setAttribute('data-theme', themeName);
+        
+        setTimeout(() => {
+            document.documentElement.style.transition = '';
+        }, 300);
+    }
+    
+    showThemeNotification(themeName) {
+        const themes = {
+            'dark': { name: '深色模式', icon: '🌙', desc: '经典深色主题，适合夜间使用' },
+            'light': { name: '浅色阅读', icon: '☀️', desc: '清爽浅色背景，适合白天阅读' },
+            'eye-care': { name: '护眼模式', icon: '🍃', desc: '淡绿色背景，减少眼部疲劳' },
+            'warm': { name: '暖色模式', icon: '🔥', desc: '温暖米色背景，营造舒适氛围' },
+            'high-contrast': { name: '高对比度', icon: '⚫', desc: '高对比度显示，提升可读性' }
+        };
+        
+        const theme = themes[themeName];
+        if (!theme) return;
+        
+        // 创建通知元素
+        const notification = document.createElement('div');
+        notification.className = 'theme-notification';
+        notification.innerHTML = `
+            <div class="theme-notification-content">
+                <span class="theme-icon">${theme.icon}</span>
+                <div class="theme-info">
+                    <div class="theme-title">${theme.name}</div>
+                    <div class="theme-desc">${theme.desc}</div>
+                </div>
+            </div>
+        `;
+        
+        // 添加通知样式（如果还没有）
+        if (!document.querySelector('#theme-notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'theme-notification-style';
+            style.textContent = `
+                .theme-notification {
+                    position: fixed;
+                    bottom: 30px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(100px);
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--primary-color);
+                    border-radius: 25px;
+                    padding: 1rem 1.5rem;
+                    z-index: 1001;
+                    box-shadow: var(--shadow-glow);
+                    backdrop-filter: blur(10px);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    opacity: 0;
+                }
+                
+                .theme-notification.show {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+                
+                .theme-notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                
+                .theme-icon {
+                    font-size: 1.5rem;
+                }
+                
+                .theme-info {
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .theme-title {
+                    color: var(--text-primary);
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+                
+                .theme-desc {
+                    color: var(--text-secondary);
+                    font-size: 0.8rem;
+                    margin-top: 0.2rem;
+                }
+                
+                @media (max-width: 480px) {
+                    .theme-notification {
+                        left: 10px;
+                        right: 10px;
+                        transform: translateY(100px);
+                        max-width: calc(100vw - 20px);
+                    }
+                    
+                    .theme-notification.show {
+                        transform: translateY(0);
+                    }
+                    
+                    .theme-desc {
+                        display: none;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 显示通知
+        document.body.appendChild(notification);
+        
+        // 触发显示动画
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        // 2秒后隐藏
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 400);
+        }, 2000);
+    }
+    
+    // 获取当前主题
+    getCurrentTheme() {
+        return this.currentTheme;
+    }
+    
+    // 循环切换主题（快捷键支持）
+    cycleTheme() {
+        const themes = ['dark', 'light', 'eye-care', 'warm', 'high-contrast'];
+        const currentIndex = themes.indexOf(this.currentTheme);
+        const nextIndex = (currentIndex + 1) % themes.length;
+        this.setTheme(themes[nextIndex]);
+    }
+}
+
+// 全局函数供HTML调用
+function setTheme(themeName) {
+    if (window.themeSwitcher) {
+        window.themeSwitcher.setTheme(themeName);
+    }
+}
+
+// 初始化主题切换器
+document.addEventListener('DOMContentLoaded', function() {
+    window.themeSwitcher = new ThemeSwitcher();
+    
+    // 添加键盘快捷键支持 (Ctrl+Shift+T)
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+            e.preventDefault();
+            window.themeSwitcher.cycleTheme();
+        }
+    });
+});
+
+// 让Chart.js等第三方库感知主题变化
+window.addEventListener('themeChanged', function(e) {
+    // 更新图表颜色等
+    if (typeof Chart !== 'undefined' && Chart.instances) {
+        Object.values(Chart.instances).forEach(chart => {
+            if (chart && chart.options) {
+                // 更新图表主题色
+                updateChartTheme(chart, e.detail.theme);
+            }
+        });
+    }
+});
+
+function updateChartTheme(chart, theme) {
+    // 根据主题更新图表颜色
+    const isDark = theme === 'dark' || theme === 'high-contrast';
+    const textColor = isDark ? '#ffffff' : '#1e293b';
+    const gridColor = isDark ? 'rgba(0, 212, 255, 0.1)' : 'rgba(0, 102, 204, 0.1)';
+    
+    if (chart.options.scales) {
+        Object.keys(chart.options.scales).forEach(axis => {
+            if (chart.options.scales[axis].ticks) {
+                chart.options.scales[axis].ticks.color = textColor;
+            }
+            if (chart.options.scales[axis].grid) {
+                chart.options.scales[axis].grid.color = gridColor;
+            }
+            if (chart.options.scales[axis].title) {
+                chart.options.scales[axis].title.color = textColor;
+            }
+        });
+    }
+    
+    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+        chart.options.plugins.legend.labels.color = textColor;
+    }
+    
+    chart.update();
+}
+</script>
