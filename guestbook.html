@@ -1,0 +1,59 @@
+---
+layout: default
+title: 留言板
+permalink: /guestbook/
+---
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-comments"></i> 留言板</h1>
+        <p class="page-description">欢迎在这里留下您的宝贵意见和建议！</p>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container">
+        <div class="guestbook-intro">
+            <div class="intro-card">
+                <div class="intro-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="intro-content">
+                    <h3>感谢您的访问</h3>
+                    <p>这里是我的数字留言板，您可以：</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> 分享您对网站的看法</li>
+                        <li><i class="fas fa-check"></i> 提出改进建议</li>
+                        <li><i class="fas fa-check"></i> 交流技术心得</li>
+                        <li><i class="fas fa-check"></i> 或者只是简单地打个招呼</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="comment-rules">
+            <h4><i class="fas fa-info-circle"></i> 留言须知</h4>
+            <div class="rules-grid">
+                <div class="rule-item">
+                    <i class="fas fa-user-check"></i>
+                    <span>需要GitHub账号登录</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-comments"></i>
+                    <span>友善交流，文明发言</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-code"></i>
+                    <span>支持Markdown语法</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-reply"></i>
+                    <span>我会尽快回复您的留言</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 引入Gitalk评论组件 -->
+        {% include gitalk.html %}
+    </div>
+</div>

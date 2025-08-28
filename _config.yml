@@ -44,11 +44,23 @@ navigation:
   - title: 知识文档
     url: /docs/
     icon: "fas fa-file-code"
+  - title: 留言板
+    url: /guestbook/
+    icon: "fas fa-comments"
 
 # 社交链接
 social:
   github: DragonKingwhd
   email: dragonkingwhd@gmail.com
+
+# Gitalk评论配置
+gitalk:
+  enable: true
+  clientID: 'your-github-oauth-app-client-id'    # GitHub OAuth App Client ID
+  clientSecret: 'your-github-oauth-app-client-secret'  # GitHub OAuth App Client Secret
+  repo: 'dragonkingwhd.github.io'               # 存储评论的GitHub仓库
+  owner: 'DragonKingwhd'                         # GitHub仓库的所有者
+  admin: ['DragonKingwhd']                       # 管理员（可以初始化评论）
 
 # 网站主题配置
 theme_config:

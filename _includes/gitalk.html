@@ -1,0 +1,27 @@
+{% if site.gitalk.enable %}
+<div id="gitalk-container" class="comments-section">
+    <div class="comments-header">
+        <h3><i class="fas fa-comments"></i> 评论区</h3>
+        <p>使用GitHub账号登录后即可评论</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Gitalk !== 'undefined') {
+        var gitalk = new Gitalk({
+            clientID: '{{ site.gitalk.clientID }}',
+            clientSecret: '{{ site.gitalk.clientSecret }}',
+            repo: '{{ site.gitalk.repo }}',
+            owner: '{{ site.gitalk.owner }}',
+            admin: {{ site.gitalk.admin | jsonify }},
+            id: location.pathname,      // 确保每个页面有唯一的评论
+            distractionFreeMode: false, // 类似Facebook的无干扰模式
+            title: '{{ page.title | default: site.title }}',
+            body: '评论页面：{{ page.url | absolute_url }}'
+        });
+        gitalk.render('gitalk-container');
+    }
+});
+</script>
+{% endif %}

@@ -85,6 +85,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.post-content')) {
         createReadingProgress();
     }
+    
+    // 计算网站运行天数
+    calculateSiteDays();
 });
 
 // 创建返回顶部按钮
@@ -321,4 +324,18 @@ function initDarkMode() {
     }
     
     document.body.appendChild(darkModeToggle);
+}
+
+// 计算网站运行天数
+function calculateSiteDays() {
+    const siteDaysElement = document.getElementById('site-days');
+    if (siteDaysElement) {
+        // 设置网站开始日期（请根据实际情况修改）
+        const startDate = new Date('2024-12-26'); // 网站创建日期
+        const currentDate = new Date();
+        const timeDifference = currentDate - startDate;
+        const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        
+        siteDaysElement.textContent = daysDifference;
+    }
 }

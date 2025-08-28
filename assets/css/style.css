@@ -635,3 +635,377 @@ code, pre, .code-font {
         animation: fadeInUp 0.6s ease-out calc(var(--index, 0) * 0.1s) both;
     }
 }
+
+/* Hero Quote Styles */
+.hero-quote {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 4rem 2rem;
+    background: var(--bg-primary);
+}
+
+.quote-container {
+    max-width: 800px;
+    text-align: center;
+}
+
+.hero-quote blockquote {
+    position: relative;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: 3rem 2rem 2rem;
+    margin: 0;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.hero-quote blockquote:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
+    border-color: rgba(0, 212, 255, 0.4);
+}
+
+.hero-quote blockquote::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 2rem;
+    font-size: 4rem;
+    color: var(--primary-color);
+    font-family: var(--font-mono);
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.hero-quote blockquote p {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.hero-quote cite {
+    display: block;
+    font-size: 1rem;
+    color: var(--primary-color);
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-weight: 500;
+    text-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+    .hero-quote {
+        min-height: 50vh;
+        padding: 3rem 1rem;
+    }
+    
+    .hero-quote blockquote {
+        padding: 2rem 1.5rem 1.5rem;
+    }
+    
+    .hero-quote blockquote p {
+        font-size: 1.1rem;
+    }
+    
+    .hero-quote blockquote::before {
+        font-size: 3rem;
+        left: 1.5rem;
+    }
+}
+
+/* Visitor Stats Styles */
+.visitor-stats {
+    padding: 4rem 2rem;
+    background: var(--bg-primary);
+}
+
+.stats-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-glow);
+    border-color: rgba(0, 212, 255, 0.4);
+}
+
+.stat-icon {
+    margin-bottom: 1rem;
+}
+
+.stat-icon i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .visitor-stats {
+        padding: 3rem 1rem;
+    }
+    
+    .stats-container {
+        gap: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-icon i {
+        font-size: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+/* Comments and Guestbook Styles */
+.comments-section {
+    margin-top: 3rem;
+    padding: 2rem 0;
+}
+
+.comments-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.comments-header h3 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.comments-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.guestbook-intro {
+    margin-bottom: 3rem;
+}
+
+.intro-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.intro-card:hover {
+    border-color: rgba(0, 212, 255, 0.4);
+    box-shadow: var(--shadow-lg);
+}
+
+.intro-icon {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.intro-content h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+}
+
+.intro-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.intro-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+.intro-content li {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.intro-content li i {
+    color: var(--success-color);
+    font-size: 0.9rem;
+}
+
+.comment-rules {
+    margin-bottom: 3rem;
+}
+
+.comment-rules h4 {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comment-rules h4 i {
+    color: var(--primary-color);
+}
+
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.3s ease;
+}
+
+.rule-item:hover {
+    border-color: rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.rule-item i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.rule-item span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Gitalk样式自定义 */
+#gitalk-container .gt-container {
+    background: var(--bg-secondary) !important;
+    border-radius: var(--border-radius) !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    padding: 2rem !important;
+}
+
+#gitalk-container .gt-header-textarea {
+    background: var(--bg-tertiary) !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    border-radius: var(--border-radius-sm) !important;
+    color: var(--text-primary) !important;
+}
+
+#gitalk-container .gt-header-textarea:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2) !important;
+}
+
+#gitalk-container .gt-btn {
+    background: var(--primary-color) !important;
+    border: none !important;
+    border-radius: var(--border-radius-sm) !important;
+    padding: 0.5rem 1rem !important;
+    color: var(--bg-primary) !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+#gitalk-container .gt-btn:hover {
+    background: var(--accent-color) !important;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+}
+
+#gitalk-container .gt-comment-content {
+    background: var(--bg-tertiary) !important;
+    border: 1px solid rgba(0, 212, 255, 0.1) !important;
+    border-radius: var(--border-radius-sm) !important;
+    color: var(--text-primary) !important;
+}
+
+#gitalk-container .gt-comment-username {
+    color: var(--primary-color) !important;
+    font-weight: 600 !important;
+}
+
+@media (max-width: 768px) {
+    .intro-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+    
+    .intro-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        align-self: center;
+    }
+    
+    .rules-grid {
+        grid-template-columns: 1fr;
+    }
+}
