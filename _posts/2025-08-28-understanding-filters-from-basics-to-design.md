@@ -45,6 +45,18 @@ fc = 15;    % 截止频率
 signal_filtered = filter(b,a,signal_noisy);  % 滤波后信号
 ```
 
+### 🎮 交互式演示
+
+下面是一个可以直接在网页中调节参数的滤波器演示：
+
+{% include filter-visualizer.html %}
+
+### 💻 在线Python代码运行
+
+你也可以运行等效的Python代码：
+
+{% include python-runner.html %}
+
 ## 📊 滤波器的分类
 
 ### 按频率特性分类
