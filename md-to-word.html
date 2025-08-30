@@ -57,7 +57,48 @@ permalink: /tools/md-to-word/
                 <div class="feature-card">
                     <i class="fas fa-shield-alt"></i>
                     <h4>本地处理</h4>
-                    <p>所有转换在本地完成，保护您的文档隐私和安全</p>
+                    <p>所有转换在浏览器本地完成，保护您的文档隐私和安全</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cloud"></i>
+                    <h4>在线可用</h4>
+                    <p>无需安装任何软件，任何设备上打开浏览器即可使用</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>跨平台支持</h4>
+                    <p>支持Windows、Mac、Linux、手机等所有现代浏览器</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h4>快速转换</h4>
+                    <p>基于最新Web技术，转换速度快，支持大文档处理</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="usage-guide">
+            <h3>使用指南</h3>
+            <div class="guide-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h4>选择文件</h4>
+                    <p>点击上方区域或拖拽.md/.markdown文件到转换区域</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h4>预览内容</h4>
+                    <p>系统会自动预览Markdown内容，确认格式正确</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h4>一键转换</h4>
+                    <p>点击"转换为Word"按钮，等待处理完成</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h4>下载文档</h4>
+                    <p>转换完成后点击下载按钮，保存Word文档</p>
                 </div>
             </div>
         </div>
@@ -241,6 +282,61 @@ permalink: /tools/md-to-word/
     line-height: 1.5;
 }
 
+.usage-guide {
+    margin-top: 3rem;
+    background: rgba(0, 212, 255, 0.05);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.usage-guide h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+}
+
+.guide-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.step {
+    text-align: center;
+    padding: 1rem;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.step h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.step p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
 @media (max-width: 768px) {
     .tool-converter {
         padding: 1.5rem;
@@ -262,9 +358,22 @@ permalink: /tools/md-to-word/
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
+<script src="https://unpkg.com/docx@8.2.2/build/index.js"></script>
 <script>
+// 检查必要的库是否加载成功
+window.addEventListener('load', function() {
+    if (typeof marked === 'undefined') {
+        alert('⚠️ Markdown解析库加载失败，请检查网络连接后刷新页面');
+        return;
+    }
+    if (typeof docx === 'undefined') {
+        alert('⚠️ Word生成库加载失败，请检查网络连接后刷新页面');
+        return;
+    }
+    console.log('✅ 所有必要库已加载完成');
+});
+
 let currentFile = null;
 let convertedBlob = null;
 
@@ -383,6 +492,11 @@ function convertWithDocx(markdownContent) {
     try {
         updateProgress(60);
         
+        // 检查必要的库
+        if (typeof marked === 'undefined' || typeof docx === 'undefined') {
+            throw new Error('必要的转换库未加载完成，请刷新页面重试');
+        }
+        
         // 解析markdown结构
         const tokens = marked.lexer(markdownContent);
         console.log('Markdown tokens:', tokens);
@@ -391,24 +505,39 @@ function convertWithDocx(markdownContent) {
         
         // 创建文档结构
         const children = [];
+        let processedTokens = 0;
         
         tokens.forEach((token, index) => {
             try {
                 console.log(`Processing token ${index}:`, token.type, token);
                 const elements = processToken(token);
                 children.push(...elements);
+                processedTokens++;
             } catch (tokenError) {
-                console.error(`Token ${index} 处理错误:`, tokenError, token);
+                console.warn(`Token ${index} 处理错误:`, tokenError, token);
                 // 跳过有问题的token，继续处理
             }
         });
+        
+        if (processedTokens === 0) {
+            throw new Error('文档解析失败，请检查Markdown格式');
+        }
         
         updateProgress(80);
         
         // 创建Word文档
         const doc = new docx.Document({
             sections: [{
-                properties: {},
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1440,    // 1英寸 = 1440 twips
+                            right: 1440,
+                            bottom: 1440,
+                            left: 1440,
+                        },
+                    },
+                },
                 children: children
             }]
         });
@@ -417,6 +546,10 @@ function convertWithDocx(markdownContent) {
         
         // 生成并下载
         docx.Packer.toBlob(doc).then(blob => {
+            if (!blob || blob.size === 0) {
+                throw new Error('生成的Word文档为空');
+            }
+            
             convertedBlob = blob;
             updateProgress(100);
             
@@ -424,18 +557,24 @@ function convertWithDocx(markdownContent) {
                 progress.style.display = 'none';
                 downloadBtn.style.display = 'inline-block';
                 convertBtn.disabled = false;
-                alert('转换成功！点击下载按钮保存 Word 文档。');
+                
+                // 显示成功信息
+                const successMsg = `🎉 转换成功！\n📄 处理了 ${processedTokens} 个文档元素\n💾 文件大小: ${formatFileSize(blob.size)}`;
+                alert(successMsg);
             }, 500);
         }).catch(packError => {
             console.error('打包错误:', packError);
-            alert('转换失败：文档生成时出错 - ' + packError.message);
+            alert('转换失败：Word文档生成时出错\n' + 
+                  '可能原因：\n• 文档内容过于复杂\n• 网络连接问题\n• 浏览器兼容性问题\n\n' +
+                  '建议：尝试简化Markdown内容或使用Chrome/Firefox浏览器');
             convertBtn.disabled = false;
             progress.style.display = 'none';
         });
         
     } catch (error) {
         console.error('DOCX转换错误:', error);
-        alert('转换失败：' + (error.message || '文档结构过于复杂'));
+        alert('🚨 转换失败：' + (error.message || '未知错误') + 
+              '\n\n💡 建议检查：\n• 网络连接是否正常\n• 文档格式是否正确\n• 浏览器是否支持最新标准');
         convertBtn.disabled = false;
         progress.style.display = 'none';
     }
