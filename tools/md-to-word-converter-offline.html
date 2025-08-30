@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to Word 转换器 (离线版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #4facfe;
+            background-color: #f8fbff;
+        }
+
+        .upload-area.dragover {
+            border-color: #4facfe;
+            background-color: #f0f8ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #4facfe;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .preview-area {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px 6px 0 0;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .preview-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .progress {
+            display: none;
+            width: 100%;
+            height: 6px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .file-info {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Markdown to Word (离线版)</h1>
+            <p>简化版Markdown转Word工具 - 无需网络连接</p>
+        </div>
+        
+        <div class="content">
+            <div class="warning">
+                ⚠️ <strong>离线版说明：</strong> 此版本不依赖外部网络资源，可直接双击打开使用。功能相比在线版有所简化，支持基本的Markdown格式转换。
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击选择文件或拖拽 MD 文件到此处</div>
+                <div class="upload-hint">支持 .md, .markdown 格式</div>
+                <input type="file" id="fileInput" accept=".md,.markdown" />
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+            
+            <div class="progress" id="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="preview-area" id="previewArea">
+                <div class="preview-header">Markdown 内容预览</div>
+                <div class="preview-content" id="previewContent"></div>
+            </div>
+            
+            <div class="actions">
+                <button class="btn" id="convertBtn" disabled>🔄 转换为 Word</button>
+                <button class="btn btn-success" id="downloadBtn" style="display: none;">💾 下载 Word 文档</button>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>纯离线</h3>
+                    <p>无需网络连接，本地处理</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>隐私保护</h3>
+                    <p>文件不会上传到任何服务器</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <h3>格式转换</h3>
+                    <p>支持基本Markdown格式</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFile = null;
+        let convertedContent = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const previewArea = document.getElementById('previewArea');
+        const previewContent = document.getElementById('previewContent');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+
+        // 简单的Markdown到HTML转换器
+        function parseMarkdown(md) {
+            let html = md
+                // 标题
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')  
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                // 粗体
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/__(.*?)__/gim, '<strong>$1</strong>')
+                // 斜体
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                // 代码
+                .replace(/`(.*?)`/gim, '<code>$1</code>')
+                // 链接
+                .replace(/\[([^\]]*)\]\(([^\)]*)\)/gim, '<a href="$2">$1</a>')
+                // 换行
+                .replace(/\n/gim, '<br>');
+            
+            return html;
+        }
+
+        // 简单的HTML到Word格式转换
+        function createWordDocument(content) {
+            const wordHeader = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?mso-application progid="Word.Document"?>
+<w:wordDocument xmlns:w="http://schemas.microsoft.com/office/word/2003/wordml">
+<w:body>`;
+            
+            const wordFooter = `</w:body></w:wordDocument>`;
+            
+            // 简单的HTML标签转Word格式
+            let wordContent = content
+                .replace(/<h1>(.*?)<\/h1>/g, '<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>$1</w:t></w:r></w:p>')
+                .replace(/<h2>(.*?)<\/h2>/g, '<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t>$1</w:t></w:r></w:p>')
+                .replace(/<h3>(.*?)<\/h3>/g, '<w:p><w:pPr><w:pStyle w:val="Heading3"/></w:pPr><w:r><w:t>$1</w:t></w:r></w:p>')
+                .replace(/<strong>(.*?)<\/strong>/g, '<w:r><w:rPr><w:b/></w:rPr><w:t>$1</w:t></w:r>')
+                .replace(/<em>(.*?)<\/em>/g, '<w:r><w:rPr><w:i/></w:rPr><w:t>$1</w:t></w:r>')
+                .replace(/<code>(.*?)<\/code>/g, '<w:r><w:rPr><w:rFonts w:ascii="Consolas"/></w:rPr><w:t>$1</w:t></w:r>')
+                .replace(/<br>/g, '</w:t></w:r></w:p><w:p><w:r><w:t>')
+                .replace(/<a href=".*?">(.*?)<\/a>/g, '$1');
+            
+            // 包装在段落中
+            if (!wordContent.includes('<w:p>')) {
+                wordContent = `<w:p><w:r><w:t>${wordContent}</w:t></w:r></w:p>`;
+            }
+            
+            return wordHeader + wordContent + wordFooter;
+        }
+
+        // 文件上传事件
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.name.match(/\.(md|markdown)$/i)) {
+                alert('请选择 Markdown 文件 (.md 或 .markdown)');
+                return;
+            }
+
+            currentFile = file;
+            
+            // 显示文件信息
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+
+            // 读取并预览文件
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                previewContent.textContent = content.substring(0, 1000) + (content.length > 1000 ? '...' : '');
+                previewArea.style.display = 'block';
+                convertBtn.disabled = false;
+            };
+            reader.readAsText(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        convertBtn.addEventListener('click', convertToWord);
+        downloadBtn.addEventListener('click', downloadWord);
+
+        function convertToWord() {
+            if (!currentFile) return;
+
+            progress.style.display = 'block';
+            convertBtn.disabled = true;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    updateProgress(25);
+                    const markdownContent = e.target.result;
+                    
+                    updateProgress(50);
+                    const htmlContent = parseMarkdown(markdownContent);
+                    
+                    updateProgress(75);
+                    convertedContent = createWordDocument(htmlContent);
+                    
+                    updateProgress(100);
+                    
+                    setTimeout(() => {
+                        progress.style.display = 'none';
+                        downloadBtn.style.display = 'inline-block';
+                        convertBtn.disabled = false;
+                        alert('转换成功！点击下载按钮保存 Word 文档。\n\n注意：离线版生成的是简化格式的Word文档。');
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('转换错误:', error);
+                    alert('转换失败：' + error.message);
+                    convertBtn.disabled = false;
+                    progress.style.display = 'none';
+                }
+            };
+            reader.readAsText(currentFile);
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+        }
+
+        function downloadWord() {
+            if (!convertedContent) return;
+            
+            const blob = new Blob([convertedContent], { type: 'application/vnd.ms-word' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentFile.name.replace(/\.(md|markdown)$/i, '.doc');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 页面加载完成提示
+        window.addEventListener('load', () => {
+            console.log('✅ 离线版Markdown转Word工具已就绪');
+        });
+    </script>
+</body>
+</html>

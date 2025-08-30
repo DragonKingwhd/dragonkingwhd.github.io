@@ -358,21 +358,114 @@ permalink: /tools/md-to-word-converter/
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
-<script src="https://unpkg.com/docx@8.2.2/build/index.js"></script>
+<!-- 多CDN备用方案 -->
 <script>
-// 检查必要的库是否加载成功
-window.addEventListener('load', function() {
-    if (typeof marked === 'undefined') {
-        alert('⚠️ Markdown解析库加载失败，请检查网络连接后刷新页面');
+// CDN资源加载管理
+const resources = {
+    marked: [
+        'https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js',
+        'https://unpkg.com/marked@9.1.2/marked.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js'
+    ],
+    docx: [
+        'https://unpkg.com/docx@8.2.2/build/index.js',
+        'https://cdn.jsdelivr.net/npm/docx@8.2.2/build/index.js',
+        'https://cdn.skypack.dev/docx@8.2.2'
+    ]
+};
+
+let loadAttempts = { marked: 0, docx: 0 };
+
+function loadScript(urls, name, callback) {
+    if (loadAttempts[name] >= urls.length) {
+        console.error(`无法加载 ${name} 库，已尝试所有CDN源`);
+        showLoadError(name);
         return;
     }
-    if (typeof docx === 'undefined') {
-        alert('⚠️ Word生成库加载失败，请检查网络连接后刷新页面');
-        return;
+    
+    const script = document.createElement('script');
+    const currentUrl = urls[loadAttempts[name]];
+    
+    script.onload = function() {
+        console.log(`✅ 成功加载 ${name} 从 ${currentUrl}`);
+        if (callback) callback();
+    };
+    
+    script.onerror = function() {
+        console.warn(`❌ 加载失败 ${name} 从 ${currentUrl}，尝试下一个源...`);
+        loadAttempts[name]++;
+        script.remove();
+        setTimeout(() => loadScript(urls, name, callback), 100);
+    };
+    
+    script.src = currentUrl;
+    document.head.appendChild(script);
+}
+
+function showLoadError(libraryName) {
+    const errorMsg = `
+⚠️ ${libraryName === 'marked' ? 'Markdown解析' : 'Word生成'}库加载失败
+
+可能原因：
+• 网络连接问题
+• CDN服务暂时不可用  
+• 防火墙/代理阻止了外部资源
+
+解决方案：
+1. 检查网络连接
+2. 尝试刷新页面
+3. 使用离线版本工具
+4. 尝试更换网络环境`;
+
+    alert(errorMsg);
+    
+    // 显示离线版本提示
+    showOfflineOption();
+}
+
+function showOfflineOption() {
+    const offlineNotice = document.createElement('div');
+    offlineNotice.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-width: 300px;
+    `;
+    offlineNotice.innerHTML = `
+        <strong>🚨 在线版本加载失败</strong><br>
+        建议使用离线版本：<br>
+        <a href="md-to-word-converter-offline.html" style="color: #fff; text-decoration: underline;">
+            点击使用离线版本
+        </a>
+    `;
+    document.body.appendChild(offlineNotice);
+    
+    setTimeout(() => offlineNotice.remove(), 10000);
+}
+
+// 开始加载资源
+console.log('🔄 开始加载依赖库...');
+loadScript(resources.marked, 'marked', function() {
+    if (typeof marked !== 'undefined') {
+        loadScript(resources.docx, 'docx', function() {
+            if (typeof docx !== 'undefined') {
+                console.log('✅ 所有库加载完成，工具就绪');
+                document.dispatchEvent(new CustomEvent('librariesLoaded'));
+            }
+        });
     }
-    console.log('✅ 所有必要库已加载完成');
 });
+</script>
+
+<script>
+// 等待库加载完成后再初始化
+document.addEventListener('librariesLoaded', function() {
 
 let currentFile = null;
 let convertedBlob = null;
@@ -764,4 +857,17 @@ function downloadWord() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+// 初始化完成
+console.log('✅ Markdown to Word 转换器已就绪');
+
+}); // 结束 librariesLoaded 事件监听
+
+// 添加页面加载超时检测
+setTimeout(function() {
+    if (typeof marked === 'undefined' || typeof docx === 'undefined') {
+        console.warn('⚠️ 库加载超时，可能存在网络问题');
+        showOfflineOption();
+    }
+}, 10000); // 10秒超时
 </script>
