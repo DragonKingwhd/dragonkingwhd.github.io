@@ -1,0 +1,135 @@
+<!-- Background Music Player (autoplay with mute toggle) -->
+<div class="bgm-container">
+  <audio id="bgm-audio" src="{{ '/assets/music/music.mp3' | relative_url }}" preload="auto" loop></audio>
+  <button id="bgm-toggle" class="bgm-toggle" aria-label="背景音乐开关" title="背景音乐">
+    <i class="fas fa-volume-up" aria-hidden="true"></i>
+  </button>
+</div>
+
+<style>
+  .bgm-toggle {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    background: var(--bg-secondary, rgba(10,14,39,0.8));
+    color: var(--text-primary, #fff);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.2));
+    backdrop-filter: blur(6px);
+    z-index: 1100;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .bgm-toggle:hover { transform: translateY(-1px); box-shadow: var(--shadow-glow, 0 6px 18px rgba(0,212,255,0.25)); }
+  .bgm-toggle.muted { opacity: 0.85; }
+  .bgm-toggle .fa-volume-mute { color: var(--text-secondary, #9aa4b2); }
+  .bgm-toggle:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,212,255,0.25); }
+  @media (max-width: 480px) { .bgm-toggle { right: 14px; bottom: 14px; } }
+</style>
+
+<script>
+  (function(){
+    const audio = document.getElementById('bgm-audio');
+    const btn = document.getElementById('bgm-toggle');
+    const LS_MUTED_KEY = 'bgm-muted';
+    const LS_ENABLED_KEY = 'bgm-enabled';
+
+    // Load user preferences
+    const savedMuted = localStorage.getItem(LS_MUTED_KEY);
+    const savedEnabled = localStorage.getItem(LS_ENABLED_KEY);
+
+    // Defaults: enabled=true, muted=false
+    let enabled = savedEnabled === null ? true : (savedEnabled === 'true');
+    let muted = savedMuted === 'true';
+
+    audio.muted = muted;
+    audio.volume = 1.0;
+
+    function setIcon() {
+      btn.innerHTML = '<i class="fas ' + (audio.muted ? 'fa-volume-mute' : 'fa-volume-up') + '" aria-hidden="true"></i>';
+      btn.classList.toggle('muted', audio.muted);
+      btn.setAttribute('aria-label', audio.muted ? '开启声音' : '静音');
+      btn.setAttribute('title', audio.muted ? '开启声音' : '静音');
+    }
+
+    async function tryPlay(preferAudible = true){
+      if (!enabled) return;
+      try {
+        if (preferAudible && !audio.muted) {
+          await audio.play();
+        } else {
+          // Ensure allowed by autoplay policies
+          audio.muted = true;
+          setIcon();
+          await audio.play();
+          if (!muted && preferAudible) {
+            // Attempt to unmute after playback started (some browsers still block)
+            audio.muted = false;
+            setIcon();
+          }
+        }
+      } catch (err) {
+        // Autoplay blocked. Keep it muted and start again
+        try {
+          audio.muted = true;
+          setIcon();
+          await audio.play();
+        } catch (_) {
+          // Still blocked until user interacts; show muted icon
+          setIcon();
+        }
+      }
+    }
+
+    // Start on load
+    document.addEventListener('DOMContentLoaded', () => {
+      setIcon();
+      // If user previously disabled bgm, keep paused
+      if (enabled) {
+        // Attempt audible first; gracefully fall back to muted if blocked
+        tryPlay(true);
+      }
+    });
+
+    // First user interaction can resume audible playback if it was blocked
+    const resumeOnUserGesture = () => {
+      if (audio.paused) {
+        audio.muted = muted; // respect current preference
+        tryPlay(!muted);
+      }
+      window.removeEventListener('click', resumeOnUserGesture);
+      window.removeEventListener('keydown', resumeOnUserGesture);
+      window.removeEventListener('touchstart', resumeOnUserGesture);
+    };
+    window.addEventListener('click', resumeOnUserGesture, { once: true, passive: true });
+    window.addEventListener('keydown', resumeOnUserGesture, { once: true });
+    window.addEventListener('touchstart', resumeOnUserGesture, { once: true, passive: true });
+
+    // Toggle button: mute/unmute and play if needed
+    btn.addEventListener('click', async () => {
+      enabled = true;
+      localStorage.setItem(LS_ENABLED_KEY, 'true');
+
+      if (audio.muted) {
+        audio.muted = false;
+        muted = false;
+        localStorage.setItem(LS_MUTED_KEY, 'false');
+        setIcon();
+        if (audio.paused) await tryPlay(true);
+      } else {
+        audio.muted = true;
+        muted = true;
+        localStorage.setItem(LS_MUTED_KEY, 'true');
+        setIcon();
+        if (audio.paused) await tryPlay(false);
+      }
+    });
+  })();
+  </script>
+
