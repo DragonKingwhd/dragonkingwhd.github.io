@@ -222,6 +222,54 @@
             padding: 2px 4px;
             border-radius: 2px;
         }
+        
+        /* Tooltip样式 */
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            line-height: 1.5;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .chart-tooltip .tooltip-time {
+            color: #66ccff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .chart-tooltip .tooltip-value {
+            display: flex;
+            align-items: center;
+            margin: 2px 0;
+        }
+        
+        .chart-tooltip .tooltip-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        
+        /* 图表交互样式 */
+        .chart-point {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        
+        .chart-point:hover {
+            opacity: 1;
+            r: 6;
+        }
     </style>
 </head>
 <body>
@@ -250,6 +298,22 @@
             <label>选择要显示的数据列：
                 <button type="button" class="help-button" onclick="toggleSelectAll()" id="selectAllBtn">✓ 全选</button>
             </label>
+            
+            <!-- 搜索筛选区域 -->
+            <div style="margin: 10px 0; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="columnSearch" placeholder="搜索数据列 (如: rb, motion, power...)" 
+                       style="flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;"
+                       oninput="filterColumns()" onkeyup="filterColumns()">
+                <button type="button" onclick="clearColumnSearch()" 
+                        style="background: #666; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    清除
+                </button>
+                <button type="button" onclick="toggleFilteredSelectAll()" id="filteredSelectAllBtn"
+                        style="background: #2196F3; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                    ✓ 筛选全选
+                </button>
+            </div>
+            
             <div class="checkbox-group" id="columnCheckboxes"></div>
         </div>
 
@@ -372,6 +436,50 @@
             <input type="text" id="chartTitle" value="数据曲线图" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
         </div>
         
+        <div class="control-group">
+            <label>时间范围限制（可选）：</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                <input type="checkbox" id="enableTimeRange">
+                <label for="enableTimeRange" style="margin: 0; font-weight: normal;">启用时间范围限制</label>
+            </div>
+            <div id="timeRangeControls" style="display: none; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">
+                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label for="timeStart" style="display: block; margin-bottom: 5px; font-size: 13px;">开始时间：</label>
+                        <input type="number" id="timeStart" placeholder="最小时间值" 
+                               style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px;" 
+                               step="any" onchange="updateTimeRange()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="timeEnd" style="display: block; margin-bottom: 5px; font-size: 13px;">结束时间：</label>
+                        <input type="number" id="timeEnd" placeholder="最大时间值" 
+                               style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px;" 
+                               step="any" onchange="updateTimeRange()">
+                    </div>
+                    <div>
+                        <button type="button" onclick="resetTimeRange()" 
+                                style="background: #666; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-top: 20px;">
+                            重置
+                        </button>
+                    </div>
+                </div>
+                <div id="timeRangeInfo" style="font-size: 12px; color: #666; margin-top: 5px;"></div>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label for="timePointQuery">查看特定时间点数据：</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+                <input type="number" id="timePointInput" placeholder="输入时间值" 
+                       style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 3px;" 
+                       step="any" onkeypress="if(event.key==='Enter') queryTimePoint()">
+                <button type="button" onclick="queryTimePoint()" style="background: #2196F3; min-width: 80px;">查询</button>
+            </div>
+            <div id="timePointResult" style="margin-top: 10px; padding: 10px; background: #f0f8ff; 
+                                          border-radius: 5px; display: none; font-family: monospace; font-size: 13px;
+                                          border: 1px solid #2196F3;"></div>
+        </div>
+        
         <button onclick="updateChart()">更新图表</button>
     </div>
 
@@ -379,11 +487,217 @@
         <div class="chart-title" id="chartTitleDisplay">数据曲线图</div>
         <div class="chart-legend" id="chartLegend"></div>
         <svg class="simple-chart" id="chart"></svg>
+        <!-- Tooltip元素 -->
+        <div id="chartTooltip" class="chart-tooltip"></div>
     </div>
 
     <script>
         let fileData = null;
         let originalData = null; // 保存原始数据
+        
+        // 数据格式化函数
+        function formatNumber(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '0';
+            }
+            
+            // 去除逗号分隔符，直接显示数字
+            if (Math.abs(value) < 0.001 && value !== 0) {
+                // 科学记数法显示非常小的数
+                return value.toExponential(3);
+            } else if (Math.abs(value) >= 1000000) {
+                // 大数字使用科学记数法或简化显示
+                return value.toExponential(3);
+            } else {
+                // 保留合适的小数位数
+                let decimals = Math.abs(value) >= 1 ? 2 : 4;
+                return value.toFixed(decimals).replace(/\.?0+$/, ''); // 去除末尾的0
+            }
+        }
+        
+        // Tooltip相关函数
+        function showTooltip(event, timeValue, dataValues, selectedColumns) {
+            const tooltip = document.getElementById('chartTooltip');
+            if (!tooltip) {
+                return;
+            }
+            
+            const timeColumn = fileData.headers[0];
+            
+            let tooltipContent = `<div class="tooltip-time">${timeColumn}: ${formatNumber(timeValue)}</div>`;
+            
+            selectedColumns.forEach((column, index) => {
+                const color = getChartColor(index);
+                const value = dataValues[column];
+                tooltipContent += `
+                    <div class="tooltip-value">
+                        <div class="tooltip-color" style="background-color: ${color}"></div>
+                        <span>${column}: ${formatNumber(value)}</span>
+                    </div>
+                `;
+            });
+            
+            tooltip.innerHTML = tooltipContent;
+            
+            // 显示tooltip
+            tooltip.style.display = 'block';
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+            
+            // 获取tooltip尺寸
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            // 计算相对于页面的位置
+            let left = event.pageX + 15;
+            let top = event.pageY - 10;
+            
+            // 防止tooltip超出视窗边界
+            if (left + tooltipRect.width > window.innerWidth) {
+                left = event.pageX - tooltipRect.width - 15;
+            }
+            if (top < window.pageYOffset) {
+                top = event.pageY + 20;
+            }
+            if (top + tooltipRect.height > window.innerHeight + window.pageYOffset) {
+                top = event.pageY - tooltipRect.height - 10;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+        
+        function hideTooltip() {
+            const tooltip = document.getElementById('chartTooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = '0';
+            }
+        }
+        
+        // 时间点查询功能
+        function queryTimePoint() {
+            if (!fileData || !originalData) {
+                alert('请先加载数据文件');
+                return;
+            }
+            
+            const timeInput = document.getElementById('timePointInput');
+            const resultDiv = document.getElementById('timePointResult');
+            const queryTime = parseFloat(timeInput.value);
+            
+            if (isNaN(queryTime)) {
+                alert('请输入有效的时间值');
+                return;
+            }
+            
+            const timeColumn = fileData.headers[0];
+            const timeValues = originalData.map(row => row[timeColumn]);
+            
+            // 查找最接近的时间点
+            let closestIndex = 0;
+            let minDiff = Math.abs(timeValues[0] - queryTime);
+            
+            for (let i = 1; i < timeValues.length; i++) {
+                const diff = Math.abs(timeValues[i] - queryTime);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIndex = i;
+                }
+            }
+            
+            const closestTime = timeValues[closestIndex];
+            const closestData = originalData[closestIndex];
+            
+            // 生成结果显示
+            let resultHTML = `<strong>🎯 查询时间: ${formatNumber(queryTime)}</strong><br>`;
+            resultHTML += `<strong>📍 最接近时间: ${formatNumber(closestTime)}</strong>`;
+            
+            if (Math.abs(closestTime - queryTime) > 0.001) {
+                resultHTML += ` <span style="color: #666;">(偏差: ${formatNumber(Math.abs(closestTime - queryTime))})</span>`;
+            }
+            
+            resultHTML += `<br><br><strong>📊 该时刻所有数据:</strong><br>`;
+            
+            // 显示所有列的数据
+            fileData.headers.forEach((header, index) => {
+                const value = closestData[header];
+                const color = index === 0 ? '#2196F3' : getChartColor(index - 1); // 时间列用蓝色，其他用曲线颜色
+                resultHTML += `<div style="margin: 3px 0; display: flex; align-items: center;">`;
+                
+                if (index > 0) { // 非时间列显示颜色块
+                    resultHTML += `<div style="width: 12px; height: 12px; background-color: ${color}; 
+                                    border-radius: 2px; margin-right: 8px;"></div>`;
+                }
+                
+                resultHTML += `<span style="color: ${color}; font-weight: ${index === 0 ? 'bold' : 'normal'};">
+                                ${header}: ${formatNumber(value)}</span></div>`;
+            });
+            
+            // 如果启用了滤波，也显示滤波后的数据
+            const enableFilter = document.getElementById('enableFilter').checked;
+            if (enableFilter) {
+                const filterType = document.getElementById('filterType').value;
+                const windowSize = parseInt(document.getElementById('windowSize').value);
+                
+                // 获取选中的列
+                const selectedColumns = Array.from(document.querySelectorAll('#columnCheckboxes input:checked'))
+                    .map(cb => cb.value);
+                
+                if (selectedColumns.length > 0) {
+                    resultHTML += `<br><strong>🔧 ${getFilterName(filterType)}滤波后数据:</strong><br>`;
+                    
+                    // 计算滤波后的数据
+                    let filteredData = originalData.map(row => ({ ...row }));
+                    
+                    selectedColumns.forEach((column, colIndex) => {
+                        const originalValues = originalData.map(row => row[column]);
+                        let filteredValues;
+                        
+                        switch (filterType) {
+                            case 'movingAverage':
+                                filteredValues = Filters.movingAverage(originalValues, windowSize);
+                                break;
+                            case 'gaussian':
+                                filteredValues = Filters.gaussian(originalValues, windowSize / 3);
+                                break;
+                            case 'butterworth':
+                                filteredValues = Filters.butterworth(originalValues, windowSize);
+                                break;
+                            case 'median':
+                                filteredValues = Filters.median(originalValues, windowSize);
+                                break;
+                            case 'kalman':
+                                filteredValues = Filters.kalman(originalValues, windowSize);
+                                break;
+                            default:
+                                filteredValues = originalValues;
+                        }
+                        
+                        filteredData.forEach((row, index) => {
+                            row[column] = filteredValues[index];
+                        });
+                    });
+                    
+                    const filteredClosestData = filteredData[closestIndex];
+                    
+                    selectedColumns.forEach((column, colIndex) => {
+                        const value = filteredClosestData[column];
+                        const color = getChartColor(colIndex);
+                        resultHTML += `<div style="margin: 3px 0; display: flex; align-items: center;">`;
+                        resultHTML += `<div style="width: 12px; height: 12px; background-color: ${color}; 
+                                        border-radius: 2px; margin-right: 8px;"></div>`;
+                        resultHTML += `<span style="color: ${color};">${column}: ${formatNumber(value)}</span></div>`;
+                    });
+                }
+            }
+            
+            resultDiv.innerHTML = resultHTML;
+            resultDiv.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
         
         // 滤波器实现 (与在线版本相同)
         const Filters = {
@@ -511,6 +825,7 @@
             const windowSize = document.getElementById('windowSize');
             const windowSizeValue = document.getElementById('windowSizeValue');
             
+            // 滤波器控制
             enableFilter.addEventListener('change', function() {
                 filterControls.style.display = this.checked ? 'block' : 'none';
             });
@@ -519,9 +834,102 @@
                 windowSizeValue.textContent = this.value;
             });
             
+            // 时间范围控制
+            const enableTimeRange = document.getElementById('enableTimeRange');
+            const timeRangeControls = document.getElementById('timeRangeControls');
+            
+            enableTimeRange.addEventListener('change', function() {
+                timeRangeControls.style.display = this.checked ? 'block' : 'none';
+                if (!this.checked) {
+                    // 禁用时重新生成图表
+                    updateChart();
+                }
+            });
+            
             // 初始化帮助面板
             updateFilterHelp();
         });
+        
+        // 时间范围相关函数
+        function updateTimeRange() {
+            if (!fileData || !originalData) return;
+            
+            const enableTimeRange = document.getElementById('enableTimeRange').checked;
+            if (!enableTimeRange) return;
+            
+            const timeStart = parseFloat(document.getElementById('timeStart').value);
+            const timeEnd = parseFloat(document.getElementById('timeEnd').value);
+            const timeColumn = fileData.headers[0];
+            const timeValues = originalData.map(row => row[timeColumn]);
+            const minTime = Math.min(...timeValues);
+            const maxTime = Math.max(...timeValues);
+            
+            // 验证输入
+            let validStart = isNaN(timeStart) ? minTime : Math.max(timeStart, minTime);
+            let validEnd = isNaN(timeEnd) ? maxTime : Math.min(timeEnd, maxTime);
+            
+            if (validStart >= validEnd) {
+                validStart = minTime;
+                validEnd = maxTime;
+            }
+            
+            // 更新输入框值
+            document.getElementById('timeStart').value = validStart;
+            document.getElementById('timeEnd').value = validEnd;
+            
+            // 计算筛选后的数据点数量
+            const filteredCount = originalData.filter(row => {
+                const time = row[timeColumn];
+                return time >= validStart && time <= validEnd;
+            }).length;
+            
+            // 更新信息显示
+            const infoDiv = document.getElementById('timeRangeInfo');
+            infoDiv.innerHTML = `
+                <strong>时间范围：</strong> ${formatNumber(validStart)} ~ ${formatNumber(validEnd)}<br>
+                <strong>数据点数：</strong> ${filteredCount} / ${originalData.length} 
+                <span style="color: #2196F3;">(${((filteredCount/originalData.length)*100).toFixed(1)}%)</span>
+            `;
+            
+            // 自动更新图表
+            updateChart();
+        }
+        
+        function resetTimeRange() {
+            if (!fileData || !originalData) return;
+            
+            const timeColumn = fileData.headers[0];
+            const timeValues = originalData.map(row => row[timeColumn]);
+            const minTime = Math.min(...timeValues);
+            const maxTime = Math.max(...timeValues);
+            
+            document.getElementById('timeStart').value = minTime;
+            document.getElementById('timeEnd').value = maxTime;
+            
+            updateTimeRange();
+        }
+        
+        function initializeTimeRange() {
+            if (!fileData || !originalData) return;
+            
+            const timeColumn = fileData.headers[0];
+            const timeValues = originalData.map(row => row[timeColumn]);
+            const minTime = Math.min(...timeValues);
+            const maxTime = Math.max(...timeValues);
+            
+            // 设置默认值和占位符
+            document.getElementById('timeStart').placeholder = `最小: ${formatNumber(minTime)}`;
+            document.getElementById('timeEnd').placeholder = `最大: ${formatNumber(maxTime)}`;
+            document.getElementById('timeStart').value = '';
+            document.getElementById('timeEnd').value = '';
+            
+            // 更新信息
+            const infoDiv = document.getElementById('timeRangeInfo');
+            infoDiv.innerHTML = `
+                <strong>数据时间范围：</strong> ${formatNumber(minTime)} ~ ${formatNumber(maxTime)}<br>
+                <strong>总数据点数：</strong> ${originalData.length}
+            `;
+        }
         
         // 切换帮助面板显示
         function toggleFilterHelp() {
@@ -531,6 +939,105 @@
             
             if (!isVisible) {
                 updateFilterHelp();
+            }
+        }
+        
+        // 数据列筛选功能
+        function filterColumns() {
+            const searchTerm = document.getElementById('columnSearch').value.toLowerCase();
+            const checkboxContainer = document.getElementById('columnCheckboxes');
+            const checkboxItems = checkboxContainer.querySelectorAll('.checkbox-item');
+            
+            let visibleCount = 0;
+            
+            checkboxItems.forEach(item => {
+                const label = item.querySelector('label');
+                const columnName = label.textContent.toLowerCase();
+                
+                if (columnName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // 更新筛选全选按钮状态
+            updateFilteredSelectAllButtonState();
+            
+            // 显示筛选结果统计
+            const filteredBtn = document.getElementById('filteredSelectAllBtn');
+            if (searchTerm.trim() === '') {
+                filteredBtn.textContent = '✓ 筛选全选';
+            } else {
+                filteredBtn.textContent = `✓ 筛选全选 (${visibleCount})`;
+            }
+        }
+        
+        function clearColumnSearch() {
+            document.getElementById('columnSearch').value = '';
+            filterColumns();
+        }
+        
+        function toggleFilteredSelectAll() {
+            const checkboxContainer = document.getElementById('columnCheckboxes');
+            const visibleCheckboxes = [];
+            
+            // 获取所有可见的复选框
+            checkboxContainer.querySelectorAll('.checkbox-item').forEach(item => {
+                if (item.style.display !== 'none') {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        visibleCheckboxes.push(checkbox);
+                    }
+                }
+            });
+            
+            if (visibleCheckboxes.length === 0) return;
+            
+            // 检查当前状态
+            const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+            const shouldSelectAll = checkedCount < visibleCheckboxes.length;
+            
+            // 设置所有可见复选框状态
+            visibleCheckboxes.forEach(cb => {
+                cb.checked = shouldSelectAll;
+            });
+            
+            // 更新按钮状态
+            updateFilteredSelectAllButtonState();
+            updateSelectAllButtonState();
+        }
+        
+        function updateFilteredSelectAllButtonState() {
+            const filteredBtn = document.getElementById('filteredSelectAllBtn');
+            const checkboxContainer = document.getElementById('columnCheckboxes');
+            const visibleCheckboxes = [];
+            
+            // 获取所有可见的复选框
+            checkboxContainer.querySelectorAll('.checkbox-item').forEach(item => {
+                if (item.style.display !== 'none') {
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        visibleCheckboxes.push(checkbox);
+                    }
+                }
+            });
+            
+            if (visibleCheckboxes.length === 0) {
+                filteredBtn.style.opacity = '0.5';
+                return;
+            }
+            
+            filteredBtn.style.opacity = '1';
+            const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+            const allSelected = checkedCount === visibleCheckboxes.length;
+            const searchTerm = document.getElementById('columnSearch').value.trim();
+            
+            if (searchTerm === '') {
+                filteredBtn.textContent = allSelected ? '✗ 筛选全不选' : '✓ 筛选全选';
+            } else {
+                filteredBtn.textContent = allSelected ? `✗ 筛选全不选 (${visibleCheckboxes.length})` : `✓ 筛选全选 (${visibleCheckboxes.length})`;
             }
         }
         
@@ -782,6 +1289,9 @@
             // 创建列选择复选框
             createColumnCheckboxes();
             
+            // 初始化时间范围控制
+            initializeTimeRange();
+            
             // 显示控件和图表
             document.getElementById('controls').style.display = 'block';
             document.getElementById('chartContainer').style.display = 'block';
@@ -808,7 +1318,10 @@
                 checkbox.checked = true; // 默认全选
                 
                 // 添加状态变化监听器
-                checkbox.addEventListener('change', updateSelectAllButtonState);
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllButtonState();
+                    updateFilteredSelectAllButtonState(); // 同时更新筛选按钮状态
+                });
                 
                 const label = document.createElement('label');
                 label.htmlFor = `col_${index}`;
@@ -823,6 +1336,7 @@
             
             // 初始化全选按钮状态
             updateSelectAllButtonState();
+            updateFilteredSelectAllButtonState();
         }
         
         // 更新全选按钮状态
@@ -839,11 +1353,25 @@
         }
         
         function getChartColor(index) {
-            const colors = [
+            // 预定义高质量颜色
+            const predefinedColors = [
                 '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                '#9966FF', '#FF9F40', '#e74c3c', '#2ecc71'
+                '#9966FF', '#FF9F40', '#e74c3c', '#2ecc71',
+                '#f39c12', '#9b59b6', '#34495e', '#16a085',
+                '#e67e22', '#c0392b', '#2980b9', '#27ae60',
+                '#d35400', '#8e44ad', '#2c3e50', '#1abc9c'
             ];
-            return colors[index % colors.length];
+            
+            if (index < predefinedColors.length) {
+                return predefinedColors[index];
+            }
+            
+            // 当超出预定义颜色时，使用HSL生成更多颜色
+            const hue = ((index - predefinedColors.length) * 137.5) % 360; // 使用黄金角分离
+            const saturation = 70 + (index * 7) % 30; // 70-100%饱和度
+            const lightness = 40 + (index * 5) % 20;  // 40-60%亮度
+            
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
         }
         
         function updateChart() {
@@ -862,21 +1390,44 @@
             const chartTitle = document.getElementById('chartTitle').value || '数据曲线图';
             document.getElementById('chartTitleDisplay').textContent = chartTitle;
             
+            // 获取时间范围设置
+            const enableTimeRange = document.getElementById('enableTimeRange').checked;
+            let currentData = originalData;
+            
+            // 应用时间范围筛选
+            if (enableTimeRange) {
+                const timeStart = parseFloat(document.getElementById('timeStart').value);
+                const timeEnd = parseFloat(document.getElementById('timeEnd').value);
+                const timeColumn = fileData.headers[0];
+                
+                if (!isNaN(timeStart) || !isNaN(timeEnd)) {
+                    const minTime = isNaN(timeStart) ? -Infinity : timeStart;
+                    const maxTime = isNaN(timeEnd) ? Infinity : timeEnd;
+                    
+                    currentData = originalData.filter(row => {
+                        const time = row[timeColumn];
+                        return time >= minTime && time <= maxTime;
+                    });
+                    
+                    if (currentData.length === 0) {
+                        showError('时间范围内没有数据点');
+                        return;
+                    }
+                }
+            }
+            
             // 获取滤波设置
             const enableFilter = document.getElementById('enableFilter').checked;
             const filterType = document.getElementById('filterType').value;
             const windowSize = parseInt(document.getElementById('windowSize').value);
             const lineStyle = document.getElementById('lineStyle').value;
             
-            // 准备数据
-            let currentData = originalData;
-            
-            // 应用滤波器
+            // 应用滤波器（在时间筛选后的数据上）
             if (enableFilter) {
-                currentData = originalData.map(row => ({ ...row })); // 复制数据
+                const filteredData = currentData.map(row => ({ ...row })); // 复制数据
                 
                 selectedColumns.forEach(column => {
-                    const originalValues = originalData.map(row => row[column]);
+                    const originalValues = currentData.map(row => row[column]);
                     let filteredValues;
                     
                     switch (filterType) {
@@ -900,10 +1451,12 @@
                     }
                     
                     // 更新数据
-                    currentData.forEach((row, index) => {
+                    filteredData.forEach((row, index) => {
                         row[column] = filteredValues[index];
                     });
                 });
+                
+                currentData = filteredData;
             }
             
             // 创建简单的SVG图表
@@ -928,15 +1481,23 @@
             // 清空SVG
             svg.innerHTML = '';
             
-            // SVG尺寸
+            // SVG尺寸 - 增加左边距以容纳Y轴标签
             const svgRect = svg.getBoundingClientRect();
-            const width = svgRect.width - 80;  // 留边距
-            const height = svgRect.height - 80;
+            const leftMargin = 80;  // 增加左边距
+            const rightMargin = 40;
+            const topMargin = 40;
+            const bottomMargin = 60; // 增加底部边距
+            const width = svgRect.width - leftMargin - rightMargin;
+            const height = svgRect.height - topMargin - bottomMargin;
             
-            // 获取数据范围
+            // 获取数据范围并添加适当的边距
             const xValues = currentData.map(row => row[timeColumn]);
             const xMin = Math.min(...xValues);
             const xMax = Math.max(...xValues);
+            const xRange = xMax - xMin;
+            const xPadding = xRange * 0.05; // 5%边距
+            const xMinPadded = xMin - xPadding;
+            const xMaxPadded = xMax + xPadding;
             
             let yMin = Infinity, yMax = -Infinity;
             selectedColumns.forEach(column => {
@@ -944,29 +1505,100 @@
                 yMin = Math.min(yMin, ...values);
                 yMax = Math.max(yMax, ...values);
             });
+            const yRange = yMax - yMin;
+            const yPadding = yRange * 0.1; // 10%边距
+            const yMinPadded = yMin - yPadding;
+            const yMaxPadded = yMax + yPadding;
             
             // 绘制坐标轴
             const axisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             
             // X轴
             const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            xAxis.setAttribute('x1', 40);
-            xAxis.setAttribute('y1', height - 40);
-            xAxis.setAttribute('x2', width + 40);
-            xAxis.setAttribute('y2', height - 40);
+            xAxis.setAttribute('x1', leftMargin);
+            xAxis.setAttribute('y1', height + topMargin);
+            xAxis.setAttribute('x2', width + leftMargin);
+            xAxis.setAttribute('y2', height + topMargin);
             xAxis.setAttribute('stroke', '#333');
             xAxis.setAttribute('stroke-width', '1');
             axisGroup.appendChild(xAxis);
             
             // Y轴
             const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            yAxis.setAttribute('x1', 40);
-            yAxis.setAttribute('y1', 40);
-            yAxis.setAttribute('x2', 40);
-            yAxis.setAttribute('y2', height - 40);
+            yAxis.setAttribute('x1', leftMargin);
+            yAxis.setAttribute('y1', topMargin);
+            yAxis.setAttribute('x2', leftMargin);
+            yAxis.setAttribute('y2', height + topMargin);
             yAxis.setAttribute('stroke', '#333');
             yAxis.setAttribute('stroke-width', '1');
             axisGroup.appendChild(yAxis);
+            
+            // 添加X轴刻度和标签
+            const xStep = (xMaxPadded - xMinPadded) / 8; // 大约8个刻度
+            for (let i = 0; i <= 8; i++) {
+                const xValue = xMinPadded + i * xStep;
+                const x = leftMargin + i * (width / 8);
+                
+                // 刻度线
+                const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                tick.setAttribute('x1', x);
+                tick.setAttribute('y1', height + topMargin);
+                tick.setAttribute('x2', x);
+                tick.setAttribute('y2', height + topMargin + 5);
+                tick.setAttribute('stroke', '#666');
+                tick.setAttribute('stroke-width', '1');
+                axisGroup.appendChild(tick);
+                
+                // 刻度标签
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', height + topMargin + 20);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('font-size', '10');
+                label.setAttribute('fill', '#666');
+                label.textContent = formatNumber(xValue);
+                axisGroup.appendChild(label);
+            }
+            
+            // 添加Y轴刻度和标签
+            const yStep = (yMaxPadded - yMinPadded) / 6; // 大约6个刻度
+            for (let i = 0; i <= 6; i++) {
+                const yValue = yMinPadded + i * yStep;
+                const y = height + topMargin - i * (height / 6);
+                
+                // 刻度线
+                const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                tick.setAttribute('x1', leftMargin - 5);
+                tick.setAttribute('y1', y);
+                tick.setAttribute('x2', leftMargin);
+                tick.setAttribute('y2', y);
+                tick.setAttribute('stroke', '#666');
+                tick.setAttribute('stroke-width', '1');
+                axisGroup.appendChild(tick);
+                
+                // 刻度标签 - 增加更多空间
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', leftMargin - 10);
+                label.setAttribute('y', y + 3);
+                label.setAttribute('text-anchor', 'end');
+                label.setAttribute('font-size', '10');
+                label.setAttribute('fill', '#666');
+                label.textContent = formatNumber(yValue);
+                axisGroup.appendChild(label);
+                
+                // 网格线（可选）
+                if (i > 0 && i < 6) {
+                    const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    gridLine.setAttribute('x1', leftMargin);
+                    gridLine.setAttribute('y1', y);
+                    gridLine.setAttribute('x2', width + leftMargin);
+                    gridLine.setAttribute('y2', y);
+                    gridLine.setAttribute('stroke', '#eee');
+                    gridLine.setAttribute('stroke-width', '1');
+                    gridLine.setAttribute('stroke-dasharray', '2,2');
+                    axisGroup.appendChild(gridLine);
+                }
+            }
             
             svg.appendChild(axisGroup);
             
@@ -981,8 +1613,8 @@
                 if (lineStyle === 'points') {
                     // 仅绘制数据点
                     values.forEach((value, i) => {
-                        const x = 40 + (xValues[i] - xMin) / (xMax - xMin) * width;
-                        const y = height - 40 - (value - yMin) / (yMax - yMin) * height;
+                        const x = leftMargin + (xValues[i] - xMinPadded) / (xMaxPadded - xMinPadded) * width;
+                        const y = topMargin + height - (value - yMinPadded) / (yMaxPadded - yMinPadded) * height;
                         
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', x);
@@ -997,12 +1629,12 @@
                     let pathData = '';
                     
                     values.forEach((value, i) => {
-                        const x = 40 + (xValues[i] - xMin) / (xMax - xMin) * width;
-                        const y = height - 40 - (value - yMin) / (yMax - yMin) * height;
+                        const x = leftMargin + (xValues[i] - xMinPadded) / (xMaxPadded - xMinPadded) * width;
+                        const y = topMargin + height - (value - yMinPadded) / (yMaxPadded - yMinPadded) * height;
                         
                         if (lineStyle === 'stepped' && i > 0) {
-                            const prevX = 40 + (xValues[i-1] - xMin) / (xMax - xMin) * width;
-                            pathData += ` L ${x} ${height - 40 - (values[i-1] - yMin) / (yMax - yMin) * height}`;
+                            const prevX = leftMargin + (xValues[i-1] - xMinPadded) / (xMaxPadded - xMinPadded) * width;
+                            pathData += ` L ${x} ${topMargin + height - (values[i-1] - yMinPadded) / (yMaxPadded - yMinPadded) * height}`;
                             pathData += ` L ${x} ${y}`;
                         } else {
                             if (i === 0) {
@@ -1043,10 +1675,58 @@
                 legend.appendChild(legendItem);
             });
             
+            // 先添加所有数据点的小圆点（用于视觉提示）
+            currentData.forEach((row, dataIndex) => {
+                const x = leftMargin + (row[timeColumn] - xMinPadded) / (xMaxPadded - xMinPadded) * width;
+                
+                selectedColumns.forEach((column, index) => {
+                    const y = topMargin + height - (row[column] - yMinPadded) / (yMaxPadded - yMinPadded) * height;
+                    const color = getChartColor(index);
+                    
+                    const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    point.setAttribute('cx', x);
+                    point.setAttribute('cy', y);
+                    point.setAttribute('r', 2);
+                    point.setAttribute('fill', color);
+                    point.setAttribute('opacity', '0.6');
+                    point.setAttribute('class', 'data-point');
+                    point.style.pointerEvents = 'none'; // 确保小点不阻挡鼠标事件
+                    
+                    svg.appendChild(point);
+                });
+            });
+            
+            // 然后添加交互区域（在最上层，确保能接收鼠标事件）
+            currentData.forEach((row, dataIndex) => {
+                const x = leftMargin + (row[timeColumn] - xMinPadded) / (xMaxPadded - xMinPadded) * width;
+                
+                // 为每个时间点创建一个垂直区域来触发tooltip
+                const interactionArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                interactionArea.setAttribute('x', x - 8);
+                interactionArea.setAttribute('y', topMargin);
+                interactionArea.setAttribute('width', 16);
+                interactionArea.setAttribute('height', height);
+                interactionArea.setAttribute('fill', 'transparent');
+                interactionArea.setAttribute('stroke', 'none');
+                interactionArea.style.cursor = 'pointer';
+                interactionArea.style.pointerEvents = 'all';
+                
+                // 添加tooltip事件
+                interactionArea.onmouseenter = function(event) {
+                    showTooltip(event, row[timeColumn], row, selectedColumns);
+                };
+                
+                interactionArea.onmouseleave = function() {
+                    hideTooltip();
+                };
+                
+                svg.appendChild(interactionArea);
+            });
+            
             // 添加轴标签
             const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            xLabel.setAttribute('x', width/2 + 40);
-            xLabel.setAttribute('y', height - 10);
+            xLabel.setAttribute('x', width/2 + leftMargin);
+            xLabel.setAttribute('y', height + topMargin + 50);
             xLabel.setAttribute('text-anchor', 'middle');
             xLabel.setAttribute('font-size', '12');
             xLabel.textContent = timeColumn;
@@ -1054,10 +1734,10 @@
             
             const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             yLabel.setAttribute('x', 15);
-            yLabel.setAttribute('y', height/2);
+            yLabel.setAttribute('y', height/2 + topMargin);
             yLabel.setAttribute('text-anchor', 'middle');
             yLabel.setAttribute('font-size', '12');
-            yLabel.setAttribute('transform', `rotate(-90, 15, ${height/2})`);
+            yLabel.setAttribute('transform', `rotate(-90, 15, ${height/2 + topMargin})`);
             yLabel.textContent = '数值';
             svg.appendChild(yLabel);
         }
