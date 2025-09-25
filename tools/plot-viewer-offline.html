@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLOT.tab 曲线图工具 (离线版)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- 内嵌简单的图表库 -->
     <style>
         body {
@@ -124,10 +125,19 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            margin-right: 10px;
         }
         
         button:hover {
             background: #45a049;
+        }
+
+        .export-button {
+            background: #FF9800;
+        }
+
+        .export-button:hover {
+            background: #F57C00;
         }
         
         /* 简单的SVG图表样式 */
@@ -481,6 +491,7 @@
         </div>
         
         <button onclick="updateChart()">更新图表</button>
+        <button class="export-button" onclick="exportToExcel()" id="exportBtn" style="display: none;">📊 导出Excel</button>
     </div>
 
     <div class="chart-container" id="chartContainer">
@@ -1295,6 +1306,7 @@
             // 显示控件和图表
             document.getElementById('controls').style.display = 'block';
             document.getElementById('chartContainer').style.display = 'block';
+            document.getElementById('exportBtn').style.display = 'inline-block';
             
             // 生成初始图表
             updateChart();
@@ -1740,6 +1752,200 @@
             yLabel.setAttribute('transform', `rotate(-90, 15, ${height/2 + topMargin})`);
             yLabel.textContent = '数值';
             svg.appendChild(yLabel);
+        }
+
+        // Excel导出功能
+        function exportToExcel() {
+            if (!fileData || !fileData.data || fileData.data.length === 0) {
+                showError('没有可导出的数据');
+                return;
+            }
+
+            try {
+                // 检查XLSX库是否可用
+                if (typeof XLSX === 'undefined') {
+                    showError('Excel导出库未加载，请检查网络连接');
+                    return;
+                }
+
+                // 获取当前选择的列
+                const selectedColumns = Array.from(document.querySelectorAll('#columnCheckboxes input:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedColumns.length === 0) {
+                    showError('请选择要导出的数据列');
+                    return;
+                }
+
+                // 获取时间范围设置
+                const enableTimeRange = document.getElementById('enableTimeRange').checked;
+                let exportData = originalData;
+
+                // 应用时间范围筛选
+                if (enableTimeRange) {
+                    const timeStart = parseFloat(document.getElementById('timeStart').value);
+                    const timeEnd = parseFloat(document.getElementById('timeEnd').value);
+                    const timeColumn = fileData.headers[0];
+
+                    if (!isNaN(timeStart) || !isNaN(timeEnd)) {
+                        const minTime = isNaN(timeStart) ? -Infinity : timeStart;
+                        const maxTime = isNaN(timeEnd) ? Infinity : timeEnd;
+
+                        exportData = originalData.filter(row => {
+                            const time = row[timeColumn];
+                            return time >= minTime && time <= maxTime;
+                        });
+
+                        if (exportData.length === 0) {
+                            showError('时间范围内没有数据可导出');
+                            return;
+                        }
+                    }
+                }
+
+                // 获取滤波设置
+                const enableFilter = document.getElementById('enableFilter').checked;
+                const filterType = document.getElementById('filterType').value;
+                const windowSize = parseInt(document.getElementById('windowSize').value);
+
+                // 准备要导出的数据
+                const timeColumn = fileData.headers[0];
+                let currentExportData = exportData;
+
+                // 如果启用了滤波，使用滤波后的数据
+                if (enableFilter) {
+                    currentExportData = exportData.map(row => ({ ...row })); // 复制数据
+
+                    selectedColumns.forEach(column => {
+                        const originalValues = exportData.map(row => row[column]);
+                        let filteredValues;
+
+                        switch (filterType) {
+                            case 'movingAverage':
+                                filteredValues = Filters.movingAverage(originalValues, windowSize);
+                                break;
+                            case 'gaussian':
+                                filteredValues = Filters.gaussian(originalValues, windowSize / 3);
+                                break;
+                            case 'butterworth':
+                                filteredValues = Filters.butterworth(originalValues, windowSize);
+                                break;
+                            case 'median':
+                                filteredValues = Filters.median(originalValues, windowSize);
+                                break;
+                            case 'kalman':
+                                filteredValues = Filters.kalman(originalValues, windowSize);
+                                break;
+                            default:
+                                filteredValues = originalValues;
+                        }
+
+                        currentExportData.forEach((row, index) => {
+                            row[column] = filteredValues[index];
+                        });
+                    });
+                }
+
+                // 创建工作表数据
+                const wsData = [];
+
+                // 添加标题行
+                const headers = [timeColumn, ...selectedColumns];
+                wsData.push(headers);
+
+                // 添加数据行
+                currentExportData.forEach(row => {
+                    const dataRow = [row[timeColumn]];
+                    selectedColumns.forEach(col => {
+                        dataRow.push(row[col]);
+                    });
+                    wsData.push(dataRow);
+                });
+
+                // 创建工作簿和工作表
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // 设置列宽
+                const colWidths = headers.map(() => ({ width: 15 }));
+                ws['!cols'] = colWidths;
+
+                // 设置标题行样式（如果支持的话）
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const address = XLSX.utils.encode_cell({ r: 0, c: C });
+                    if (!ws[address]) continue;
+                    ws[address].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "E8F5E8" } }
+                    };
+                }
+
+                // 添加工作表到工作簿
+                let sheetName = '数据';
+                if (enableTimeRange) {
+                    sheetName += '_时间筛选';
+                }
+                if (enableFilter) {
+                    sheetName += `_${getFilterName(filterType)}滤波`;
+                }
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+                // 如果启用了滤波或时间范围筛选，还可以添加原始数据表
+                if (enableFilter || enableTimeRange) {
+                    const originalWsData = [];
+                    originalWsData.push(headers);
+
+                    originalData.forEach(row => {
+                        const dataRow = [row[timeColumn]];
+                        selectedColumns.forEach(col => {
+                            dataRow.push(row[col]);
+                        });
+                        originalWsData.push(dataRow);
+                    });
+
+                    const originalWs = XLSX.utils.aoa_to_sheet(originalWsData);
+                    originalWs['!cols'] = colWidths;
+                    XLSX.utils.book_append_sheet(wb, originalWs, '原始数据');
+                }
+
+                // 生成文件名
+                const now = new Date();
+                const timestamp = now.toISOString().slice(0, 19).replace(/[:\-T]/g, '');
+                const baseFileName = fileData.filename.replace(/\.[^/.]+$/, "");
+                let suffix = '';
+                if (enableTimeRange) {
+                    suffix += '_时间筛选';
+                }
+                if (enableFilter) {
+                    suffix += `_${getFilterName(filterType)}滤波`;
+                }
+                const fileName = `${baseFileName}${suffix}_${timestamp}.xlsx`;
+
+                // 导出文件
+                XLSX.writeFile(wb, fileName);
+
+                // 显示成功消息
+                const errorDiv = document.getElementById('errorDiv');
+                const originalBg = errorDiv.style.backgroundColor;
+                const originalColor = errorDiv.style.color;
+
+                errorDiv.innerHTML = `✅ Excel文件导出成功：${fileName}`;
+                errorDiv.style.backgroundColor = '#e8f5e8';
+                errorDiv.style.color = '#2e7d32';
+                errorDiv.style.display = 'block';
+
+                // 3秒后隐藏消息并恢复原样式
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                    errorDiv.style.backgroundColor = originalBg || '#ffebee';
+                    errorDiv.style.color = originalColor || '#c62828';
+                }, 3000);
+
+            } catch (error) {
+                showError('导出Excel文件失败: ' + error.message);
+                console.error('导出错误:', error);
+            }
         }
     </script>
 </body>

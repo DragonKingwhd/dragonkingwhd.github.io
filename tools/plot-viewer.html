@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLOT.tab 曲线图工具</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         // 检查Chart.js是否加载成功，如果失败则尝试备用CDN
         window.addEventListener('load', function() {
@@ -155,10 +156,19 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            margin-right: 10px;
         }
         
         button:hover {
             background: #45a049;
+        }
+
+        .export-button {
+            background: #FF9800;
+        }
+
+        .export-button:hover {
+            background: #F57C00;
         }
         
         .hidden {
@@ -370,6 +380,7 @@
         </div>
         
         <button onclick="updateChart()">更新图表</button>
+        <button class="export-button" onclick="exportToExcel()" id="exportBtn" style="display: none;">📊 导出Excel</button>
     </div>
 
     <div class="chart-container" id="chartContainer">
@@ -781,6 +792,7 @@
             // 显示控件和图表
             document.getElementById('controls').style.display = 'block';
             document.getElementById('chartContainer').style.display = 'block';
+            document.getElementById('exportBtn').style.display = 'inline-block';
             
             // 生成初始图表
             updateChart();
@@ -1011,10 +1023,158 @@
         
         function getChartColor(index) {
             const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
                 '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
             ];
             return colors[index % colors.length];
+        }
+
+        // Excel导出功能
+        function exportToExcel() {
+            if (!fileData || !fileData.data || fileData.data.length === 0) {
+                showError('没有可导出的数据');
+                return;
+            }
+
+            try {
+                // 获取当前选择的列
+                const selectedColumns = Array.from(document.querySelectorAll('#columnCheckboxes input:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedColumns.length === 0) {
+                    showError('请选择要导出的数据列');
+                    return;
+                }
+
+                // 获取滤波设置
+                const enableFilter = document.getElementById('enableFilter').checked;
+                const filterType = document.getElementById('filterType').value;
+                const windowSize = parseInt(document.getElementById('windowSize').value);
+
+                // 准备要导出的数据
+                const timeColumn = fileData.headers[0];
+                let exportData = originalData;
+
+                // 如果启用了滤波，使用滤波后的数据
+                if (enableFilter) {
+                    exportData = originalData.map(row => ({ ...row })); // 复制数据
+
+                    selectedColumns.forEach(column => {
+                        const originalValues = originalData.map(row => row[column]);
+                        let filteredValues;
+
+                        switch (filterType) {
+                            case 'movingAverage':
+                                filteredValues = Filters.movingAverage(originalValues, windowSize);
+                                break;
+                            case 'gaussian':
+                                filteredValues = Filters.gaussian(originalValues, windowSize / 3);
+                                break;
+                            case 'butterworth':
+                                filteredValues = Filters.butterworth(originalValues, windowSize);
+                                break;
+                            case 'median':
+                                filteredValues = Filters.median(originalValues, windowSize);
+                                break;
+                            case 'kalman':
+                                filteredValues = Filters.kalman(originalValues, windowSize);
+                                break;
+                            default:
+                                filteredValues = originalValues;
+                        }
+
+                        exportData.forEach((row, index) => {
+                            row[column] = filteredValues[index];
+                        });
+                    });
+                }
+
+                // 创建工作表数据
+                const wsData = [];
+
+                // 添加标题行
+                const headers = [timeColumn, ...selectedColumns];
+                wsData.push(headers);
+
+                // 添加数据行
+                exportData.forEach(row => {
+                    const dataRow = [row[timeColumn]];
+                    selectedColumns.forEach(col => {
+                        dataRow.push(row[col]);
+                    });
+                    wsData.push(dataRow);
+                });
+
+                // 创建工作簿和工作表
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // 设置列宽
+                const colWidths = headers.map(() => ({ width: 15 }));
+                ws['!cols'] = colWidths;
+
+                // 设置标题行样式（如果支持的话）
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const address = XLSX.utils.encode_cell({ r: 0, c: C });
+                    if (!ws[address]) continue;
+                    ws[address].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "E8F5E8" } }
+                    };
+                }
+
+                // 添加工作表到工作簿
+                const sheetName = enableFilter ?
+                    `${getFilterName(filterType)}滤波数据` : '原始数据';
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+                // 如果启用了滤波，还可以添加原始数据表
+                if (enableFilter) {
+                    const originalWsData = [];
+                    originalWsData.push(headers);
+
+                    originalData.forEach(row => {
+                        const dataRow = [row[timeColumn]];
+                        selectedColumns.forEach(col => {
+                            dataRow.push(row[col]);
+                        });
+                        originalWsData.push(dataRow);
+                    });
+
+                    const originalWs = XLSX.utils.aoa_to_sheet(originalWsData);
+                    originalWs['!cols'] = colWidths;
+                    XLSX.utils.book_append_sheet(wb, originalWs, '原始数据');
+                }
+
+                // 生成文件名
+                const now = new Date();
+                const timestamp = now.toISOString().slice(0, 19).replace(/[:\-T]/g, '');
+                const baseFileName = fileData.filename.replace(/\.[^/.]+$/, "");
+                const suffix = enableFilter ? `_${getFilterName(filterType)}滤波` : '';
+                const fileName = `${baseFileName}${suffix}_${timestamp}.xlsx`;
+
+                // 导出文件
+                XLSX.writeFile(wb, fileName);
+
+                // 显示成功消息
+                const successDiv = document.getElementById('errorDiv');
+                successDiv.innerHTML = `✅ Excel文件导出成功：${fileName}`;
+                successDiv.style.backgroundColor = '#e8f5e8';
+                successDiv.style.color = '#2e7d32';
+                successDiv.style.display = 'block';
+
+                // 3秒后隐藏消息
+                setTimeout(() => {
+                    successDiv.style.display = 'none';
+                    successDiv.style.backgroundColor = '#ffebee';
+                    successDiv.style.color = '#c62828';
+                }, 3000);
+
+            } catch (error) {
+                showError('导出Excel文件失败: ' + error.message);
+                console.error('导出错误:', error);
+            }
         }
     </script>
 </body>
