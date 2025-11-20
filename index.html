@@ -1,35 +1,413 @@
 ---
-layout: home
-title: Dragonking的博客
+layout: null
+title: 首页
 ---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragonking's Universe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@900&display=swap" rel="stylesheet">
+    <style>
+        /* 基础重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: #000000; /* 纯黑背景 */
+            overflow: hidden; /* 隐藏滚动条 */
+            font-family: 'SimHei', 'Heiti SC', 'Noto Sans SC', sans-serif; /* 黑体 */
+            height: 100vh;
+            width: 100vw;
+        }
 
-<div class="hero-section">
-    <h1 class="hero-title">Dragonking</h1>
-    <p class="hero-subtitle">技术探索者 | 代码创造者 | 知识分享者</p>
-    
-    <div class="hero-nav">
-        <a href="{{ '/tools/' | relative_url }}" class="hero-nav-item">
-            <i class="fas fa-tools"></i>
-            <h3>工具</h3>
-            <p>实用的开发工具和在线应用</p>
-        </a>
-        
-        <a href="{{ '/diary/' | relative_url }}" class="hero-nav-item">
-            <i class="fas fa-book-open"></i>
-            <h3>日记</h3>
-            <p>技术学习日记和开发心得</p>
-        </a>
-        
-        <a href="{{ '/skills/' | relative_url }}" class="hero-nav-item">
-            <i class="fas fa-code-branch"></i>
-            <h3>技能树</h3>
-            <p>技术栈和技能发展轨迹</p>
-        </a>
-        
-        <a href="{{ '/docs/' | relative_url }}" class="hero-nav-item">
-            <i class="fas fa-file-code"></i>
-            <h3>知识文档</h3>
-            <p>技术文档和学习笔记</p>
-        </a>
+        /* 画布样式 */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* 左下角标注 */
+        .watermark {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: #00d4ff; /* 青色 */
+            font-size: 14px;
+            font-weight: 900; /* 粗体 */
+            letter-spacing: 1px;
+            z-index: 10;
+            opacity: 0.8;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            pointer-events: none; /* 防止遮挡交互 */
+        }
+
+        /* 导航栏浮动在特效之上 (保留原有导航入口) */
+        .nav-overlay {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            z-index: 10;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-overlay a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .nav-overlay a:hover {
+            color: #00d4ff;
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="universe"></canvas>
+
+    <div class="watermark">Dragonking by Gemini3</div>
+
+    <div class="nav-overlay">
+        <a href="/blog/">博客</a>
+        <a href="/projects/">项目</a>
+        <a href="/tools/">工具</a>
+        <a href="/about/">关于</a>
     </div>
-</div>
+
+    <script>
+        const canvas = document.getElementById('universe');
+        const ctx = canvas.getContext('2d');
+
+        // 配置参数
+        const config = {
+            particleCount: 400,
+            sceneDuration: 5000, // 每个场景5秒
+            colors: [
+                '#00d4ff', // 青色 (Primary)
+                '#ffffff', // 白色 (Stars/Core)
+                '#7c3aed'  // 紫色 (Accent)
+            ]
+        };
+
+        let width, height;
+        let particles = [];
+        let startTime = Date.now();
+
+        // 初始化画布
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 粒子类
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.z = Math.random() * width; // 深度
+                this.size = Math.random() * 2;
+                this.color = config.colors[Math.floor(Math.random() * config.colors.length)];
+                this.angle = Math.random() * Math.PI * 2;
+                this.radius = Math.random() * Math.min(width, height) / 2;
+                this.speed = Math.random() * 0.02 + 0.005;
+                
+                // 针对DNA场景的特定属性
+                this.dnaOffset = Math.random() * Math.PI * 2;
+                this.dnaY = Math.random() * height;
+            }
+        }
+
+        // 初始化粒子池
+        for (let i = 0; i < config.particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        // 场景 1: 宇宙 (Universe) - 粒子向四周发散
+        function drawUniverse(time) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 拖尾效果
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                // 简单的透视投影逻辑
+                p.z -= 2; 
+                if (p.z <= 0) {
+                    p.z = width;
+                    p.x = Math.random() * width;
+                    p.y = Math.random() * height;
+                }
+
+                const k = 128.0 / p.z;
+                const px = (p.x - width / 2) * k + width / 2;
+                const py = (p.y - height / 2) * k + height / 2;
+
+                if (px >= 0 && px <= width && py >= 0 && py <= height) {
+                    const size = (1 - p.z / width) * 3;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                }
+            });
+        }
+
+        // 场景 2: 黑洞 (Black Hole) - 粒子吸入旋转
+        function drawBlackHole(time) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+            
+            const cx = width / 2;
+            const cy = height / 2;
+
+            particles.forEach((p, i) => {
+                // 重置逻辑：如果被吸入中心，重置到边缘
+                if (p.radius < 5) {
+                    p.radius = Math.min(width, height) / 2;
+                    p.angle = Math.random() * Math.PI * 2;
+                }
+
+                p.angle += p.speed * 2;
+                p.radius -= 0.5; // 向内吸入
+
+                // 椭圆轨道模拟吸积盘视角
+                const x = cx + Math.cos(p.angle) * p.radius;
+                const y = cy + Math.sin(p.angle) * p.radius * 0.6; // 压扁一点
+
+                ctx.beginPath();
+                ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+                // 越靠近中心越紫/白，外围青色
+                ctx.fillStyle = p.radius < 50 ? '#ffffff' : (i % 2 === 0 ? '#7c3aed' : '#00d4ff');
+                ctx.fill();
+            });
+            
+            // 黑洞核心
+            ctx.beginPath();
+            ctx.arc(cx, cy, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // 场景 3: DNA 螺旋 (DNA Helix)
+        function drawDNA(time) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // 清除稍快，拖尾短
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const scale = 60;
+            const speed = time * 0.001;
+
+            particles.forEach((p, i) => {
+                // 复用粒子作为DNA碱基对的点
+                // 我们只用一部分粒子画DNA，保持整洁
+                if (i > 100) return; 
+
+                const y = (i * 15) % height; // 垂直分布
+                const offset = (y / height) * Math.PI * 4; // 螺旋相位
+                
+                // 双螺旋
+                const x1 = cx + Math.sin(offset + speed) * scale;
+                const x2 = cx + Math.sin(offset + speed + Math.PI) * scale;
+
+                // 链1 (青色)
+                ctx.beginPath();
+                ctx.arc(x1, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#00d4ff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00d4ff';
+                ctx.fill();
+
+                // 链2 (紫色)
+                ctx.beginPath();
+                ctx.arc(x2, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#7c3aed';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#7c3aed';
+                ctx.fill();
+
+                // 中间连接线 (每隔几个画一条)
+                if (i % 3 === 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        // 场景 4: 太阳-地球-月亮 (Solar System)
+        function drawSolarSystem(time) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+            const t = time * 0.001;
+
+            // 太阳
+            ctx.beginPath();
+            ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff'; // 白矮星/太阳核心风格
+            ctx.shadowBlur = 50;
+            ctx.shadowColor = '#ffffff';
+            ctx.fill();
+
+            // 地球轨道
+            const earthOrbitR = Math.min(width, height) * 0.25;
+            const earthX = cx + Math.cos(t) * earthOrbitR;
+            const earthY = cy + Math.sin(t) * earthOrbitR;
+
+            // 地球
+            ctx.beginPath();
+            ctx.arc(earthX, earthY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d4ff';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#00d4ff';
+            ctx.fill();
+
+            // 月球轨道
+            const moonOrbitR = 40;
+            const moonX = earthX + Math.cos(t * 3) * moonOrbitR;
+            const moonY = earthY + Math.sin(t * 3) * moonOrbitR;
+
+            // 月球
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#7c3aed'; // 紫月亮，符合配色限制
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 背景点缀
+            particles.forEach((p, i) => {
+                 if (i % 10 === 0) { // 少量背景星星
+                     ctx.fillStyle = '#ffffff';
+                     ctx.fillRect(p.x, p.y, 1, 1);
+                 }
+            });
+        }
+
+        // 场景 5: 北斗七星 + 北极星 (Big Dipper & Polaris)
+        function drawConstellation(time) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+            
+            // 简单的相对坐标定义 (基于屏幕中心的偏移)
+            const scale = Math.min(width, height) * 0.0015; // 缩放系数
+            
+            // 北极星 (Polaris)
+            const polaris = { x: cx, y: cy - 200 * scale, name: 'Polaris' };
+            
+            // 北斗七星 (大致相对位置)
+            const dipper = [
+                { x: cx - 200 * scale, y: cy + 50 * scale }, // Dubhe (天枢)
+                { x: cx - 200 * scale, y: cy + 120 * scale }, // Merak (天璇) - 指向北极星
+                { x: cx - 260 * scale, y: cy + 140 * scale }, // Phecda (天玑)
+                { x: cx - 240 * scale, y: cy + 70 * scale }, // Megrez (天权)
+                { x: cx - 300 * scale, y: cy + 60 * scale }, // Alioth (玉衡)
+                { x: cx - 340 * scale, y: cy + 80 * scale }, // Mizar (开阳)
+                { x: cx - 380 * scale, y: cy + 120 * scale } // Alkaid (摇光)
+            ];
+
+            // 绘制北极星
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(polaris.x, polaris.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 绘制连线：天璇 -> 天枢 -> 北极星 (指示线)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(dipper[1].x, dipper[1].y);
+            ctx.lineTo(dipper[0].x, dipper[0].y);
+            ctx.lineTo(polaris.x, polaris.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 绘制北斗七星及其连线
+            ctx.beginPath();
+            ctx.moveTo(dipper[6].x, dipper[6].y); // 柄端
+            dipper.slice().reverse().forEach(star => {
+                ctx.lineTo(star.x, star.y);
+            });
+            // 闭合斗勺
+            ctx.lineTo(dipper[2].x, dipper[2].y); 
+            
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#00d4ff';
+            ctx.stroke();
+
+            // 画星星点
+            dipper.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#7c3aed';
+                ctx.shadowColor = '#7c3aed';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+            });
+
+            // 少量背景星星闪烁
+            ctx.shadowBlur = 0;
+             particles.forEach((p, i) => {
+                 if (i % 5 === 0 && Math.random() > 0.9) {
+                     ctx.fillStyle = '#ffffff';
+                     ctx.fillRect(p.x, p.y, 1.5, 1.5);
+                 }
+            });
+        }
+
+        // 主循环
+        function animate() {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const sceneIndex = Math.floor(elapsed / config.sceneDuration) % 5;
+            const sceneTime = elapsed % config.sceneDuration;
+
+            // 场景调度
+            switch(sceneIndex) {
+                case 0: drawUniverse(elapsed); break;
+                case 1: drawBlackHole(elapsed); break;
+                case 2: drawDNA(elapsed); break;
+                case 3: drawSolarSystem(elapsed); break;
+                case 4: drawConstellation(elapsed); break;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+    </script>
+</body>
+</html>
