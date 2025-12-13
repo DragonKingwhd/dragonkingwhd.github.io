@@ -32,18 +32,15 @@ author:
 
 # 导航菜单
 navigation:
+  - title: 博客
+    url: /blog/
+    icon: "fas fa-pen-fancy"
   - title: 工具
     url: /tools/
     icon: "fas fa-tools"
   - title: 日记
     url: /diary/
     icon: "fas fa-book-open"
-  - title: 技能树
-    url: /skills/
-    icon: "fas fa-code-branch"
-  - title: 知识文档
-    url: /docs/
-    icon: "fas fa-file-code"
   - title: 留言板
     url: /guestbook/
     icon: "fas fa-comments"
