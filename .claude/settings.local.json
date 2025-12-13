@@ -8,7 +8,10 @@
       "Bash(git commit:*)",
       "Bash(git config:*)",
       "Bash(git push:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:dragonkingwhd.github.io)",
+      "Bash(ls:*)",
+      "Bash(bundle exec jekyll build:*)"
     ]
   }
 }

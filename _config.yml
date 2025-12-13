@@ -38,9 +38,9 @@ navigation:
   - title: 工具
     url: /tools/
     icon: "fas fa-tools"
-  - title: 日记
-    url: /diary/
-    icon: "fas fa-book-open"
+  - title: 浮生日记
+    url: /floating-diary/
+    icon: "fas fa-feather"
   - title: 留言板
     url: /guestbook/
     icon: "fas fa-comments"
