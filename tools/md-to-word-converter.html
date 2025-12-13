@@ -1,0 +1,873 @@
+---
+layout: default
+title: Markdown to Word 转换器
+permalink: /tools/md-to-word-converter/
+---
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Markdown to Word 转换器</h1>
+        <p class="page-subtitle">将您的 Markdown 文件快速转换为专业的 Word 文档</p>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="container">
+        <div class="tool-converter">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击选择文件或拖拽 MD 文件到此处</div>
+                <div class="upload-hint">支持 .md, .markdown 格式</div>
+                <input type="file" id="fileInput" accept=".md,.markdown" style="display: none;" />
+            </div>
+            
+            <div class="file-info" id="fileInfo" style="display: none;">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+            
+            <div class="progress" id="progress" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="preview-area" id="previewArea" style="display: none;">
+                <div class="preview-header">Markdown 预览</div>
+                <div class="preview-content" id="previewContent"></div>
+            </div>
+            
+            <div class="converter-actions">
+                <button class="btn btn-primary" id="convertBtn" disabled>🔄 转换为 Word</button>
+                <button class="btn btn-success" id="downloadBtn" style="display: none;">💾 下载 Word 文档</button>
+            </div>
+        </div>
+        
+        <div class="tool-features">
+            <h3>功能特色</h3>
+            <div class="grid grid-3">
+                <div class="feature-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>格式保留</h4>
+                    <p>完整保留标题层级、列表、表格、引用等所有Markdown格式</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-palette"></i>
+                    <h4>专业样式</h4>
+                    <p>自动应用专业的Word文档样式，适合报告和文档制作</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>本地处理</h4>
+                    <p>所有转换在浏览器本地完成，保护您的文档隐私和安全</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-cloud"></i>
+                    <h4>在线可用</h4>
+                    <p>无需安装任何软件，任何设备上打开浏览器即可使用</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>跨平台支持</h4>
+                    <p>支持Windows、Mac、Linux、手机等所有现代浏览器</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h4>快速转换</h4>
+                    <p>基于最新Web技术，转换速度快，支持大文档处理</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="usage-guide">
+            <h3>使用指南</h3>
+            <div class="guide-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <h4>选择文件</h4>
+                    <p>点击上方区域或拖拽.md/.markdown文件到转换区域</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <h4>预览内容</h4>
+                    <p>系统会自动预览Markdown内容，确认格式正确</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <h4>一键转换</h4>
+                    <p>点击"转换为Word"按钮，等待处理完成</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <h4>下载文档</h4>
+                    <p>转换完成后点击下载按钮，保存Word文档</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.tool-converter {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2rem;
+}
+
+.upload-area {
+    border: 2px dashed rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(0, 212, 255, 0.15);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.upload-text {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.upload-hint {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.file-info {
+    background: rgba(0, 212, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.file-name {
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.file-size {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--gradient-primary);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.preview-area {
+    margin: 2rem 0;
+}
+
+.preview-header {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-bottom: none;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.preview-content {
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 0 0 8px 8px;
+    padding: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-primary);
+    font-size: 0.9rem;
+}
+
+.converter-actions {
+    text-align: center;
+    margin: 2rem 0;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tool-features {
+    margin-top: 3rem;
+}
+
+.tool-features h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+}
+
+.feature-card i {
+    font-size: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.feature-card h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.usage-guide {
+    margin-top: 3rem;
+    background: rgba(0, 212, 255, 0.05);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.usage-guide h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+}
+
+.guide-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.step {
+    text-align: center;
+    padding: 1rem;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.step h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.step p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .tool-converter {
+        padding: 1.5rem;
+    }
+    
+    .upload-area {
+        padding: 2rem 1rem;
+    }
+    
+    .converter-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+</style>
+
+<!-- 多CDN备用方案 -->
+<script>
+// CDN资源加载管理
+const resources = {
+    marked: [
+        'https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js',
+        'https://unpkg.com/marked@9.1.2/marked.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js'
+    ],
+    docx: [
+        'https://unpkg.com/docx@8.2.2/build/index.js',
+        'https://cdn.jsdelivr.net/npm/docx@8.2.2/build/index.js',
+        'https://cdn.skypack.dev/docx@8.2.2'
+    ]
+};
+
+let loadAttempts = { marked: 0, docx: 0 };
+
+function loadScript(urls, name, callback) {
+    if (loadAttempts[name] >= urls.length) {
+        console.error(`无法加载 ${name} 库，已尝试所有CDN源`);
+        showLoadError(name);
+        return;
+    }
+    
+    const script = document.createElement('script');
+    const currentUrl = urls[loadAttempts[name]];
+    
+    script.onload = function() {
+        console.log(`✅ 成功加载 ${name} 从 ${currentUrl}`);
+        if (callback) callback();
+    };
+    
+    script.onerror = function() {
+        console.warn(`❌ 加载失败 ${name} 从 ${currentUrl}，尝试下一个源...`);
+        loadAttempts[name]++;
+        script.remove();
+        setTimeout(() => loadScript(urls, name, callback), 100);
+    };
+    
+    script.src = currentUrl;
+    document.head.appendChild(script);
+}
+
+function showLoadError(libraryName) {
+    const errorMsg = `
+⚠️ ${libraryName === 'marked' ? 'Markdown解析' : 'Word生成'}库加载失败
+
+可能原因：
+• 网络连接问题
+• CDN服务暂时不可用  
+• 防火墙/代理阻止了外部资源
+
+解决方案：
+1. 检查网络连接
+2. 尝试刷新页面
+3. 使用离线版本工具
+4. 尝试更换网络环境`;
+
+    alert(errorMsg);
+    
+    // 显示离线版本提示
+    showOfflineOption();
+}
+
+function showOfflineOption() {
+    const offlineNotice = document.createElement('div');
+    offlineNotice.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff6b6b;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        max-width: 300px;
+    `;
+    offlineNotice.innerHTML = `
+        <strong>🚨 在线版本加载失败</strong><br>
+        建议使用离线版本：<br>
+        <a href="md-to-word-converter-offline.html" style="color: #fff; text-decoration: underline;">
+            点击使用离线版本
+        </a>
+    `;
+    document.body.appendChild(offlineNotice);
+    
+    setTimeout(() => offlineNotice.remove(), 10000);
+}
+
+// 开始加载资源
+console.log('🔄 开始加载依赖库...');
+loadScript(resources.marked, 'marked', function() {
+    if (typeof marked !== 'undefined') {
+        loadScript(resources.docx, 'docx', function() {
+            if (typeof docx !== 'undefined') {
+                console.log('✅ 所有库加载完成，工具就绪');
+                document.dispatchEvent(new CustomEvent('librariesLoaded'));
+            }
+        });
+    }
+});
+</script>
+
+<script>
+// 等待库加载完成后再初始化
+document.addEventListener('librariesLoaded', function() {
+
+let currentFile = null;
+let convertedBlob = null;
+
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const previewArea = document.getElementById('previewArea');
+const previewContent = document.getElementById('previewContent');
+const convertBtn = document.getElementById('convertBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const progress = document.getElementById('progress');
+const progressBar = document.getElementById('progressBar');
+
+// 文件上传事件
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) handleFile(files[0]);
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+    if (!file.name.match(/\.(md|markdown)$/i)) {
+        alert('请选择 Markdown 文件 (.md 或 .markdown)');
+        return;
+    }
+
+    currentFile = file;
+    
+    // 显示文件信息
+    fileName.textContent = file.name;
+    fileSize.textContent = formatFileSize(file.size);
+    fileInfo.style.display = 'block';
+
+    // 读取并预览文件
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            let markdownContent = e.target.result;
+            
+            // 使用同样的清理逻辑
+            markdownContent = cleanMarkdownContent(markdownContent);
+            
+            const htmlContent = marked.parse(markdownContent);
+            
+            previewContent.innerHTML = htmlContent;
+            previewArea.style.display = 'block';
+            convertBtn.disabled = false;
+        } catch (error) {
+            console.error('预览错误:', error);
+            previewContent.innerHTML = '<p style="color: #e74c3c;">文件预览失败，但仍可尝试转换</p>';
+            previewArea.style.display = 'block';
+            convertBtn.disabled = false;
+        }
+    };
+    reader.readAsText(file);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+convertBtn.addEventListener('click', convertToWord);
+downloadBtn.addEventListener('click', downloadWord);
+
+function convertToWord() {
+    if (!currentFile) return;
+
+    progress.style.display = 'block';
+    convertBtn.disabled = true;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            updateProgress(25);
+            let markdownContent = e.target.result;
+            
+            // 清理和预处理内容
+            markdownContent = cleanMarkdownContent(markdownContent);
+            
+            updateProgress(50);
+            
+            // 使用新的docx库转换
+            convertWithDocx(markdownContent);
+            
+        } catch (error) {
+            console.error('转换错误详情:', error);
+            let errorMsg = '转换失败。错误信息：' + (error.message || '未知错误');
+            alert(errorMsg);
+            convertBtn.disabled = false;
+            progress.style.display = 'none';
+        }
+    };
+    reader.readAsText(currentFile);
+}
+
+function convertWithDocx(markdownContent) {
+    try {
+        updateProgress(60);
+        
+        // 检查必要的库
+        if (typeof marked === 'undefined' || typeof docx === 'undefined') {
+            throw new Error('必要的转换库未加载完成，请刷新页面重试');
+        }
+        
+        // 解析markdown结构
+        const tokens = marked.lexer(markdownContent);
+        console.log('Markdown tokens:', tokens);
+        
+        updateProgress(70);
+        
+        // 创建文档结构
+        const children = [];
+        let processedTokens = 0;
+        
+        tokens.forEach((token, index) => {
+            try {
+                console.log(`Processing token ${index}:`, token.type, token);
+                const elements = processToken(token);
+                children.push(...elements);
+                processedTokens++;
+            } catch (tokenError) {
+                console.warn(`Token ${index} 处理错误:`, tokenError, token);
+                // 跳过有问题的token，继续处理
+            }
+        });
+        
+        if (processedTokens === 0) {
+            throw new Error('文档解析失败，请检查Markdown格式');
+        }
+        
+        updateProgress(80);
+        
+        // 创建Word文档
+        const doc = new docx.Document({
+            sections: [{
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1440,    // 1英寸 = 1440 twips
+                            right: 1440,
+                            bottom: 1440,
+                            left: 1440,
+                        },
+                    },
+                },
+                children: children
+            }]
+        });
+        
+        updateProgress(90);
+        
+        // 生成并下载
+        docx.Packer.toBlob(doc).then(blob => {
+            if (!blob || blob.size === 0) {
+                throw new Error('生成的Word文档为空');
+            }
+            
+            convertedBlob = blob;
+            updateProgress(100);
+            
+            setTimeout(() => {
+                progress.style.display = 'none';
+                downloadBtn.style.display = 'inline-block';
+                convertBtn.disabled = false;
+                
+                // 显示成功信息
+                const successMsg = `🎉 转换成功！\n📄 处理了 ${processedTokens} 个文档元素\n💾 文件大小: ${formatFileSize(blob.size)}`;
+                alert(successMsg);
+            }, 500);
+        }).catch(packError => {
+            console.error('打包错误:', packError);
+            alert('转换失败：Word文档生成时出错\n' + 
+                  '可能原因：\n• 文档内容过于复杂\n• 网络连接问题\n• 浏览器兼容性问题\n\n' +
+                  '建议：尝试简化Markdown内容或使用Chrome/Firefox浏览器');
+            convertBtn.disabled = false;
+            progress.style.display = 'none';
+        });
+        
+    } catch (error) {
+        console.error('DOCX转换错误:', error);
+        alert('🚨 转换失败：' + (error.message || '未知错误') + 
+              '\n\n💡 建议检查：\n• 网络连接是否正常\n• 文档格式是否正确\n• 浏览器是否支持最新标准');
+        convertBtn.disabled = false;
+        progress.style.display = 'none';
+    }
+}
+
+function processToken(token) {
+    const elements = [];
+    
+    switch (token.type) {
+        case 'heading':
+            elements.push(new docx.Paragraph({
+                text: cleanText(token.text),
+                heading: getHeadingLevel(token.depth),
+                spacing: { after: 200 }
+            }));
+            break;
+            
+        case 'paragraph':
+            elements.push(new docx.Paragraph({
+                children: [new docx.TextRun(cleanText(token.text))],
+                spacing: { after: 200 }
+            }));
+            break;
+            
+        case 'list':
+            if (token.items) {
+                token.items.forEach((item, index) => {
+                    const itemText = typeof item === 'string' ? item : (item.text || '');
+                    elements.push(new docx.Paragraph({
+                        text: cleanText(itemText),
+                        bullet: { level: 0 },
+                        spacing: { after: 100 }
+                    }));
+                });
+            }
+            break;
+            
+        case 'table':
+            const tableRows = [];
+            
+            // 表头
+            if (token.header && token.header.length > 0) {
+                const headerCells = token.header.map(cell => 
+                    new docx.TableCell({
+                        children: [new docx.Paragraph(cleanText(cell))],
+                        shading: { fill: "f0f0f0" }
+                    })
+                );
+                tableRows.push(new docx.TableRow({ children: headerCells }));
+            }
+            
+            // 表格内容
+            if (token.rows) {
+                token.rows.forEach(row => {
+                    const cells = row.map(cell => 
+                        new docx.TableCell({
+                            children: [new docx.Paragraph(cleanText(cell))]
+                        })
+                    );
+                    tableRows.push(new docx.TableRow({ children: cells }));
+                });
+            }
+            
+            if (tableRows.length > 0) {
+                elements.push(new docx.Table({
+                    rows: tableRows,
+                    width: { size: 100, type: docx.WidthType.PERCENTAGE }
+                }));
+            }
+            break;
+            
+        case 'blockquote':
+            elements.push(new docx.Paragraph({
+                text: cleanText(token.text),
+                indent: { left: 720 },
+                italics: true,
+                spacing: { after: 200 }
+            }));
+            break;
+            
+        case 'code':
+            elements.push(new docx.Paragraph({
+                children: [new docx.TextRun({
+                    text: cleanText(token.text),
+                    font: "Consolas"
+                })],
+                shading: { fill: "f5f5f5" },
+                spacing: { after: 200 }
+            }));
+            break;
+            
+        case 'hr':
+            elements.push(new docx.Paragraph({
+                children: [new docx.TextRun("___")],
+                alignment: docx.AlignmentType.CENTER,
+                spacing: { after: 200 }
+            }));
+            break;
+            
+        case 'space':
+            // 跳过空行
+            break;
+            
+        default:
+            // 处理其他类型的token
+            if (token.text) {
+                elements.push(new docx.Paragraph({
+                    children: [new docx.TextRun(cleanText(token.text))],
+                    spacing: { after: 200 }
+                }));
+            }
+    }
+    
+    return elements;
+}
+
+function getHeadingLevel(depth) {
+    const levels = {
+        1: docx.HeadingLevel.HEADING_1,
+        2: docx.HeadingLevel.HEADING_2,
+        3: docx.HeadingLevel.HEADING_3,
+        4: docx.HeadingLevel.HEADING_4,
+        5: docx.HeadingLevel.HEADING_5,
+        6: docx.HeadingLevel.HEADING_6
+    };
+    return levels[depth] || docx.HeadingLevel.HEADING_6;
+}
+
+function cleanText(text) {
+    if (!text) return '';
+    
+    // 确保输入是字符串
+    if (typeof text !== 'string') {
+        text = String(text);
+    }
+    
+    try {
+        // 移除HTML标签和Markdown标记
+        return text
+            .replace(/<[^>]*>/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/`(.*?)`/g, '$1')
+            .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+            .trim();
+    } catch (error) {
+        console.warn('文本清理出错:', error, 'text:', text);
+        return String(text).trim();
+    }
+}
+
+function cleanMarkdownContent(content) {
+    try {
+        // 移除或替换可能引起问题的字符
+        content = content
+            // 移除BOM
+            .replace(/^\uFEFF/, '')
+            // 标准化换行符
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n')
+            // 移除控制字符（保留制表符和换行符）
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+            // 修复可能的编码问题
+            .replace(/[""]/g, '"')
+            .replace(/['']/g, "'");
+        
+        return content;
+    } catch (error) {
+        console.warn('内容清理过程出错:', error);
+        return content;
+    }
+}
+
+function updateProgress(percent) {
+    progressBar.style.width = percent + '%';
+}
+
+function downloadWord() {
+    if (!convertedBlob) return;
+    
+    const url = URL.createObjectURL(convertedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentFile.name.replace(/\.(md|markdown)$/i, '.docx');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// 初始化完成
+console.log('✅ Markdown to Word 转换器已就绪');
+
+}); // 结束 librariesLoaded 事件监听
+
+// 添加页面加载超时检测
+setTimeout(function() {
+    if (typeof marked === 'undefined' || typeof docx === 'undefined') {
+        console.warn('⚠️ 库加载超时，可能存在网络问题');
+        showOfflineOption();
+    }
+}, 10000); // 10秒超时
+</script>
