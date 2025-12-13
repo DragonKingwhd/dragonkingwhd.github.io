@@ -47,15 +47,11 @@ signal_filtered = filter(b,a,signal_noisy);  % 滤波后信号
 
 ### 🎮 交互式演示
 
-下面是一个可以直接在网页中调节参数的滤波器演示：
-
-{% include filter-visualizer.html %}
+下面是一个可以直接在网页中调节参数的滤波器演示（在线演示已移除，请参考下面的 MATLAB 代码示例实现）。
 
 ### 💻 在线Python代码运行
 
-你也可以运行等效的Python代码：
-
-{% include python-runner.html %}
+你也可以运行等效的Python代码（可以使用 Jupyter Notebook 或其他 Python 编程环境）：
 
 ## 📊 滤波器的分类
 
