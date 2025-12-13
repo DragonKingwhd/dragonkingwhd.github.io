@@ -4,60 +4,107 @@ title: 博客文章
 permalink: /blog/
 ---
 
-<section class="blog-header">
+<div class="page-header">
     <div class="container">
-        <h1>博客文章</h1>
-        <p>记录学习心得，分享技术经验</p>
+        <h1 class="page-title">博客文章</h1>
+        <p class="page-subtitle">记录学习心得，分享技术经验</p>
+    </div>
+</div>
+
+<section class="blog-hero">
+    <div class="container">
+        <!-- 搜索框 -->
+        <div class="blog-search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="搜索文章标题或标签..."
+                >
+                <span class="search-counter"><span id="resultCount">{{ site.posts.size }}</span> 篇文章</span>
+            </div>
+        </div>
+
+        <!-- 分类筛选栏 -->
+        <div class="category-filter">
+            <div class="filter-label">分类筛选:</div>
+            <div class="filter-scroll">
+                <button class="filter-tag active" data-category="all">
+                    <i class="fas fa-layer-group"></i> 全部
+                </button>
+                {% assign categories = "" | split: "" %}
+                {% for post in site.posts %}
+                    {% for cat in post.categories %}
+                        {% unless categories contains cat %}
+                            {% assign categories = categories | push: cat %}
+                        {% endunless %}
+                    {% endfor %}
+                {% endfor %}
+
+                {% for category in categories %}
+                <button class="filter-tag" data-category="{{ category }}">
+                    <i class="fas fa-folder"></i> {{ category }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </section>
 
 <section class="blog-content">
     <div class="container">
-        <div class="posts-list">
+        <div class="posts-grid" id="postsGrid">
             {% for post in site.posts %}
-            <article class="post-preview">
-                <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
-                
-                <div class="post-meta">
-                    <span class="post-date">
-                        <i class="fas fa-calendar"></i>
-                        {{ post.date | date: site.date_format }}
-                    </span>
-                    
+            <article class="post-card" data-categories="{% for cat in post.categories %}{{ cat }}{% unless forloop.last %} {% endunless %}{% endfor %}" data-title="{{ post.title | downcase }}" data-tags="{% for tag in post.tags %}{{ tag | downcase }}{% unless forloop.last %} {% endunless %}{% endfor %}">
+                <div class="post-card-header">
+                    <div class="post-date-badge">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ post.date | date: "%m.%d" }}</span>
+                    </div>
                     {% if post.categories.size > 0 %}
-                    <span class="post-categories">
+                    <div class="post-category-badge">
                         <i class="fas fa-folder"></i>
-                        {% for category in post.categories %}
-                        <a href="/categories/{{ category | slugify }}">{{ category }}</a>
-                        {% unless forloop.last %}, {% endunless %}
-                        {% endfor %}
-                    </span>
-                    {% endif %}
-                    
-                    {% if post.tags.size > 0 %}
-                    <div class="post-tags">
-                        <i class="fas fa-tags"></i>
-                        {% for tag in post.tags limit:3 %}
-                        <a href="/tags/{{ tag | slugify }}" class="tag">#{{ tag }}</a>
-                        {% endfor %}
-                        {% if post.tags.size > 3 %}
-                        <span class="more-tags">...</span>
-                        {% endif %}
+                        {{ post.categories[0] }}
                     </div>
                     {% endif %}
                 </div>
-                
-                <p>{{ post.excerpt | strip_html | truncatewords: 50 }}</p>
-                
-                <a href="{{ post.url | relative_url }}" class="read-more">
-                    阅读全文 <i class="fas fa-arrow-right"></i>
-                </a>
+
+                <h2 class="post-card-title">
+                    <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+                </h2>
+
+                <p class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 35 }}</p>
+
+                <div class="post-card-footer">
+                    <div class="post-tags">
+                        {% for tag in post.tags limit:2 %}
+                        <span class="tag-pill">#{{ tag }}</span>
+                        {% endfor %}
+                        {% if post.tags.size > 2 %}
+                        <span class="tag-more">+{{ post.tags.size | minus: 2 }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ post.url | relative_url }}" class="read-more-btn">
+                        阅读全文 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </article>
             {% endfor %}
         </div>
-        
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-content">
+                <i class="fas fa-inbox"></i>
+                <h3>没有找到相关文章</h3>
+                <p id="emptyMessage">调整搜索或筛选条件试试</p>
+            </div>
+        </div>
+
         {% if site.posts.size == 0 %}
-        <div class="no-posts">
+        <div class="no-posts" id="noPosts">
             <i class="fas fa-pen-nib"></i>
             <h3>还没有文章</h3>
             <p>快来写第一篇博客文章吧！</p>
@@ -65,3 +112,676 @@ permalink: /blog/
         {% endif %}
     </div>
 </section>
+
+<style>
+/* ========== Blog Hero Section ========== */
+.blog-hero {
+    padding: 3rem 0;
+    background: linear-gradient(135deg,
+        rgba(0, 212, 255, 0.05),
+        rgba(124, 58, 237, 0.05));
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* 搜索框容器 */
+.blog-search-container {
+    margin-bottom: 2.5rem;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-glass);
+    border: 2px solid rgba(0, 212, 255, 0.2);
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.1);
+    backdrop-filter: blur(20px);
+}
+
+.search-box:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.3), 0 4px 15px rgba(0, 212, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.search-box i {
+    color: var(--primary-color);
+    margin-right: 1rem;
+    font-size: 1.1rem;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    font-family: var(--font-sans);
+}
+
+.search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.search-counter {
+    margin-left: 1rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(0, 212, 255, 0.2);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+}
+
+/* 分类筛选 */
+.category-filter {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+
+.filter-scroll {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scroll-behavior: smooth;
+    flex: 1;
+}
+
+.filter-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.filter-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 2px;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 25px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-sans);
+    backdrop-filter: blur(10px);
+}
+
+.filter-tag:hover {
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.15);
+}
+
+.filter-tag.active {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(124, 58, 237, 0.15));
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.filter-tag i {
+    font-size: 0.9rem;
+}
+
+/* ========== Posts Grid ========== */
+.blog-content {
+    padding: 4rem 0;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* ========== Post Card ========== */
+.post-card {
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    position: relative;
+    animation: fadeInUp 0.6s ease-out both;
+}
+
+.post-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+    transition: left 0.8s ease;
+    z-index: 1;
+}
+
+.post-card:hover::before {
+    left: 100%;
+}
+
+.post-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary-color);
+    box-shadow: 0 15px 40px rgba(0, 212, 255, 0.2), var(--shadow-glow);
+}
+
+/* 设置每个卡片的动画延迟 */
+{% for i in (0..100) %}
+.post-card:nth-child({{ i | plus: 1 }}) {
+    animation-delay: {{ i | times: 0.05 }}s;
+}
+{% endfor %}
+
+/* 卡片头部 - 日期和分类 */
+.post-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    gap: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.post-date-badge,
+.post-category-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.post-category-badge {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(0, 212, 255, 0.1));
+    border-color: rgba(124, 58, 237, 0.3);
+    color: var(--accent-color);
+}
+
+.post-card:hover .post-date-badge,
+.post-card:hover .post-category-badge {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 212, 255, 0.15);
+}
+
+.post-date-badge i,
+.post-category-badge i {
+    font-size: 0.85rem;
+}
+
+/* 文章标题 */
+.post-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 2;
+    flex-grow: 1;
+}
+
+.post-card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.post-card:hover .post-card-title a {
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* 文章摘要 */
+.post-excerpt {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+}
+
+/* 卡片底部 - 标签和按钮 */
+.post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(0, 212, 255, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.post-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.tag-pill {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 20px;
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.tag-pill:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.tag-more {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+}
+
+/* 阅读按钮 */
+.read-more-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.read-more-btn:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-glow);
+}
+
+.read-more-btn i {
+    transition: transform 0.3s ease;
+}
+
+.read-more-btn:hover i {
+    transform: translateX(2px);
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 3rem 2rem;
+}
+
+.empty-state-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* ========== No Posts State ========== */
+.no-posts {
+    text-align: center;
+    padding: 6rem 2rem;
+}
+
+.no-posts i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.no-posts h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.no-posts p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 1024px) {
+    .posts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .category-filter {
+        gap: 1rem;
+    }
+
+    .filter-scroll {
+        flex-wrap: nowrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .blog-hero {
+        padding: 2rem 0;
+    }
+
+    .blog-search-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-box {
+        padding: 0.6rem 1rem;
+    }
+
+    .search-input {
+        font-size: 0.95rem;
+    }
+
+    .search-counter {
+        margin-left: 0.75rem;
+        padding-left: 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .category-filter {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .filter-label {
+        text-align: center;
+    }
+
+    .filter-scroll {
+        justify-content: center;
+    }
+
+    .posts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .post-card {
+        padding: 1.5rem;
+    }
+
+    .post-card-header {
+        flex-wrap: wrap;
+    }
+
+    .post-card-title {
+        font-size: 1.1rem;
+    }
+
+    .post-excerpt {
+        -webkit-line-clamp: 2;
+    }
+
+    .post-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .read-more-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .blog-content {
+        padding: 2rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .blog-hero {
+        padding: 1.5rem 0;
+    }
+
+    .search-box {
+        padding: 0.5rem 0.8rem;
+    }
+
+    .search-box i {
+        margin-right: 0.75rem;
+    }
+
+    .search-input {
+        font-size: 0.9rem;
+    }
+
+    .search-counter {
+        display: none;
+    }
+
+    .filter-label {
+        font-size: 0.85rem;
+    }
+
+    .filter-tag {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.85rem;
+    }
+
+    .post-card {
+        padding: 1.2rem;
+    }
+
+    .post-card-header {
+        gap: 0.5rem;
+    }
+
+    .post-date-badge,
+    .post-category-badge {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .post-card-title {
+        font-size: 1rem;
+    }
+
+    .post-excerpt {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .tag-pill {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    .read-more-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* 禁用动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .post-card,
+    .search-box,
+    .filter-tag,
+    .read-more-btn {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+</style>
+
+<script>
+class BlogFilter {
+    constructor() {
+        this.allPosts = Array.from(document.querySelectorAll('.post-card'));
+        this.searchInput = document.getElementById('searchInput');
+        this.filterTags = document.querySelectorAll('.filter-tag');
+        this.postsGrid = document.getElementById('postsGrid');
+        this.emptyState = document.getElementById('emptyState');
+        this.resultCount = document.getElementById('resultCount');
+
+        this.currentCategory = 'all';
+        this.currentSearch = '';
+
+        this.init();
+    }
+
+    init() {
+        // 搜索监听
+        this.searchInput.addEventListener('input', (e) => this.handleSearch(e));
+
+        // 分类筛选监听
+        this.filterTags.forEach(tag => {
+            tag.addEventListener('click', (e) => this.handleFilter(e));
+        });
+    }
+
+    handleSearch(e) {
+        this.currentSearch = e.target.value.toLowerCase();
+        this.filterPosts();
+    }
+
+    handleFilter(e) {
+        e.preventDefault();
+
+        // 更新活跃状态
+        this.filterTags.forEach(tag => tag.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+
+        this.currentCategory = e.currentTarget.getAttribute('data-category');
+        this.filterPosts();
+    }
+
+    filterPosts() {
+        let visibleCount = 0;
+
+        this.allPosts.forEach(post => {
+            const title = post.getAttribute('data-title');
+            const tags = post.getAttribute('data-tags');
+            const categories = post.getAttribute('data-categories');
+
+            // 匹配搜索条件
+            const matchSearch = !this.currentSearch ||
+                title.includes(this.currentSearch) ||
+                tags.includes(this.currentSearch);
+
+            // 匹配分类条件
+            const matchCategory = this.currentCategory === 'all' ||
+                categories.includes(this.currentCategory);
+
+            const shouldShow = matchSearch && matchCategory;
+
+            if (shouldShow) {
+                post.style.display = '';
+                post.style.animation = 'fadeInUp 0.6s ease-out both';
+                visibleCount++;
+            } else {
+                post.style.display = 'none';
+            }
+        });
+
+        // 显示/隐藏空状态
+        if (visibleCount === 0) {
+            this.emptyState.style.display = 'flex';
+            this.postsGrid.style.display = 'none';
+
+            if (this.currentSearch) {
+                document.getElementById('emptyMessage').textContent = `未找到包含 "${this.currentSearch}" 的文章`;
+            } else {
+                document.getElementById('emptyMessage').textContent = `该分类下暂无文章`;
+            }
+        } else {
+            this.emptyState.style.display = 'none';
+            this.postsGrid.style.display = 'grid';
+        }
+
+        // 更新计数
+        this.resultCount.textContent = visibleCount;
+    }
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', () => {
+    new BlogFilter();
+});
+</script>
