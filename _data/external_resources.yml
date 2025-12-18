@@ -1,0 +1,18 @@
+# 外部学习资源
+# External learning resources
+
+resources:
+  - title: "机械工程基础课程"
+    title_en: "Fundamentals of Mechanical Engineering"
+    description: "来自中东技术大学(METU)的开放课件资源，讲解机械工程的基础概念和原理。"
+    description_en: "Open course materials from Middle East Technical University (METU) covering fundamental concepts and principles of mechanical engineering."
+    url: "https://ocw.metu.edu.tr/mod/resource/view.php?id=2094"
+    category: "机械工程"
+    icon: "⚙️"
+    source: "METU OCW"
+    date: "2025-12-18"
+    tags:
+      - 机械工程
+      - 工程学
+      - 课程资源
+      - 开源教材
