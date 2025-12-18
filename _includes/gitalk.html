@@ -9,16 +9,36 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Gitalk !== 'undefined') {
+        // 生成一个安全的、长度不超过50字符的唯一ID
+        var pageId = (function() {
+            var url = location.pathname;
+            // 移除首尾斜杠
+            url = url.replace(/^\/|\/$/g, '');
+            // 如果ID太长，使用hash
+            if (url.length > 50) {
+                var hash = 0;
+                for (var i = 0; i < url.length; i++) {
+                    var char = url.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+                url = 'page-' + Math.abs(hash);
+            }
+            return url || 'home';
+        })();
+
         var gitalk = new Gitalk({
             clientID: '{{ site.gitalk.clientID }}',
             clientSecret: '{{ site.gitalk.clientSecret }}',
             repo: '{{ site.gitalk.repo }}',
             owner: '{{ site.gitalk.owner }}',
             admin: {{ site.gitalk.admin | jsonify }},
-            id: location.pathname,      // 确保每个页面有唯一的评论
+            id: pageId,                 // 使用优化后的ID
             distractionFreeMode: false, // 类似Facebook的无干扰模式
             title: '{{ page.title | default: site.title }}',
-            body: '评论页面：{{ page.url | absolute_url }}'
+            body: '评论页面：{{ page.url | absolute_url }}',
+            createIssueManually: false,
+            labels: ['Gitalk', 'Comment']
         });
         gitalk.render('gitalk-container');
     }

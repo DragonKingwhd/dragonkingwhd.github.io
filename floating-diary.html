@@ -63,6 +63,9 @@ permalink: /floating-diary/
                     </div>
                 </div>
             </div>
+        <!-- Gitalk 评论区 -->
+        <div class="gitalk-section">
+            {% include gitalk.html %}
         </div>
     </div>
 </section>
@@ -298,6 +301,67 @@ permalink: /floating-diary/
     opacity: 0.5;
 }
 
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Gitalk 评论区样式 */
+.gitalk-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.comments-section {
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.comments-header {
+    margin-bottom: 1.5rem;
+}
+
+.comments-header h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    color: var(--text-primary, #fff);
+}
+
+.comments-header p {
+    margin: 0;
+    color: var(--text-secondary, #999);
+    font-size: 0.95rem;
+}
+
+/* Gitalk 容器自适应 */
+#gitalk-container {
+    color: var(--text-primary, #fff);
+}
+
+#gitalk-container .gt-container {
+    background: transparent !important;
+}
+
+#gitalk-container .gt-header-textarea {
+    background: var(--bg-tertiary, rgba(0, 0, 0, 0.3)) !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    color: var(--text-primary, #fff) !important;
+}
+
+#gitalk-container .gt-btn {
+    background: linear-gradient(135deg, var(--primary-color, #00d4ff), var(--accent-color, #7c3aed)) !important;
+    border: none !important;
+    color: white !important;
+}
+
+#gitalk-container .gt-btn:hover {
+    opacity: 0.9 !important;
+}
+
 /* 响应式 */
 @media (max-width: 1024px) {
     .diary-container {
@@ -326,6 +390,15 @@ permalink: /floating-diary/
 
     .diary-list-section {
         max-height: 400px;
+    }
+
+    .gitalk-section {
+        margin-top: 2rem;
+        padding-top: 1rem;
+    }
+
+    .comments-section {
+        padding: 1rem;
     }
 }
 </style>
