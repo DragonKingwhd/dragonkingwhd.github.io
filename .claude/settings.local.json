@@ -11,7 +11,10 @@
       "Bash(git add:*)",
       "WebFetch(domain:dragonkingwhd.github.io)",
       "Bash(ls:*)",
-      "Bash(bundle exec jekyll build:*)"
+      "Bash(bundle exec jekyll build:*)",
+      "Bash(find:*)",
+      "Bash(dir:*)",
+      "WebFetch(domain:ocw.metu.edu.tr)"
     ]
   }
 }

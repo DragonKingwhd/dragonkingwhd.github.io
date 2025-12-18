@@ -39,6 +39,10 @@ author: "Your Name"
 
 如果你对动力学系统和控制理论感兴趣，可以查看我的其他文章和项目。
 
+## 推荐资源
+
+- [METU OpenCourseWare - 机械设计课程](https://ocw.metu.edu.tr/mod/resource/view.php?id=2094) - 土耳其中东技术大学的开放课程资源，涵盖机械设计的核心概念和方法
+
 ---
 
 *注: 本PDF文档可直接下载用于学习和研究目的。*
