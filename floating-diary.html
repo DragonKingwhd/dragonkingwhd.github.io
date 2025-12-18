@@ -13,56 +13,53 @@ permalink: /floating-diary/
 
 <section class="content-section">
     <div class="container">
-        <div class="diary-container">
-            <!-- 日记编辑器 -->
-            <div class="diary-editor">
-                <div class="editor-header">
-                    <h3>写一篇日记</h3>
-                    <div class="editor-actions">
-                        <button class="btn btn-secondary" id="newDiaryBtn">
-                            <i class="fas fa-file-alt"></i> 新建
-                        </button>
-                        <button class="btn btn-primary" id="saveDiaryBtn">
-                            <i class="fas fa-save"></i> 保存
-                        </button>
-                    </div>
+        <div class="diary-intro">
+            <div class="intro-card">
+                <div class="intro-icon">
+                    <i class="fas fa-feather-alt"></i>
                 </div>
-
-                <div class="editor-content">
-                    <input type="text" id="diaryTitle" class="diary-title-input" placeholder="日记标题（可选）" maxlength="100">
-                    <div class="editor-meta">
-                        <span id="diaryDate" class="editor-date"></span>
-                        <span class="editor-status" id="editorStatus">未保存</span>
-                    </div>
-                    <textarea id="diaryContent" class="diary-textarea" placeholder="在这里写下你的想法和心得..."></textarea>
-                </div>
-
-                <div class="editor-toolbar">
-                    <div class="toolbar-left">
-                        <span id="wordCount" class="word-count">0 字</span>
-                    </div>
-                    <div class="toolbar-right">
-                        <button class="btn btn-small" id="exportBtn" title="导出为 Markdown">
-                            <i class="fas fa-download"></i> 导出
-                        </button>
-                    </div>
+                <div class="intro-content">
+                    <h3>浮生若梦</h3>
+                    <p>用文字记录生活的点滴，让瞬间变成永恒。这里是我的个人日记本，记录思考、感悟与成长。</p>
                 </div>
             </div>
+        </div>
 
-            <!-- 日记列表 -->
-            <div class="diary-list-section">
-                <div class="list-header">
-                    <h3>我的日记</h3>
-                    <input type="search" id="searchDiary" class="search-input" placeholder="搜索日记...">
-                </div>
-
-                <div id="diaryList" class="diary-list">
-                    <div class="empty-state">
-                        <i class="fas fa-book-open"></i>
-                        <p>还没有日记，开始写一篇吧！</p>
+        <div class="diary-list-container">
+            {% assign sorted_diaries = site.diary_posts | sort: 'date' | reverse %}
+            {% if sorted_diaries.size > 0 %}
+            <div class="diary-timeline">
+                {% for diary in sorted_diaries %}
+                <article class="diary-card">
+                    <div class="diary-card-date">
+                        <span class="day">{{ diary.date | date: "%d" }}</span>
+                        <span class="month">{{ diary.date | date: "%m月" }}</span>
+                        <span class="year">{{ diary.date | date: "%Y" }}</span>
                     </div>
-                </div>
+                    <div class="diary-card-content">
+                        <h2 class="diary-card-title">
+                            <a href="{{ diary.url | relative_url }}">{{ diary.title }}</a>
+                        </h2>
+                        {% if diary.mood %}
+                        <span class="diary-mood">{{ diary.mood }}</span>
+                        {% endif %}
+                        <p class="diary-excerpt">{{ diary.excerpt | strip_html | truncatewords: 50 }}</p>
+                        <a href="{{ diary.url | relative_url }}" class="read-more-btn">
+                            阅读全文 <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>还没有日记</h3>
+                <p>在 _diary_posts 文件夹中添加 markdown 文件来发布日记</p>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Gitalk 评论区 -->
         <div class="gitalk-section">
             {% include gitalk.html %}
@@ -71,240 +68,211 @@ permalink: /floating-diary/
 </section>
 
 <style>
-.diary-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    margin: 2rem 0;
+.diary-intro {
+    margin-bottom: 3rem;
 }
 
-.diary-editor {
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.2));
+.intro-card {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+    border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 12px;
-    overflow: hidden;
-}
-
-.editor-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color, rgba(0, 212, 255, 0.1));
+    padding: 2rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 1.5rem;
+    align-items: flex-start;
 }
 
-.editor-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.editor-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.editor-content {
-    padding: 1.5rem;
-}
-
-.diary-title-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid var(--primary-color, #00d4ff);
-    color: var(--text-primary, #fff);
-    font-size: 1.5rem;
-    font-weight: 600;
-    padding: 0 0 0.5rem 0;
-    margin-bottom: 1rem;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.diary-title-input:focus {
-    border-color: var(--primary-color, #00d4ff);
-}
-
-.diary-title-input::placeholder {
-    color: var(--text-secondary, #999);
-}
-
-.editor-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    color: var(--text-secondary, #999);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color, rgba(0, 212, 255, 0.1));
-}
-
-.editor-date {
-    font-weight: 500;
-}
-
-.editor-status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
-    font-size: 0.85rem;
-}
-
-.editor-status.saved {
-    background: rgba(0, 212, 255, 0.2);
+.intro-icon {
+    font-size: 2.5rem;
     color: var(--primary-color, #00d4ff);
+    flex-shrink: 0;
 }
 
-.diary-textarea {
-    width: 100%;
-    min-height: 300px;
-    background: transparent;
-    border: none;
-    color: var(--text-primary, #fff);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1rem;
+.intro-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.intro-content p {
+    margin: 0;
+    color: var(--text-secondary);
     line-height: 1.6;
-    resize: vertical;
-    outline: none;
 }
 
-.diary-textarea::placeholder {
-    color: var(--text-secondary, #666);
-}
-
-.editor-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border-color, rgba(0, 212, 255, 0.1));
-    background: var(--bg-tertiary, rgba(0, 0, 0, 0.3));
-    font-size: 0.9rem;
-}
-
-.word-count {
-    color: var(--text-secondary, #999);
-}
-
-.toolbar-right {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-small {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-}
-
-/* 日记列表 */
-.diary-list-section {
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.2));
-    border-radius: 12px;
-    padding: 1.5rem;
-    height: fit-content;
-    position: sticky;
-    top: 100px;
-}
-
-.list-header {
-    margin-bottom: 1.5rem;
-}
-
-.list-header h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-}
-
-.search-input {
-    width: 100%;
-    background: transparent;
-    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.2));
-    color: var(--text-primary, #fff);
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.search-input:focus {
-    border-color: var(--primary-color, #00d4ff);
-}
-
-.search-input::placeholder {
-    color: var(--text-secondary, #666);
-}
-
-.diary-list {
+/* 日记时间线 */
+.diary-timeline {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    max-height: 600px;
-    overflow-y: auto;
+    gap: 2rem;
 }
 
-.diary-item {
-    padding: 1rem;
-    background: var(--bg-tertiary, rgba(0, 0, 0, 0.3));
-    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.1));
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.diary-item:hover {
-    background: var(--bg-tertiary, rgba(0, 212, 255, 0.1));
-    border-color: var(--primary-color, #00d4ff);
-    transform: translateX(4px);
-}
-
-.diary-item.active {
-    background: var(--bg-tertiary, rgba(0, 212, 255, 0.15));
-    border-color: var(--primary-color, #00d4ff);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-}
-
-.diary-item-title {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary, #fff);
-    word-break: break-word;
-}
-
-.diary-item-date {
-    font-size: 0.85rem;
-    color: var(--text-secondary, #999);
-}
-
-.diary-item-preview {
-    font-size: 0.9rem;
-    color: var(--text-secondary, #999);
-    margin-top: 0.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+.diary-card {
+    display: flex;
+    gap: 2rem;
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+    position: relative;
 }
 
+.diary-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    transform: scaleY(0);
+    transition: transform 0.3s;
+}
+
+.diary-card:hover::before {
+    transform: scaleY(1);
+}
+
+.diary-card:hover {
+    transform: translateX(8px);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+}
+
+.diary-card-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+    border-radius: 12px;
+    text-align: center;
+}
+
+.diary-card-date .day {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.diary-card-date .month {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.diary-card-date .year {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.diary-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.diary-card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.4;
+}
+
+.diary-card-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.diary-card:hover .diary-card-title a {
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.diary-mood {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    width: fit-content;
+}
+
+.diary-excerpt {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: fit-content;
+}
+
+.read-more-btn:hover {
+    transform: translateX(4px);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+}
+
+.read-more-btn i {
+    transition: transform 0.3s;
+}
+
+.read-more-btn:hover i {
+    transform: translateX(2px);
+}
+
+/* 空状态 */
 .empty-state {
     text-align: center;
-    padding: 2rem 1rem;
-    color: var(--text-secondary, #999);
+    padding: 4rem 2rem;
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 12px;
 }
 
 .empty-state i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
     opacity: 0.5;
 }
 
-.empty-state i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
 }
 
 /* Gitalk 评论区样式 */
@@ -314,304 +282,46 @@ permalink: /floating-diary/
     border-top: 1px solid rgba(0, 212, 255, 0.2);
 }
 
-.comments-section {
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.comments-header {
-    margin-bottom: 1.5rem;
-}
-
-.comments-header h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.3rem;
-    color: var(--text-primary, #fff);
-}
-
-.comments-header p {
-    margin: 0;
-    color: var(--text-secondary, #999);
-    font-size: 0.95rem;
-}
-
-/* Gitalk 容器自适应 */
-#gitalk-container {
-    color: var(--text-primary, #fff);
-}
-
-#gitalk-container .gt-container {
-    background: transparent !important;
-}
-
-#gitalk-container .gt-header-textarea {
-    background: var(--bg-tertiary, rgba(0, 0, 0, 0.3)) !important;
-    border: 1px solid rgba(0, 212, 255, 0.2) !important;
-    color: var(--text-primary, #fff) !important;
-}
-
-#gitalk-container .gt-btn {
-    background: linear-gradient(135deg, var(--primary-color, #00d4ff), var(--accent-color, #7c3aed)) !important;
-    border: none !important;
-    color: white !important;
-}
-
-#gitalk-container .gt-btn:hover {
-    opacity: 0.9 !important;
-}
-
 /* 响应式 */
-@media (max-width: 1024px) {
-    .diary-container {
-        grid-template-columns: 1fr;
-    }
-
-    .diary-list-section {
-        position: static;
-    }
-}
-
 @media (max-width: 768px) {
-    .diary-editor {
-        margin-bottom: 2rem;
-    }
-
-    .editor-header {
+    .intro-card {
         flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
+        text-align: center;
     }
 
-    .diary-textarea {
-        min-height: 200px;
+    .diary-card {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
     }
 
-    .diary-list-section {
-        max-height: 400px;
+    .diary-card-date {
+        flex-direction: row;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        min-width: auto;
+    }
+
+    .diary-card-date .day {
+        font-size: 1.5rem;
+    }
+
+    .diary-card-date .month,
+    .diary-card-date .year {
+        font-size: 0.85rem;
+    }
+
+    .diary-card-title {
+        font-size: 1.2rem;
+    }
+
+    .diary-card:hover {
+        transform: translateX(4px);
     }
 
     .gitalk-section {
         margin-top: 2rem;
         padding-top: 1rem;
     }
-
-    .comments-section {
-        padding: 1rem;
-    }
 }
 </style>
-
-<script>
-class FloatingDiary {
-    constructor() {
-        this.diaries = JSON.parse(localStorage.getItem('floatingDiaries')) || [];
-        this.currentId = null;
-        this.init();
-    }
-
-    init() {
-        this.setupEventListeners();
-        this.updateDateDisplay();
-        this.renderDiaryList();
-
-        // 每分钟自动保存
-        setInterval(() => this.autoSave(), 60000);
-    }
-
-    setupEventListeners() {
-        document.getElementById('saveDiaryBtn').addEventListener('click', () => this.saveDiary());
-        document.getElementById('newDiaryBtn').addEventListener('click', () => this.newDiary());
-        document.getElementById('exportBtn').addEventListener('click', () => this.exportDiary());
-        document.getElementById('diaryContent').addEventListener('input', () => this.updateWordCount());
-        document.getElementById('searchDiary').addEventListener('input', (e) => this.filterDiaries(e.target.value));
-    }
-
-    updateDateDisplay() {
-        const dateElement = document.getElementById('diaryDate');
-        const now = new Date();
-        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-        dateElement.textContent = now.toLocaleDateString('zh-CN', options);
-    }
-
-    updateWordCount() {
-        const content = document.getElementById('diaryContent').value;
-        const wordCount = content.length;
-        document.getElementById('wordCount').textContent = `${wordCount} 字`;
-    }
-
-    saveDiary() {
-        const title = document.getElementById('diaryTitle').value || '无标题日记';
-        const content = document.getElementById('diaryContent').value;
-
-        if (!content.trim()) {
-            alert('请写入日记内容');
-            return;
-        }
-
-        const now = new Date().toISOString();
-
-        if (this.currentId) {
-            // 更新现有日记
-            const diary = this.diaries.find(d => d.id === this.currentId);
-            if (diary) {
-                diary.title = title;
-                diary.content = content;
-                diary.updatedAt = now;
-            }
-        } else {
-            // 创建新日记
-            const newDiary = {
-                id: Date.now().toString(),
-                title: title,
-                content: content,
-                createdAt: now,
-                updatedAt: now
-            };
-            this.diaries.unshift(newDiary);
-            this.currentId = newDiary.id;
-        }
-
-        // 保存到 localStorage
-        localStorage.setItem('floatingDiaries', JSON.stringify(this.diaries));
-
-        // 更新状态显示
-        const statusElement = document.getElementById('editorStatus');
-        statusElement.textContent = '已保存';
-        statusElement.classList.add('saved');
-        setTimeout(() => {
-            statusElement.textContent = '未保存';
-            statusElement.classList.remove('saved');
-        }, 2000);
-
-        this.renderDiaryList();
-    }
-
-    autoSave() {
-        if (document.getElementById('diaryContent').value.trim()) {
-            this.saveDiary();
-        }
-    }
-
-    newDiary() {
-        document.getElementById('diaryTitle').value = '';
-        document.getElementById('diaryContent').value = '';
-        this.currentId = null;
-        this.updateWordCount();
-
-        // 清除 active 状态
-        document.querySelectorAll('.diary-item').forEach(item => {
-            item.classList.remove('active');
-        });
-    }
-
-    exportDiary() {
-        if (!this.currentId && !document.getElementById('diaryContent').value.trim()) {
-            alert('没有可导出的内容');
-            return;
-        }
-
-        const title = document.getElementById('diaryTitle').value || '日记';
-        const content = document.getElementById('diaryContent').value;
-        const date = new Date().toISOString().split('T')[0];
-
-        const markdown = `# ${title}\n\n**日期**: ${date}\n\n${content}\n\n---\n\n*由浮生日记导出*`;
-
-        // 创建下载链接
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/markdown;charset=utf-8,' + encodeURIComponent(markdown));
-        element.setAttribute('download', `${title}-${date}.md`);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-
-    renderDiaryList() {
-        const listContainer = document.getElementById('diaryList');
-
-        if (this.diaries.length === 0) {
-            listContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-book-open"></i>
-                    <p>还没有日记，开始写一篇吧！</p>
-                </div>
-            `;
-            return;
-        }
-
-        listContainer.innerHTML = this.diaries.map(diary => `
-            <div class="diary-item ${this.currentId === diary.id ? 'active' : ''}" data-id="${diary.id}">
-                <div class="diary-item-title">${diary.title}</div>
-                <div class="diary-item-date">${new Date(diary.updatedAt).toLocaleDateString('zh-CN')}</div>
-                <div class="diary-item-preview">${diary.content.substring(0, 80)}...</div>
-            </div>
-        `).join('');
-
-        // 添加点击事件
-        document.querySelectorAll('.diary-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const id = item.getAttribute('data-id');
-                this.loadDiary(id);
-            });
-        });
-    }
-
-    loadDiary(id) {
-        const diary = this.diaries.find(d => d.id === id);
-        if (!diary) return;
-
-        this.currentId = id;
-        document.getElementById('diaryTitle').value = diary.title;
-        document.getElementById('diaryContent').value = diary.content;
-        this.updateWordCount();
-
-        // 更新 active 状态
-        document.querySelectorAll('.diary-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        document.querySelector(`[data-id="${id}"]`).classList.add('active');
-    }
-
-    filterDiaries(searchText) {
-        const filtered = this.diaries.filter(diary =>
-            diary.title.toLowerCase().includes(searchText.toLowerCase()) ||
-            diary.content.toLowerCase().includes(searchText.toLowerCase())
-        );
-
-        const listContainer = document.getElementById('diaryList');
-
-        if (filtered.length === 0) {
-            listContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-search"></i>
-                    <p>没找到匹配的日记</p>
-                </div>
-            `;
-            return;
-        }
-
-        listContainer.innerHTML = filtered.map(diary => `
-            <div class="diary-item ${this.currentId === diary.id ? 'active' : ''}" data-id="${diary.id}">
-                <div class="diary-item-title">${diary.title}</div>
-                <div class="diary-item-date">${new Date(diary.updatedAt).toLocaleDateString('zh-CN')}</div>
-                <div class="diary-item-preview">${diary.content.substring(0, 80)}...</div>
-            </div>
-        `).join('');
-
-        // 添加点击事件
-        document.querySelectorAll('.diary-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const id = item.getAttribute('data-id');
-                this.loadDiary(id);
-            });
-        });
-    }
-}
-
-// 页面加载时初始化
-document.addEventListener('DOMContentLoaded', () => {
-    new FloatingDiary();
-});
-</script>

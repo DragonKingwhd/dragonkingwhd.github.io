@@ -75,6 +75,9 @@ collections:
   docs:
     output: true
     permalink: /:collection/:name/
+  diary_posts:
+    output: true
+    permalink: /diary/:year/:month/:day/:title/
 
 # 默认设置
 defaults:
@@ -94,3 +97,9 @@ defaults:
       type: "docs"
     values:
       layout: "doc"
+  - scope:
+      path: ""
+      type: "diary_posts"
+    values:
+      layout: "diary"
+      author: "Dragonking"

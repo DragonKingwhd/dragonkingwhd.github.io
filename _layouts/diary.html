@@ -1,0 +1,259 @@
+---
+layout: default
+---
+
+<article class="diary-post">
+    <header class="diary-header">
+        <div class="container">
+            <div class="diary-header-content">
+                <div class="diary-date-display">
+                    <span class="diary-day">{{ page.date | date: "%d" }}</span>
+                    <span class="diary-month-year">{{ page.date | date: "%Y年%m月" }}</span>
+                </div>
+                <div class="diary-title-section">
+                    <h1>{{ page.title }}</h1>
+                    {% if page.mood %}
+                    <span class="diary-mood">{{ page.mood }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="diary-content">
+        <div class="container">
+            {{ content }}
+        </div>
+    </div>
+
+    <footer class="diary-footer">
+        <div class="container">
+            <div class="diary-navigation">
+                {% if page.previous %}
+                <div class="nav-previous">
+                    <a href="{{ page.previous.url | relative_url }}">
+                        <i class="fas fa-arrow-left"></i>
+                        <div>
+                            <span>上一篇</span>
+                            <h4>{{ page.previous.title }}</h4>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if page.next %}
+                <div class="nav-next">
+                    <a href="{{ page.next.url | relative_url }}">
+                        <div>
+                            <span>下一篇</span>
+                            <h4>{{ page.next.title }}</h4>
+                        </div>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="back-to-diary">
+                <a href="/floating-diary/" class="btn btn-secondary">
+                    <i class="fas fa-book-open"></i> 返回日记列表
+                </a>
+            </div>
+        </div>
+    </footer>
+</article>
+
+<!-- Gitalk评论区 -->
+{% include gitalk.html %}
+
+<style>
+.diary-post {
+    min-height: 100vh;
+}
+
+.diary-header {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+    padding: 4rem 0 3rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.diary-header-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.diary-date-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    padding: 1.5rem;
+    border-radius: 12px;
+    min-width: 100px;
+}
+
+.diary-day {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.diary-month-year {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 0.25rem;
+}
+
+.diary-title-section {
+    flex: 1;
+}
+
+.diary-title-section h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.diary-mood {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 20px;
+    font-size: 1rem;
+}
+
+.diary-content {
+    padding: 3rem 0;
+}
+
+.diary-content .container {
+    max-width: 800px;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.diary-content p {
+    margin-bottom: 1.5rem;
+}
+
+.diary-content h2 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.diary-footer {
+    padding: 3rem 0;
+    border-top: 1px solid rgba(0, 212, 255, 0.1);
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.02));
+}
+
+.diary-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.diary-navigation .nav-previous,
+.diary-navigation .nav-next {
+    flex: 1;
+    max-width: 45%;
+}
+
+.diary-navigation a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.3s;
+}
+
+.diary-navigation a:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15);
+}
+
+.diary-navigation span {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.diary-navigation h4 {
+    margin: 0.25rem 0 0;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.diary-navigation i {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.nav-next a {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.back-to-diary {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .diary-header {
+        padding: 2rem 0;
+    }
+
+    .diary-header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .diary-date-display {
+        padding: 1rem 2rem;
+    }
+
+    .diary-title-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .diary-content {
+        padding: 2rem 0;
+    }
+
+    .diary-content .container {
+        font-size: 1rem;
+    }
+
+    .diary-navigation {
+        flex-direction: column;
+    }
+
+    .diary-navigation .nav-previous,
+    .diary-navigation .nav-next {
+        max-width: 100%;
+    }
+
+    .nav-next a {
+        justify-content: flex-start;
+        text-align: left;
+    }
+}
+</style>
