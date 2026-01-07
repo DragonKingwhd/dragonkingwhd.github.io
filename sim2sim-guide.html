@@ -1,0 +1,1583 @@
+---
+layout: default
+title: Sim2Sim部署指南 - IsaacLab到Mujoco
+permalink: /sim2sim-guide/
+---
+
+<div class="sim2sim-page">
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">Sim2Sim部署指南</h1>
+      <p class="page-subtitle">从IsaacLab到Mujoco的策略迁移完全指南</p>
+    </div>
+  </div>
+
+  <!-- 导航面板 -->
+  <div class="sim2sim-nav-container">
+    <nav class="sim2sim-sidebar">
+      <div class="sidebar-header">
+        <h3>章节导航</h3>
+      </div>
+      <ul class="toc-list">
+        <li><a href="#overview" class="toc-link" data-section="overview">
+          <i class="fas fa-book-open"></i> 概述
+        </a></li>
+        <li><a href="#observation" class="toc-link" data-section="observation">
+          <i class="fas fa-microchip"></i> 观测空间对齐
+        </a></li>
+        <li><a href="#obs-example" class="toc-link" data-section="obs-example">
+          <i class="fas fa-arrow-right"></i> 观测迁移示例
+        </a></li>
+        <li><a href="#timing" class="toc-link" data-section="timing">
+          <i class="fas fa-clock"></i> 时间步参数同步
+        </a></li>
+        <li><a href="#jitter" class="toc-link" data-section="jitter">
+          <i class="fas fa-bolt"></i> 抖动问题分析
+        </a></li>
+        <li><a href="#faq" class="toc-link" data-section="faq">
+          <i class="fas fa-question-circle"></i> 常见问题FAQ
+        </a></li>
+        <li><a href="#summary" class="toc-link" data-section="summary">
+          <i class="fas fa-check-circle"></i> 总结与建议
+        </a></li>
+      </ul>
+
+      <div class="sidebar-references">
+        <h4>参考资源</h4>
+        <ul>
+          <li><a href="https://isaac-sim.github.io/IsaacLab/" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> IsaacLab官方文档
+          </a></li>
+          <li><a href="https://github.com/roboterax/humanoid-gym" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> Humanoid-Gym
+          </a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="sim2sim-content">
+      <!-- 英雄部分 -->
+      <section class="sim2sim-hero">
+        <div class="hero-content">
+          <h2>从<span class="highlight-blue">IsaacLab</span>到<span class="highlight-green">Mujoco</span></h2>
+          <p>Sim2Sim策略部署全解析</p>
+          <p class="hero-desc">深入探讨强化学习策略从NVIDIA IsaacLab仿真环境迁移到Mujoco物理引擎的完整过程，包括观测空间对齐、时间步参数同步，以及机器人抖动问题的系统性解决方案。</p>
+        </div>
+      </section>
+
+      <!-- 内容区域 -->
+      <div class="sim2sim-sections">
+        <!-- Section 1: 概述 -->
+        <section id="overview" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-book-open"></i> 1. Sim2Sim迁移的核心挑战</h2>
+          </div>
+
+          <div class="content-card">
+            <p>Sim2Sim部署是指将在一个模拟器(如IsaacLab)中训练的强化学习策略迁移到另一个物理模拟器(如Mujoco)中执行的过程。这看似简单的任务实际上包含多个关键技术挑战：</p>
+
+            <div class="challenge-list">
+              <div class="challenge-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <h4>观测空间不一致</h4>
+                  <p>两个模拟器对同一观测量(如速度、位置)的计算方式可能不同，导致神经网络输入特征分布差异。</p>
+                </div>
+              </div>
+
+              <div class="challenge-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <h4>时间步参数差异</h4>
+                  <p>物理步长、降采样比例等参数的不同组合会影响控制频率和动态响应，破坏策略的时序假设。</p>
+                </div>
+              </div>
+
+              <div class="challenge-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <h4>物理引擎差异</h4>
+                  <p>不同的物理引擎(IsaacGym vs Mujoco)有不同的接触模型、约束求解算法，导致动力学差异。</p>
+                </div>
+              </div>
+
+              <div class="challenge-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <h4>执行器参数差异</h4>
+                  <p>电机控制模型、PD参数、力矩限制等在两个平台上的实现细节不同。</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-box">
+              <i class="fas fa-info-circle"></i>
+              <div>
+                <strong>核心思想</strong>
+                <p>成功的Sim2Sim迁移需要三个步骤：(1)观测对齐 - 确保网络输入一致; (2)参数同步 - 匹配控制时序; (3)测试调试 - 识别和修正部署时的问题。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: 观测空间对齐 -->
+        <section id="observation" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-microchip"></i> 2. 观测空间对齐</h2>
+          </div>
+
+          <div class="content-card">
+            <h3>为什么要对齐观测？</h3>
+            <p>神经网络的输入(观测)决定了其内部特征的分布。在IsaacLab中训练时，网络学到的权重是针对特定的观测向量结构和数值范围优化的。如果在Mujoco中使用不同的观测定义或计算方式，网络将无法正确理解输入，导致策略性能急剧下降。</p>
+
+            <h3>观测对齐的两个关键方面</h3>
+            <div class="two-column-layout">
+              <div class="column">
+                <h4><i class="fas fa-list-check"></i> 1. 观测维度和顺序</h4>
+                <ul>
+                  <li>确保Mujoco中的观测向量维度与IsaacLab完全相同</li>
+                  <li>维护观测各分量的顺序(首先是速度，然后是位置，等等)</li>
+                  <li>检查是否有缺失的观测项(如足端接触力)</li>
+                </ul>
+              </div>
+              <div class="column">
+                <h4><i class="fas fa-calculator"></i> 2. 观测计算方式</h4>
+                <ul>
+                  <li>重现IsaacLab中的观测计算公式</li>
+                  <li>考虑坐标系变换(世界坐标 vs 本体坐标)</li>
+                  <li>匹配标准化参数(mean和std)</li>
+                </ul>
+              </div>
+            </div>
+
+            <h3>常见观测项及其计算</h3>
+            <div class="observation-table-wrapper">
+              <table class="obs-table">
+                <thead>
+                  <tr>
+                    <th>观测项</th>
+                    <th class="dim-col">维度</th>
+                    <th class="isaac-col">IsaacLab来源</th>
+                    <th class="mujoco-col">Mujoco实现</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>投影重力</td>
+                    <td>3</td>
+                    <td><code>mdp.projected_gravity</code></td>
+                    <td><code>base_mat.T @ gravity_world</code></td>
+                  </tr>
+                  <tr>
+                    <td>底盘线/角速度</td>
+                    <td>6</td>
+                    <td><code>mdp.node_lin_ang_vel</code></td>
+                    <td><code>data.cvel[base_body_id]</code></td>
+                  </tr>
+                  <tr>
+                    <td>底盘高度</td>
+                    <td>1</td>
+                    <td><code>mdp.node_height_mm</code></td>
+                    <td><code>data.xpos[base_body_id][2]</code></td>
+                  </tr>
+                  <tr>
+                    <td>曲柄相位(sin/cos)</td>
+                    <td>8</td>
+                    <td><code>mdp.crank_angles_deg</code></td>
+                    <td><code>np.sin/cos(data.qpos)</code></td>
+                  </tr>
+                  <tr>
+                    <td>驱动关节速度</td>
+                    <td>4</td>
+                    <td><code>mdp.joint_vel</code></td>
+                    <td><code>data.qvel[joint_cache]</code></td>
+                  </tr>
+                  <tr>
+                    <td>足端高度估计</td>
+                    <td>1</td>
+                    <td><code>(自定义函数)</code></td>
+                    <td><code>_estimate_foot_height_mm</code></td>
+                  </tr>
+                  <tr>
+                    <td>俯仰/推杆关节状态</td>
+                    <td>4</td>
+                    <td><code>mdp.joint_pos_rel</code></td>
+                    <td><code>data.qpos, data.qvel</code></td>
+                  </tr>
+                  <tr>
+                    <td>高度扫描</td>
+                    <td>400</td>
+                    <td><code>mdp.height_scan</code></td>
+                    <td><code>mujoco.mj_ray</code></td>
+                  </tr>
+                  <tr>
+                    <td>上一时刻动作</td>
+                    <td>6</td>
+                    <td><code>mdp.last_action</code></td>
+                    <td><code>last_actions (缓存)</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="warning-box">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div>
+                <strong>常见错误</strong>
+                <p>容易出错的地方：(1) 忘记对关节进行标准化处理; (2) 高度扫描计算错误(通常需要进行ray casting); (3) 忽略了坐标系变换; (4) 关节顺序错误。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: 观测迁移示例 -->
+        <section id="obs-example" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-arrow-right"></i> 3. 观测迁移示例</h2>
+          </div>
+
+          <div class="content-card">
+            <h3>实际代码示例</h3>
+            <p>下面是一个具体的观测迁移示例，展示如何在Mujoco中重现IsaacLab的观测计算：</p>
+
+            <div class="code-example">
+              <div class="code-header">
+                <span>Mujoco观测计算示例</span>
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <i class="fas fa-copy"></i> 复制
+                </button>
+              </div>
+              <pre><code class="language-python">import numpy as np
+import mujoco
+from typing import Dict
+
+class Sim2SimObservationBuilder:
+    def __init__(self, model: mujoco.MjModel, data: mujoco.MjData):
+        self.model = model
+        self.data = data
+
+        # 从IsaacLab训练日志中提取
+        self.obs_mean = np.array([...])  # 观测均值
+        self.obs_std = np.array([...])   # 观测标准差
+
+        # 关节映射
+        self.joint_map = {
+            'left_hip': 0,
+            'left_knee': 1,
+            'right_hip': 2,
+            'right_knee': 3,
+        }
+
+    def get_observation(self) -> np.ndarray:
+        """获取并标准化观测向量"""
+        obs = []
+
+        # 1. 投影重力 (3)
+        base_rot = self.data.xmat[self.base_body_id].reshape(3, 3)
+        gravity_world = np.array([0, 0, -9.81])
+        projected_gravity = base_rot.T @ gravity_world
+        obs.append(projected_gravity)
+
+        # 2. 底盘速度 (6)
+        base_cvel = self.data.cvel[self.base_body_id]
+        obs.append(base_cvel)
+
+        # 3. 底盘高度 (1)
+        base_height = self.data.xpos[self.base_body_id, 2]
+        obs.append([base_height])
+
+        # 4. 曲柄相位 sin/cos (8)
+        joint_pos = self.data.qpos[self.joint_indices]
+        obs.append(np.sin(joint_pos))
+        obs.append(np.cos(joint_pos))
+
+        # 5. 驱动关节速度 (4)
+        joint_vel = self.data.qvel[self.joint_indices]
+        obs.append(joint_vel)
+
+        # ... 其他观测项 ...
+
+        # 连接所有观测
+        obs_vec = np.concatenate(obs)
+
+        # 标准化
+        obs_vec = (obs_vec - self.obs_mean) / (self.obs_std + 1e-8)
+
+        return obs_vec</code></pre>
+            </div>
+
+            <h3>关键注意事项</h3>
+            <div class="highlight-box">
+              <i class="fas fa-lightbulb"></i>
+              <p><strong>标准化是关键：</strong> IsaacLab在训练时对观测进行标准化。必须在部署时应用相同的均值和标准差，否则网络会因输入分布不匹配而失效。这些值通常保存在训练日志的config文件中。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: 时间步参数同步 -->
+        <section id="timing" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-clock"></i> 4. 时间步参数同步</h2>
+          </div>
+
+          <div class="content-card">
+            <h3>时间步参数的重要性</h3>
+            <p>强化学习策略在训练时对时间步长有隐含的假设。改变时间参数会改变策略"看到"的动态特性，影响控制效果。</p>
+
+            <h3>关键参数对比</h3>
+            <div class="timing-table-wrapper">
+              <table class="timing-table">
+                <thead>
+                  <tr>
+                    <th>参数</th>
+                    <th class="isaac-col">IsaacLab</th>
+                    <th class="mujoco-col">Mujoco</th>
+                    <th>说明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>物理步长</strong></td>
+                    <td><code>sim.dt</code></td>
+                    <td><code>model.opt.timestep</code></td>
+                    <td>物理引擎单次积分的时间间隔，通常为0.005s</td>
+                  </tr>
+                  <tr>
+                    <td><strong>降采样/抽取</strong></td>
+                    <td><code>decimation</code></td>
+                    <td><code>policy_update_interval</code></td>
+                    <td>策略更新之前执行多少个物理步</td>
+                  </tr>
+                  <tr>
+                    <td><strong>控制步长</strong></td>
+                    <td><code>sim.dt × decimation</code></td>
+                    <td><code>timestep × interval</code></td>
+                    <td>策略更新之间的实际时间间隔</td>
+                  </tr>
+                  <tr>
+                    <td><strong>控制频率</strong></td>
+                    <td><code>1 / control_dt</code></td>
+                    <td><code>1 / control_dt</code></td>
+                    <td>策略发送指令的频率(Hz)，两边必须一致！</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3>参数同步检查清单</h3>
+            <div class="checklist">
+              <div class="checklist-item">
+                <input type="checkbox" id="check1" disabled>
+                <label for="check1">确认IsaacLab中的<code>sim.dt</code>值</label>
+              </div>
+              <div class="checklist-item">
+                <input type="checkbox" id="check2" disabled>
+                <label for="check2">确认IsaacLab中的<code>decimation</code>值，计算控制频率</label>
+              </div>
+              <div class="checklist-item">
+                <input type="checkbox" id="check3" disabled>
+                <label for="check3">在Mujoco中设置<code>model.opt.timestep</code>匹配IsaacLab的<code>sim.dt</code></label>
+              </div>
+              <div class="checklist-item">
+                <input type="checkbox" id="check4" disabled>
+                <label for="check4">在Mujoco中设置<code>policy_update_interval</code>使得控制频率一致</label>
+              </div>
+              <div class="checklist-item">
+                <input type="checkbox" id="check5" disabled>
+                <label for="check5">验证：<code>1/(dt_isaac × decimation) ≈ 1/(dt_mujoco × interval)</code></label>
+              </div>
+            </div>
+
+            <div class="success-box">
+              <i class="fas fa-check-circle"></i>
+              <div>
+                <strong>经验数值</strong>
+                <p>大多数人形机器人使用 <code>dt = 0.005s, decimation = 2</code>，对应50Hz的控制频率。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: 抖动问题分析 -->
+        <section id="jitter" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-bolt"></i> 5. 抖动问题分析</h2>
+          </div>
+
+          <div class="content-card">
+            <h3>什么是抖动？</h3>
+            <p>抖动(Jitter)是指在部署时机器人四肢出现的高频、不稳定的抖动现象。这通常表现为：关节快速振荡、动作不平滑、控制不稳定等。抖动是Sim2Sim迁移中最常见的问题。</p>
+
+            <h3>常见原因及诊断</h3>
+            <div class="jitter-issues">
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-error"></i>
+                  <h4>观测标准化缺失/错误</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 行为完全错乱，策略无法工作</p>
+                  <p><strong>诊断：</strong> 检查是否加载了训练时的mean和std</p>
+                  <p><strong>解决方案：</strong> 从训练日志提取obs_mean和obs_std并应用</p>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-error"></i>
+                  <h4>控制频率不匹配</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 动作延迟、响应不及时、策略跟不上动态变化</p>
+                  <p><strong>诊断：</strong> 对比训练和部署的 <code>1/(dt×decimation)</code></p>
+                  <p><strong>解决方案：</strong> 调整timestep和policy_update_interval</p>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-warning"></i>
+                  <h4>执行器参数不匹配</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 关节响应弱、无法精确跟踪目标</p>
+                  <p><strong>诊断：</strong> 检查action_scale、kp、kd参数</p>
+                  <p><strong>解决方案：</strong> 在Mujoco XML中匹配IsaacLab的执行器配置</p>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-warning"></i>
+                  <h4>关节顺序错误</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 动作错位、控制效果完全反向或混乱</p>
+                  <p><strong>诊断：</strong> 打印并对比关节名称映射</p>
+                  <p><strong>解决方案：</strong> 创建并验证JOINT_NAME_MAP</p>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-info"></i>
+                  <h4>高频噪声与探索伪影</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 静止时持续微弱抖动，整体动作有轻微不平滑</p>
+                  <p><strong>诊断：</strong> 策略在训练时添加了探索噪声(epsilon-greedy或高斯噪声)</p>
+                  <p><strong>解决方案：</strong> 添加低通滤波器或减少动作率惩罚</p>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header">
+                  <i class="fas fa-circle severity-info"></i>
+                  <h4>物理参数差异</h4>
+                </div>
+                <div class="issue-body">
+                  <p><strong>症状：</strong> 整体动作缓慢或加快、稳定性变化</p>
+                  <p><strong>诊断：</strong> 质量、惯性、摩擦系数差异</p>
+                  <p><strong>解决方案：</strong> 训练时使用域随机化(Domain Randomization)</p>
+                </div>
+              </div>
+            </div>
+
+            <h3>调试步骤</h3>
+            <div class="debug-steps">
+              <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <strong>验证观测</strong>
+                  <p>在部署前，打印并检查观测向量的值。与训练时的观测分布进行对比。</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <strong>检查动作输出</strong>
+                  <p>打印网络输出的动作值。检查是否在预期范围内[-1, 1]或其他标度。</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <strong>监视关节状态</strong>
+                  <p>记录关节位置、速度和加速度。识别哪个关节抖动最严重。</p>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                  <strong>隔离问题</strong>
+                  <p>逐一禁用或调整参数，确定是哪个方面导致问题。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6: 常见问题FAQ -->
+        <section id="faq" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-question-circle"></i> 6. 常见问题FAQ</h2>
+          </div>
+
+          <div class="content-card">
+            <div class="faq-list">
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>我的网络输入是否需要完全匹配IsaacLab？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>是的，神经网络权重是针对特定的输入结构优化的。观测维度、顺序和计算方式都必须一致。即使只是改变观测的一个小细节，也可能导致策略性能大幅下降。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>如果我不知道训练时的obs_mean和obs_std怎么办？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>检查IsaacLab的训练日志目录，通常在config.yaml或checkpoints中保存。如果找不到，可以在IsaacLab中运行模型以收集观测统计信息。作为最后的手段，可以尝试不进行标准化(即直接使用原始观测)，但这通常不会工作。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>控制频率差1Hz会有显著影响吗？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>通常会有显著影响。如果策略是在50Hz训练的，部署时如果实际频率是45Hz或55Hz，性能会明显下降。这是因为网络的循环单元(如LSTM)对时间间隔很敏感。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>如何处理IsaacLab中有而Mujoco中没有的观测？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>有几个选项：(1) 在Mujoco中用其他方式计算该观测; (2) 使用零向量或恒定值替代; (3) 训练一个新的网络适配Mujoco。通常情况1最可行。例如，如果IsaacLab有接触力但Mujoco没有，可以用关节加速度来近似。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>为什么机器人在IsaacLab中完美，在Mujoco中却持续抖动？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>这是最常见的问题。可能的原因：(1) 观测标准化未应用; (2) 物理参数(质量、摩擦)不匹配; (3) 执行器模型差异(PD控制器参数); (4) 数值积分误差(IsaacGym使用GPU并行，Mujoco使用CPU串行)。建议逐一检查。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>能否使用Domain Randomization来提高Sim2Sim鲁棒性？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>可以。在训练阶段对物理参数(质量、摩擦、阻尼)进行随机化，可以让策略对环境差异更加鲁棒。但这是一个预防性措施，不能完全解决观测或参数不匹配的问题。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>我应该使用循环网络(LSTM)还是前馈网络？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>这取决于任务。前馈网络对时间步长的敏感性较低，但循环网络可以更好地利用历史信息。如果你的策略使用LSTM，时间参数同步就变得更加关键。建议先用前馈网络进行Sim2Sim验证，然后再引入LSTM。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 7: 总结与建议 -->
+        <section id="summary" class="sim2sim-section">
+          <div class="section-header">
+            <h2><i class="fas fa-check-circle"></i> 7. 总结与建议</h2>
+          </div>
+
+          <div class="content-card">
+            <h3>关键要点总结</h3>
+            <div class="summary-boxes">
+              <div class="summary-box">
+                <div class="box-icon"><i class="fas fa-eye"></i></div>
+                <h4>观测对齐是基础</h4>
+                <p>Sim2Sim迁移的成功与否首先取决于观测是否完全对齐。维度、顺序、计算方式和标准化参数都必须一致。这是最容易出错但也是最容易检查的方面。</p>
+              </div>
+
+              <div class="summary-box">
+                <div class="box-icon"><i class="fas fa-hourglass-half"></i></div>
+                <h4>时间参数要精确</h4>
+                <p>控制频率的任何偏差都会影响策略性能。确保IsaacLab和Mujoco的控制周期完全相同，这是部署成功的必要条件。</p>
+              </div>
+
+              <div class="summary-box">
+                <div class="box-icon"><i class="fas fa-tools"></i></div>
+                <h4>系统地调试问题</h4>
+                <p>当出现抖动等问题时，不要盲目调试。先验证观测，再检查时间参数，最后检查物理参数。逐一排除可能的原因。</p>
+              </div>
+
+              <div class="summary-box">
+                <div class="box-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h4>设计时要考虑迁移</h4>
+                <p>如果预期策略需要跨仿真器部署，在训练设计中就应该考虑这一点。例如使用Domain Randomization、保存完整的配置信息、避免依赖模拟器特定的观测。</p>
+              </div>
+            </div>
+
+            <h3>Sim2Sim迁移检查清单</h3>
+            <div class="final-checklist">
+              <h4><i class="fas fa-list-check"></i> 准备阶段</h4>
+              <ul>
+                <li class="checklist-ready">收集IsaacLab训练的完整配置(sim.dt, decimation, 网络结构等)</li>
+                <li class="checklist-ready">获取obs_mean, obs_std, 模型权重文件</li>
+                <li class="checklist-ready">文档化IsaacLab中的每个观测项如何计算</li>
+                <li class="checklist-ready">准备Mujoco XML模型文件</li>
+              </ul>
+
+              <h4><i class="fas fa-list-check"></i> 观测对齐阶段</h4>
+              <ul>
+                <li class="checklist-ready">逐个实现IsaacLab的观测计算函数</li>
+                <li class="checklist-ready">对比观测向量的维度和顺序</li>
+                <li class="checklist-ready">应用正确的标准化参数</li>
+                <li class="checklist-ready">编写单元测试验证观测计算正确性</li>
+              </ul>
+
+              <h4><i class="fas fa-list-check"></i> 参数同步阶段</h4>
+              <ul>
+                <li class="checklist-ready">设置Mujoco timestep = IsaacLab sim.dt</li>
+                <li class="checklist-ready">设置policy_update_interval使控制频率一致</li>
+                <li class="checklist-ready">验证执行器参数(PD系数、力矩限制)相同</li>
+                <li class="checklist-ready">检查关节映射正确</li>
+              </ul>
+
+              <h4><i class="fas fa-list-check"></i> 部署和调试阶段</h4>
+              <ul>
+                <li class="checklist-ready">在静止或简单场景下测试</li>
+                <li class="checklist-ready">打印观测和动作，检查数值合理性</li>
+                <li class="checklist-ready">如出现问题，按照调试步骤逐一排查</li>
+                <li class="checklist-ready">必要时调整执行器参数或添加滤波器</li>
+              </ul>
+            </div>
+
+            <h3>推荐阅读</h3>
+            <ul class="reference-list">
+              <li><a href="https://isaac-sim.github.io/IsaacLab/" target="_blank">IsaacLab官方文档</a></li>
+              <li><a href="https://mujoco.readthedocs.io/" target="_blank">Mujoco官方文档</a></li>
+              <li><a href="https://github.com/roboterax/humanoid-gym" target="_blank">Humanoid-Gym项目 - 成功的Sim2Sim案例</a></li>
+            </ul>
+
+            <div class="closing-box">
+              <i class="fas fa-lightbulb"></i>
+              <p><strong>最后建议：</strong>成功的Sim2Sim迁移需要耐心和系统性。虽然听起来很复杂，但只要你理解了核心原理(观测对齐 + 参数同步)，大多数问题都可以解决。祝你的项目顺利！</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ========== 页面整体布局 ========== */
+.sim2sim-page {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.sim2sim-nav-container {
+  display: flex;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 60px);
+}
+
+/* ========== 侧边栏 ========== */
+.sim2sim-sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  width: 260px;
+  height: calc(100vh - 60px);
+  background: var(--bg-glass);
+  border-right: 1px solid rgba(0, 212, 255, 0.1);
+  overflow-y: auto;
+  padding: 2rem 0;
+  z-index: 20;
+}
+
+.sidebar-header {
+  padding: 0 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-header h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-link:hover {
+  color: var(--primary-color);
+  background: rgba(0, 212, 255, 0.05);
+  border-left-color: var(--primary-color);
+}
+
+.toc-link.active {
+  color: var(--primary-color);
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+.toc-link i {
+  width: 1.2rem;
+  text-align: center;
+}
+
+.sidebar-references {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.sidebar-references h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.sidebar-references ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.sidebar-references li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-references a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.sidebar-references a:hover {
+  color: var(--primary-color);
+}
+
+/* ========== 主要内容区 ========== */
+.sim2sim-content {
+  margin-left: 260px;
+  flex: 1;
+}
+
+.sim2sim-hero {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.hero-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-content p:nth-of-type(1) {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.hero-desc {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.highlight-blue {
+  color: var(--primary-color);
+}
+
+.highlight-green {
+  color: var(--accent-color);
+}
+
+/* ========== 内容区域 ========== */
+.sim2sim-sections {
+  padding: 3rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.sim2sim-section {
+  margin-bottom: 4rem;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+}
+
+.section-header h2 i {
+  color: var(--primary-color);
+}
+
+/* ========== 内容卡片 ========== */
+.content-card {
+  background: var(--bg-glass);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.content-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.content-card h3:first-child {
+  margin-top: 0;
+}
+
+.content-card p {
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+/* ========== 挑战列表 ========== */
+.challenge-list {
+  display: grid;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.challenge-item {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border-left: 3px solid var(--primary-color);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.challenge-item:hover {
+  background: rgba(0, 212, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.challenge-item i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.challenge-item h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.challenge-item p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ========== 信息框 ========== */
+.info-box,
+.success-box,
+.warning-box,
+.highlight-box,
+.closing-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid;
+}
+
+.info-box {
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+.info-box i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.success-box {
+  background: rgba(16, 185, 129, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.success-box i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+}
+
+.warning-box {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--warning-color);
+}
+
+.warning-box i {
+  color: var(--warning-color);
+  font-size: 1.2rem;
+}
+
+.highlight-box {
+  background: rgba(124, 58, 237, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.highlight-box i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+}
+
+.closing-box {
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--primary-color);
+  text-align: center;
+}
+
+.closing-box i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+/* ========== 表格 ========== */
+.observation-table-wrapper,
+.timing-table-wrapper {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.obs-table,
+.timing-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.obs-table thead,
+.timing-table thead {
+  border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+}
+
+.obs-table th,
+.timing-table th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.isaac-col {
+  color: var(--primary-color);
+}
+
+.mujoco-col {
+  color: var(--accent-color);
+}
+
+.dim-col {
+  text-align: center;
+}
+
+.obs-table td,
+.timing-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.obs-table tbody tr:hover,
+.timing-table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.obs-table code,
+.timing-table code {
+  background: rgba(0, 212, 255, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+/* ========== 两列布局 ========== */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.column h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.column h4 i {
+  margin-right: 0.5rem;
+  color: var(--primary-color);
+}
+
+.column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.column li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.column li:before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--primary-color);
+}
+
+/* ========== 代码示例 ========== */
+.code-example {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.code-header .copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.code-header .copy-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.code-example pre {
+  margin: 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.code-example code {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ========== 检查清单 ========== */
+.checklist {
+  margin: 1.5rem 0;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+
+.checklist-item input {
+  cursor: pointer;
+}
+
+.checklist-item label {
+  cursor: pointer;
+  flex: 1;
+  margin: 0;
+}
+
+.checklist-item code {
+  background: rgba(0, 212, 255, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* ========== 抖动问题卡片 ========== */
+.jitter-issues {
+  display: grid;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.issue-card {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.issue-header i {
+  font-size: 0.8rem;
+}
+
+.severity-error {
+  color: #ef4444;
+}
+
+.severity-warning {
+  color: #f59e0b;
+}
+
+.severity-info {
+  color: var(--primary-color);
+}
+
+.issue-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.issue-body {
+  padding: 1.5rem;
+}
+
+.issue-body p {
+  margin-bottom: 0.75rem;
+}
+
+.issue-body p:last-child {
+  margin-bottom: 0;
+}
+
+.issue-body strong {
+  color: var(--text-primary);
+}
+
+/* ========== 调试步骤 ========== */
+.debug-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.step {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-color);
+  color: var(--bg-primary);
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.step-content strong {
+  color: var(--text-primary);
+}
+
+.step-content p {
+  margin: 0.5rem 0 0 0;
+}
+
+/* ========== FAQ ========== */
+.faq-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.faq-item {
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.faq-question:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.faq-question i {
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+}
+
+.faq-question.active i {
+  transform: rotate(90deg);
+}
+
+.faq-answer {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  line-height: 1.8;
+}
+
+/* ========== 总结框 ========== */
+.summary-boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.summary-box {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.summary-box:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 212, 255, 0.1);
+}
+
+.box-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.summary-box h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.summary-box p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ========== 最终检查清单 ========== */
+.final-checklist {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 1.5rem 0;
+}
+
+.final-checklist h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.final-checklist h4:first-child {
+  margin-top: 0;
+}
+
+.final-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.final-checklist li {
+  padding: 0.75rem 0;
+  padding-left: 2rem;
+  position: relative;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.final-checklist li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.reference-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.reference-list li {
+  padding: 0.5rem 0;
+}
+
+.reference-list a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.reference-list a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 1024px) {
+  .sim2sim-sidebar {
+    width: 220px;
+  }
+
+  .sim2sim-content {
+    margin-left: 220px;
+  }
+
+  .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .debug-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-boxes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .sim2sim-sidebar {
+    position: absolute;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 40;
+  }
+
+  .sim2sim-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sim2sim-content {
+    margin-left: 0;
+  }
+
+  .sim2sim-sections {
+    padding: 1.5rem 1rem;
+  }
+
+  .content-card {
+    padding: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .hero-content h2 {
+    font-size: 2rem;
+  }
+
+  .summary-boxes {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+
+<script>
+// TOC 链接激活
+document.addEventListener('DOMContentLoaded', function() {
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('.sim2sim-section');
+
+  window.addEventListener('scroll', () => {
+    let currentSection = '';
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 100;
+      if (window.pageYOffset >= sectionTop) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href').slice(1) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  });
+});
+
+// FAQ 开关
+function toggleFAQ(button) {
+  const answer = button.nextElementSibling;
+  const isVisible = answer.style.display !== 'none';
+
+  answer.style.display = isVisible ? 'none' : 'block';
+  button.classList.toggle('active', !isVisible);
+}
+
+// 代码复制功能
+function copyCode(button) {
+  const codeBlock = button.closest('.code-example');
+  const code = codeBlock.querySelector('code').textContent;
+
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+    setTimeout(() => {
+      button.innerHTML = originalText;
+    }, 2000);
+  });
+}
+
+// 平滑滚动
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  });
+});
+</script>
