@@ -1,0 +1,1610 @@
+---
+layout: default
+title: Isaac Sim vs MuJoCo - 深度对比分析 - 知识库
+permalink: /isaac-sim-vs-mujoco/
+---
+
+<div class="isaac-sim-page">
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">NVIDIA 4000美元的Isaac Sim<br/>vs 免费的MuJoCo</h1>
+      <p class="page-subtitle">一场没人预见的仿真战争</p>
+      <p class="page-tagline">GPU算力 vs 物理精度 — 6个月测试的真相</p>
+    </div>
+  </div>
+
+  <!-- 导航面板 -->
+  <div class="isaac-nav-container">
+    <nav class="isaac-sidebar">
+      <div class="sidebar-header">
+        <h3>章节导航</h3>
+      </div>
+      <ul class="toc-list">
+        <li><a href="#tldr" class="toc-link" data-section="tldr">
+          <i class="fas fa-bolt"></i> TL;DR
+        </a></li>
+        <li><a href="#hardware-cost" class="toc-link" data-section="hardware-cost">
+          <i class="fas fa-dollar-sign"></i> 硬件成本
+        </a></li>
+        <li><a href="#why-matters" class="toc-link" data-section="why-matters">
+          <i class="fas fa-question"></i> 为什么重要
+        </a></li>
+        <li><a href="#technical-compare" class="toc-link" data-section="technical-compare">
+          <i class="fas fa-code"></i> 技术对比
+        </a></li>
+        <li><a href="#mujoco-details" class="toc-link" data-section="mujoco-details">
+          <i class="fas fa-box"></i> MuJoCo
+        </a></li>
+        <li><a href="#isaac-details" class="toc-link" data-section="isaac-details">
+          <i class="fas fa-rocket"></i> Isaac Sim
+        </a></li>
+        <li><a href="#benchmarks" class="toc-link" data-section="benchmarks">
+          <i class="fas fa-chart-bar"></i> 性能基准
+        </a></li>
+        <li><a href="#why-isaac-sim" class="toc-link" data-section="why-isaac-sim">
+          <i class="fas fa-star"></i> 为什么选Isaac
+        </a></li>
+        <li><a href="#limitations" class="toc-link" data-section="limitations">
+          <i class="fas fa-exclamation-triangle"></i> 局限性
+        </a></li>
+        <li><a href="#how-to-choose" class="toc-link" data-section="how-to-choose">
+          <i class="fas fa-balance-scale"></i> 选择指南
+        </a></li>
+        <li><a href="#newton-engine" class="toc-link" data-section="newton-engine">
+          <i class="fas fa-crown"></i> Newton引擎
+        </a></li>
+        <li><a href="#installation-guide" class="toc-link" data-section="installation-guide">
+          <i class="fas fa-download"></i> 安装指南
+        </a></li>
+        <li><a href="#conclusion" class="toc-link" data-section="conclusion">
+          <i class="fas fa-flag-checkered"></i> 结论
+        </a></li>
+        <li><a href="#faq" class="toc-link" data-section="faq">
+          <i class="fas fa-question-circle"></i> FAQ
+        </a></li>
+      </ul>
+
+      <div class="sidebar-references">
+        <h4>参考资源</h4>
+        <ul>
+          <li><a href="https://isaac-sim.github.io/IsaacLab/" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> Isaac Lab官方文档
+          </a></li>
+          <li><a href="https://mujoco.readthedocs.io/" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-external-link-alt"></i> MuJoCo官方文档
+          </a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="isaac-content">
+      <!-- 英雄部分 -->
+      <section class="isaac-hero">
+        <div class="hero-content">
+          <h2>从<span class="highlight-isaac">Isaac Sim</span>到<span class="highlight-mujoco">MuJoCo</span></h2>
+          <p>机器人仿真平台完全对比分析</p>
+          <p class="hero-desc">深入探讨NVIDIA Isaac Lab和Google DeepMind MuJoCo的完整对比，包括性能基准、成本分析、技术架构以及在不同场景下的最优选择。基于6个月的实际测试和部署经验。</p>
+        </div>
+      </section>
+
+      <!-- 内容区域 -->
+      <div class="isaac-sections">
+
+        <!-- Section: TL;DR -->
+        <section id="tldr" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-bolt"></i> TL;DR — 关键性能数据</h2>
+          </div>
+          <div class="content-card">
+            <div class="highlight-box">
+              <i class="fas fa-info-circle"></i>
+              <div>
+                <strong>快速对比</strong>
+                <p>Isaac Sim/Lab：82,000–94,000 FPS，支持4,096个并行环境</p>
+                <p>MuJoCo MJX：8芯片TPU v5上270万步/秒；Apple M3 Max上65万步/秒</p>
+                <p>Sim-to-real成功率：两个平台都达84%–93%</p>
+              </div>
+            </div>
+            <p><strong>关键发现：</strong></p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>单环境物理仿真中，Isaac Sim的开销比MuJoCo高出多达20倍</li>
+              <li>大规模并行训练时，Isaac Sim的优势明显（4分钟 vs 3天14小时）</li>
+              <li>Newton引擎承诺在RTX 4090上实现152倍locomotion加速，313倍manipulation加速</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Section: 硬件成本 -->
+        <section id="hardware-cost" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-dollar-sign"></i> GPU硬件成本：RTX 4090对机器人仿真值得吗？</h2>
+          </div>
+          <div class="content-card">
+            <h3>实际测试对比</h3>
+            <p><strong>第一次尝试：</strong> RTX 4090工作站（市场价2000-2500美元），128GB内存，Isaac Sim 4.5，4096个并行环境。<strong style="color: #00D4FF;">训练至稳定行走的时间：4分23秒</strong></p>
+            <p><strong>第二次尝试：</strong> 2019年MacBook Pro，MuJoCo 3.3，单线程CPU，256个环境。<strong style="color: #10B981;">训练时间：3天14小时</strong></p>
+            <p>两个策略都成功迁移到了Unitree G1机器人。都能工作。但时间相差1000倍。</p>
+            
+            <div class="info-box">
+              <i class="fas fa-lightbulb"></i>
+              <div>
+                <strong>关键问题</strong>
+                <p>正确的问题不是哪个仿真器更好，而是<strong>哪个仿真器匹配你的硬件、时间表、预算，以及你在凌晨2点调试CUDA错误的容忍度</strong>。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: 为什么重要 -->
+        <section id="why-matters" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-question"></i> 为什么最佳仿真器取决于使用场景</h2>
+          </div>
+          <div class="content-card">
+            <h3>学术 vs 工业的差异</h3>
+            <p>MuJoCo的原始论文被引用5,329次，是"最广泛使用的仿真器"。但在2025年的机器人公司中 — Figure AI、1X Technologies、Agility Robotics、Sanctuary AI — 你会看到<strong>每个屏幕上都在运行Isaac Sim</strong>。</p>
+            
+            <div class="warning-box">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div>
+                <strong>观察</strong>
+                <p>被引用最多的仿真器不是工业界使用最多的仿真器。学术黄金标准不是部署标准。</p>
+              </div>
+            </div>
+
+            <h3>历史背景</h3>
+            <p>答案始于<strong>2021年10月</strong>：Google DeepMind收购了MuJoCo。九年来，MuJoCo是年费500美元的专有引擎，这就是为什么每个RL基准都基于MuJoCo。</p>
+            <p>然后DeepMind开源了它。NVIDIA看到了机会：<strong>如果物理仿真和神经网络训练在同一GPU上运行呢？</strong>Isaac Lab应运而生。</p>
+          </div>
+        </section>
+
+        <!-- Section: 技术对比 -->
+        <section id="technical-compare" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-code"></i> Isaac Sim vs MuJoCo：完整技术对比</h2>
+          </div>
+
+          <!-- MuJoCo 细节 -->
+          <div id="mujoco-details" class="content-card">
+            <h3><i class="fas fa-box"></i> MuJoCo：物理纯粹主义者</h3>
+            <p><strong>理念：</strong> 首先正确模拟物理。速度其次。其他一切第三。</p>
+            <p>MuJoCo — Multi-Joint dynamics with Contact — 由Emanuel Todorov为生物力学和机器人研究创建。作为二阶连续时间仿真器实现完整的运动方程，不做任何妥协物理精度的捷径。</p>
+            
+            <h4>核心优势</h4>
+            <table class="comparison-table">
+              <tr>
+                <th>指标</th>
+                <th>数值</th>
+                <th>背景</th>
+              </tr>
+              <tr>
+                <td>单线程速度</td>
+                <td>~30,000 步/秒</td>
+                <td>27自由度人形机器人，~150倍实时</td>
+              </tr>
+              <tr>
+                <td>物理精度</td>
+                <td>最佳线性稳定性</td>
+                <td>IEEE对比研究，2023</td>
+              </tr>
+              <tr>
+                <td>安装</td>
+                <td><code>pip install mujoco</code></td>
+                <td>30秒到第一次仿真</td>
+              </tr>
+              <tr>
+                <td>内存占用</td>
+                <td>~50MB</td>
+                <td>可在嵌入式系统上运行</td>
+              </tr>
+              <tr>
+                <td>生态系统</td>
+                <td>dm_control, Gymnasium, Brax</td>
+                <td>所有主流RL框架</td>
+              </tr>
+            </table>
+
+            <h4>MJX革命 — GPU/TPU加速</h4>
+            <p>从3.0版本开始，MuJoCo包含MJX — 一个可在GPU和TPU上运行的JAX重实现。性能数据：</p>
+            <table class="comparison-table">
+              <tr>
+                <th>硬件</th>
+                <th>步数/秒</th>
+                <th>批量大小</th>
+              </tr>
+              <tr>
+                <td>Apple M3 Max (CPU)</td>
+                <td>650,000</td>
+                <td>单个人形机器人</td>
+              </tr>
+              <tr>
+                <td>64核AMD 3995WX</td>
+                <td>1,800,000</td>
+                <td>批处理</td>
+              </tr>
+              <tr>
+                <td>NVIDIA A100 GPU</td>
+                <td>950,000</td>
+                <td>8,192环境</td>
+              </tr>
+              <tr>
+                <td>8芯片TPU v5</td>
+                <td style="color: #10B981; font-weight: bold;">2,700,000</td>
+                <td style="color: #10B981; font-weight: bold;">16,384环境</td>
+              </tr>
+            </table>
+
+            <h4>MuJoCo示例代码</h4>
+            <div class="code-example">
+              <div class="code-header">
+                <span>MuJoCo：10行代码实现第一次仿真</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i> 复制</button>
+              </div>
+              <pre><code class="language-python">import mujoco
+import gymnasium as gym
+
+env = gym.make("Humanoid-v4", render_mode="human")
+obs, info = env.reset()
+for _ in range(1000):
+    action = env.action_space.sample()
+    obs, reward, terminated, truncated, info = env.step(action)
+    if terminated or truncated:
+        obs, info = env.reset()</code></pre>
+            </div>
+            <p><strong>到工作代码的时间：</strong>5分钟以内。30秒安装。一分钟内运行。</p>
+          </div>
+
+          <!-- Isaac Sim 细节 -->
+          <div id="isaac-details" class="content-card">
+            <h3><i class="fas fa-rocket"></i> Isaac Sim：GPU极端主义者</h3>
+            <p><strong>理念：</strong> 并行化解决一切。如果你没有运行4,096个环境，你就是在浪费硅片。</p>
+            <p>Isaac Sim是NVIDIA押注机器人未来是GPU原生的。基于Omniverse和OpenUSD构建，为一件事而设计：<strong>带有照片级真实渲染的大规模并行仿真</strong>。</p>
+            
+            <h4>核心优势</h4>
+            <table class="comparison-table">
+              <tr>
+                <th>指标</th>
+                <th>数值</th>
+                <th>背景</th>
+              </tr>
+              <tr>
+                <td>并行环境数</td>
+                <td>4,096-10,000+</td>
+                <td>单GPU</td>
+              </tr>
+              <tr>
+                <td>训练FPS</td>
+                <td>85,000-100,000</td>
+                <td>配合RL Games/RSL-RL</td>
+              </tr>
+              <tr>
+                <td>渲染</td>
+                <td>RTX光线追踪</td>
+                <td>照片级真实RGB/深度</td>
+              </tr>
+              <tr>
+                <td>Sim-to-real</td>
+                <td>内置域随机化工具</td>
+                <td>大规模域随机化</td>
+              </tr>
+              <tr>
+                <td>生态系统</td>
+                <td>Isaac Lab, GR00T, Cosmos</td>
+                <td>完整NVIDIA栈</td>
+              </tr>
+            </table>
+
+            <h4>训练速度的本质差异</h4>
+            <p>OpenAI 2019年的手内立方体操控需要：</p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>数月连续训练</li>
+              <li>920个worker（29,440个CPU核心）</li>
+              <li>64个V100 GPU</li>
+              <li>MuJoCo作为物理后端</li>
+            </ul>
+            <p>Isaac Gym在Shadow Hand任务上实现了类似结果：</p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>35分钟到1小时（取决于域随机化）</li>
+              <li>单个A100 GPU</li>
+              <li>零CPU参与</li>
+            </ul>
+            <p><strong style="color: #00D4FF;">这不是2倍改进。这是实际训练时间50倍的改进。</strong></p>
+
+            <h4>Isaac Lab示例代码</h4>
+            <div class="code-example">
+              <div class="code-header">
+                <span>Isaac Lab：GPU原生训练</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i> 复制</button>
+              </div>
+              <pre><code class="language-python">from omni.isaac.lab.envs import ManagerBasedRLEnv
+
+# 4096个环境，全在GPU上
+env = ManagerBasedRLEnv(cfg=env_cfg, num_envs=4096)
+
+# 张量永不离开GPU
+obs = env.reset()
+for _ in range(10000):
+    actions = policy(obs)  # PyTorch在同一GPU上
+    obs, rewards, dones, infos = env.step(actions)</code></pre>
+            </div>
+            <p><strong>关键差异：</strong> 这些张量永远不接触CPU内存。从观测到动作到奖励，一切都在GPU上。</p>
+          </div>
+        </section>
+
+        <!-- Section: 性能基准 -->
+        <section id="benchmarks" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-chart-bar"></i> 性能基准：Isaac Lab vs MuJoCo MJX</h2>
+          </div>
+          <div class="content-card">
+            <h3>速度对比</h3>
+            <table class="comparison-table">
+              <tr>
+                <th>场景</th>
+                <th>MuJoCo (CPU)</th>
+                <th>MuJoCo MJX (GPU)</th>
+                <th>MuJoCo MJX (TPU)</th>
+                <th>Isaac Lab (GPU)</th>
+                <th>胜者</th>
+              </tr>
+              <tr>
+                <td>单环境27自由度人形</td>
+                <td>30K步/秒</td>
+                <td>N/A (开销)</td>
+                <td>N/A</td>
+                <td>~1.5K步/秒</td>
+                <td><strong>MuJoCo</strong></td>
+              </tr>
+              <tr>
+                <td>256并行环境</td>
+                <td>~120K步/秒</td>
+                <td>~400K步/秒</td>
+                <td>~800K步/秒</td>
+                <td>~60K FPS</td>
+                <td>MuJoCo MJX</td>
+              </tr>
+              <tr>
+                <td>4,096并行环境</td>
+                <td>有限</td>
+                <td>950K步/秒</td>
+                <td>2.7M步/秒</td>
+                <td>85-95K FPS</td>
+                <td><strong>MuJoCo MJX (TPU)</strong></td>
+              </tr>
+              <tr>
+                <td>人形训练至收敛</td>
+                <td>天</td>
+                <td>小时</td>
+                <td>~1小时</td>
+                <td style="color: #00D4FF; font-weight: bold;">4分钟</td>
+                <td style="color: #00D4FF; font-weight: bold;">Isaac Lab</td>
+              </tr>
+              <tr>
+                <td>视觉策略</td>
+                <td>手动</td>
+                <td>非原生</td>
+                <td>非原生</td>
+                <td>原生RTX</td>
+                <td><strong>Isaac Lab</strong></td>
+              </tr>
+            </table>
+
+            <h3>物理精度（IEEE研究，2023）</h3>
+            <table class="comparison-table">
+              <tr>
+                <th>引擎</th>
+                <th>线性稳定性</th>
+                <th>角稳定性</th>
+                <th>精度</th>
+                <th>摩擦</th>
+                <th>迁移性</th>
+              </tr>
+              <tr>
+                <td><strong>MuJoCo</strong></td>
+                <td style="color: #10B981; font-weight: bold;">最佳</td>
+                <td>良好</td>
+                <td style="color: #10B981; font-weight: bold;">最佳</td>
+                <td>良好</td>
+                <td style="color: #10B981; font-weight: bold;">最佳</td>
+              </tr>
+              <tr>
+                <td><strong>PhysX (Isaac)</strong></td>
+                <td>良好</td>
+                <td style="color: #00D4FF; font-weight: bold;">最佳</td>
+                <td>良好</td>
+                <td>良好</td>
+                <td>良好</td>
+              </tr>
+              <tr>
+                <td>DART</td>
+                <td>良好</td>
+                <td>良好</td>
+                <td>良好</td>
+                <td style="color: #f59e0b; font-weight: bold;">最佳</td>
+                <td>中等</td>
+              </tr>
+              <tr>
+                <td>Bullet</td>
+                <td>中等</td>
+                <td>中等</td>
+                <td>中等</td>
+                <td>中等</td>
+                <td>差</td>
+              </tr>
+              <tr>
+                <td>ODE</td>
+                <td>差</td>
+                <td>差</td>
+                <td>中等</td>
+                <td>中等</td>
+                <td>差</td>
+              </tr>
+            </table>
+
+            <h3>Sim-to-Real迁移率</h3>
+            <table class="comparison-table">
+              <tr>
+                <th>方法</th>
+                <th>任务</th>
+                <th>成功率</th>
+                <th>平台</th>
+                <th>来源</th>
+              </tr>
+              <tr>
+                <td>域随机化（基础）</td>
+                <td>Locomotion</td>
+                <td>65-75%</td>
+                <td>两者</td>
+                <td>多篇论文</td>
+              </tr>
+              <tr>
+                <td>域随机化（优化）</td>
+                <td>Manipulation</td>
+                <td style="color: #00D4FF; font-weight: bold;">93%</td>
+                <td>Isaac Sim</td>
+                <td>ResearchGate 2024</td>
+              </tr>
+              <tr>
+                <td>TRANSIC（人在回路）</td>
+                <td>装配</td>
+                <td>77%</td>
+                <td>混合</td>
+                <td>CoRL 2024</td>
+              </tr>
+              <tr>
+                <td>NVIDIA AutoMate</td>
+                <td>装配</td>
+                <td style="color: #00D4FF; font-weight: bold;">84.5%</td>
+                <td>Isaac Sim</td>
+                <td>NVIDIA博客</td>
+              </tr>
+              <tr>
+                <td>零样本（Humanoid-Gym）</td>
+                <td>双足行走</td>
+                <td>86%</td>
+                <td>Isaac→MuJoCo</td>
+                <td>ArXiv 2024</td>
+              </tr>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section: 为什么选Isaac -->
+        <section id="why-isaac-sim" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-star"></i> 什么时候选择Isaac Sim而不是MuJoCo</h2>
+          </div>
+          <div class="content-card">
+            <p>让我透明地说明：生产工作流运行在Isaac Sim上。以下是具体原因。</p>
+
+            <h3>1. 训练速度改变一切</h3>
+            <p>当在迭代奖励塑造、超参数和策略架构时，<strong>4分钟 vs 4小时的差异不是增量的 — 是本质性的</strong>。</p>
+            <p>用Isaac Sim，每天运行10-15个实验。用MuJoCo在CPU上，运行2-3个。一个月下来，这是探索300个奖励函数变体和60个之间的区别。</p>
+            <div class="success-box">
+              <i class="fas fa-check-circle"></i>
+              <div><strong>研究速度是复利的。迭代更快的团队找到更好的解决方案。</strong></div>
+            </div>
+
+            <h3>2. 未来是GPU原生的</h3>
+            <p>看看NVIDIA的路线图：</p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li><strong>GR00T N1</strong>：首个人形机器人开放基础模型（20亿参数），用Isaac Lab训练</li>
+              <li><strong>Cosmos</strong>：机器人世界模型，为Omniverse集成设计</li>
+              <li><strong>Newton</strong>：基于NVIDIA Warp构建的下一代物理引擎</li>
+              <li><strong>Jetson Thor</strong>：专为人形机器人设计的计算平台</li>
+            </ul>
+            <p>今天在Isaac Sim上训练意味着对明天工具的原生访问。</p>
+
+            <h3>3. 视觉策略不可妥协</h3>
+            <p>真实机器人有摄像头。在MuJoCo中只用本体感觉观测训练，期望策略迁移到视觉系统 = 逆风而行。</p>
+            <p>Isaac Sim的RTX光线追踪生成照片级真实的RGB和深度。Agility Robotics这样的领先公司使用Isaac Sim的合成数据来训练感知模型。</p>
+            <p><strong>数据：</strong>NVIDIA生成了780,000条合成轨迹 — 相当于6,500小时的人类演示 — 仅用11小时。合成+真实数据结合使GR00T N1的性能提升了40%。</p>
+
+            <h3>4. 大规模域随机化</h3>
+            <p>Isaac Lab使以下内容的随机化变得简单：</p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>物理参数（摩擦、质量、阻尼）</li>
+              <li>视觉外观（纹理、光照、材质）</li>
+              <li>传感器噪声和延迟</li>
+              <li>环境条件</li>
+            </ul>
+            <p><strong>同时跨4,096个环境。</strong> 这种多样性建立鲁棒性。</p>
+          </div>
+        </section>
+
+        <!-- Section: 局限性 -->
+        <section id="limitations" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-exclamation-triangle"></i> 局限性：他们没告诉你的事</h2>
+          </div>
+          <div class="content-card">
+            
+            <h3>Isaac Sim：痛点</h3>
+            
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-error"></i>
+                <h4>1. 学习悬崖（不是曲线）</h4>
+              </div>
+              <div class="issue-body">
+                <p><strong>现实：</strong>第一次Isaac Sim安装花了6小时。第一次成功的机器人仿真花了3天。</p>
+                <p>Omniverse生态系统强大但令人不知所措。你不只是学习物理引擎 — 还要学习USD模式、Kit扩展、Nucleus服务器、场景组合范式。</p>
+                <p><strong>解决：</strong>预算2-4周达到生产力。预算2-3个月感觉流畅。</p>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-error"></i>
+                <h4>2. VRAM饥渴</h4>
+              </div>
+              <div class="issue-body">
+                <p>4,096环境的Isaac Sim消耗14-18GB VRAM。在RTX 3080（10GB）上，2,048环境就会OOM。</p>
+                <p><strong>推荐配置：</strong></p>
+                <ul style="list-style: disc; margin-left: 2rem;">
+                  <li>最低可用：RTX 3070（8GB）用于小规模工作</li>
+                  <li>推荐：RTX 4080（16GB）或更好</li>
+                  <li>生产：A100/H100（注意：某些GPU不支持渲染）</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-warning"></i>
+                <h4>3. 调试是黑盒</h4>
+              </div>
+              <div class="issue-body">
+                <p>当MuJoCo物理出问题，可检查约束求解器状态、接触力、关节扭矩。</p>
+                <p>当Isaac Sim物理出问题，得到一个引用无法检查的内部PhysX状态的崩溃日志。GPU加速调试是自相矛盾的。</p>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-warning"></i>
+                <h4>4. 强烈推荐Linux</h4>
+              </div>
+              <div class="issue-body">
+                <p>Windows支持存在但是二等公民。性能更差，bug更常见，社区假设Ubuntu 22.04。</p>
+              </div>
+            </div>
+
+            <h3>MuJoCo：痛点</h3>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-error"></i>
+                <h4>1. 速度问题（仍然存在）</h4>
+              </div>
+              <div class="issue-body">
+                <p>是的，MJX存在。是的，它在TPU上很快。但是：</p>
+                <ul style="list-style: disc; margin-left: 2rem;">
+                  <li>大多数研究者没有TPU访问权限</li>
+                  <li>大多数实验室有NVIDIA GPU</li>
+                  <li>MJX在NVIDIA GPU上不如Isaac Lab优化</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-warning"></i>
+                <h4>2. 生态系统差距</h4>
+              </div>
+              <div class="issue-body">
+                <p>MuJoCo给你物理仿真。就这些。</p>
+                <p>需要合成数据？自己构建。需要ROS集成？第三方包。需要高质量渲染？集成外部工具。需要大规模域随机化？手动实现。</p>
+                <p><strong>Isaac Sim捆绑了所有这些。</strong></p>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-info"></i>
+                <h4>3. 渲染情况</h4>
+              </div>
+              <div class="issue-body">
+                <p>MuJoCo的默认渲染器功能但基础。对于基于视觉的RL，需要集成外部渲染器或接受仿真相机看起来不像真实相机。</p>
+              </div>
+            </div>
+
+            <div class="issue-card">
+              <div class="issue-header">
+                <i class="fas fa-circle severity-info"></i>
+                <h4>4. MJX限制</h4>
+              </div>
+              <div class="issue-body">
+                <p>MJX强大但有约束：</p>
+                <ul style="list-style: disc; margin-left: 2rem;">
+                  <li>单场景比CPU MuJoCo慢10倍</li>
+                  <li>不支持网格-网格碰撞（导致穿透）</li>
+                  <li>凸网格限制在<200顶点或<32顶点</li>
+                  <li>多接触时性能下降</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: 选择指南 -->
+        <section id="how-to-choose" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-balance-scale"></i> 如何在Isaac Sim和MuJoCo之间选择</h2>
+          </div>
+          <div class="content-card">
+            
+            <h3>选择MuJoCo如果：</h3>
+            <table class="comparison-table">
+              <tr>
+                <th>标准</th>
+                <th>权重</th>
+              </tr>
+              <tr>
+                <td>发表带有标准化基准的学术论文</td>
+                <td style="color: #ef4444; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>接触丰富的操控（灵巧手、装配）</td>
+                <td style="color: #ef4444; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>没有NVIDIA GPU访问</td>
+                <td style="color: #ef4444; font-weight: bold;">关键</td>
+              </tr>
+              <tr>
+                <td>算法开发期间的快速原型设计</td>
+                <td style="color: #ef4444; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>JAX/Flax生态系统用于可微分仿真</td>
+                <td style="color: #ef4444; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>在嵌入式系统或树莓派上运行</td>
+                <td style="color: #ef4444; font-weight: bold;">关键</td>
+              </tr>
+            </table>
+
+            <h3>选择Isaac Sim如果：</h3>
+            <table class="comparison-table">
+              <tr>
+                <th>标准</th>
+                <th>权重</th>
+              </tr>
+              <tr>
+                <td>训练1,000+并行环境</td>
+                <td style="color: #00D4FF; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>需要真实RGB/深度的视觉策略</td>
+                <td style="color: #00D4FF; font-weight: bold;">关键</td>
+              </tr>
+              <tr>
+                <td>为感知生成合成数据集</td>
+                <td style="color: #00D4FF; font-weight: bold;">关键</td>
+              </tr>
+              <tr>
+                <td>在NVIDIA机器人栈上部署（Jetson, GR00T）</td>
+                <td style="color: #00D4FF; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>工业环境需要ROS2集成</td>
+                <td style="color: #00D4FF; font-weight: bold;">高</td>
+              </tr>
+              <tr>
+                <td>域随机化作为主要sim-to-real策略</td>
+                <td style="color: #00D4FF; font-weight: bold;">高</td>
+              </tr>
+            </table>
+
+            <h3>混合方法（生产团队实际做的）</h3>
+            <div class="success-box">
+              <i class="fas fa-check-circle"></i>
+              <div>
+                <p><strong>最佳实践流程：</strong></p>
+                <ol style="margin-left: 1rem;">
+                  <li>在MuJoCo中原型设计 — 快速迭代，调试物理，验证算法</li>
+                  <li>在Isaac Lab中扩展训练 — 4,096环境，域随机化</li>
+                  <li>在MuJoCo中验证 — 物理精度检查，捕捉Isaac特定伪影</li>
+                  <li>用Isaac Sim工具部署 — ROS集成，监控，数字孪生</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: Newton引擎 -->
+        <section id="newton-engine" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-crown"></i> Newton物理引擎：游戏规则改变者</h2>
+          </div>
+          <div class="content-card">
+            <p>2025年3月18日，黄仁勋在GTC上宣布了意想不到的事情：<strong>Newton</strong>。</p>
+            <p>Newton是由NVIDIA、Google DeepMind和迪士尼研究院联合开发的<strong>开源物理引擎</strong>。再读一遍这句话。这些应该是竞争对手。</p>
+
+            <h3>技术基础</h3>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>基于NVIDIA Warp（CUDA-X加速）构建</li>
+              <li>兼容MuJoCo Playground和Isaac Lab</li>
+              <li>包含MuJoCo-Warp：MuJoCo的物理，由NVIDIA GPU加速</li>
+            </ul>
+
+            <h3>Google DeepMind声称的性能</h3>
+            <div class="highlight-box">
+              <i class="fas fa-bolt"></i>
+              <div>
+                <ul style="list-style: disc; margin-left: 2rem;">
+                  <li>人形仿真比MJX快 <strong style="color: #00D4FF;">70倍</strong></li>
+                  <li>手内操控任务快 <strong style="color: #00D4FF;">100倍</strong></li>
+                  <li>RTX 4090上locomotion加速 <strong style="color: #00D4FF;">152倍</strong></li>
+                  <li>RTX 4090上manipulation加速 <strong style="color: #00D4FF;">313倍</strong></li>
+                </ul>
+              </div>
+            </div>
+
+            <h3>影响</h3>
+            <p><strong>MuJoCo vs Isaac Sim的争论可能变得无关紧要。</strong> MuJoCo的物理精度 + NVIDIA的GPU加速 + Isaac Lab的兼容性 = 游戏规则改变。</p>
+            <p>迪士尼研究院是第一个客户 — BDX机器人（星球大战机器人）在Newton上训练。</p>
+          </div>
+        </section>
+
+        <!-- Section: 安装指南 -->
+        <section id="installation-guide" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-download"></i> Isaac Sim和MuJoCo安装：分步指南</h2>
+          </div>
+          <div class="content-card">
+            
+            <h3>MuJoCo（5分钟到第一次仿真）</h3>
+            <div class="code-example">
+              <div class="code-header">
+                <span>安装MuJoCo</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i> 复制</button>
+              </div>
+              <pre><code class="language-bash"># 安装
+pip install mujoco gymnasium
+
+# 验证安装
+python -c "import mujoco; print(mujoco.__version__)"</code></pre>
+            </div>
+
+            <div class="code-example">
+              <div class="code-header">
+                <span>第一次仿真：人形locomotion</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i> 复制</button>
+              </div>
+              <pre><code class="language-python">import gymnasium as gym
+
+# 创建带可视化的环境
+env = gym.make("Humanoid-v4", render_mode="human")
+obs, info = env.reset()
+
+print(f"观测空间: {env.observation_space.shape}")
+print(f"动作空间: {env.action_space.shape}")
+
+# 随机策略rollout
+for episode in range(3):
+    obs, info = env.reset()
+    total_reward = 0
+    for step in range(1000):
+        action = env.action_space.sample()
+        obs, reward, terminated, truncated, info = env.step(action)
+        total_reward += reward
+        if terminated or truncated:
+            print(f"Episode {episode + 1}: {total_reward:.2f} 奖励, {step + 1} 步")
+            break
+
+env.close()</code></pre>
+            </div>
+
+            <h3>Isaac Lab（30-60分钟到第一次仿真）</h3>
+            <p><strong>前置条件：</strong></p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>8GB+ VRAM的NVIDIA GPU（推荐RTX 4080+）</li>
+              <li>Ubuntu 20.04/22.04（强烈推荐）</li>
+              <li>NVIDIA驱动525+和CUDA 12.0+</li>
+            </ul>
+
+            <div class="code-example">
+              <div class="code-header">
+                <span>Isaac Lab安装步骤</span>
+                <button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i> 复制</button>
+              </div>
+              <pre><code class="language-bash"># 步骤1：通过Omniverse Launcher安装Isaac Sim
+# 从以下地址下载：https://developer.nvidia.com/isaac-sim
+
+# 步骤2：克隆Isaac Lab
+git clone https://github.com/isaac-sim/IsaacLab.git
+cd IsaacLab
+
+# 步骤3：创建conda环境
+conda create -n isaaclab python=3.10
+conda activate isaaclab
+
+# 步骤4：安装Isaac Lab
+./isaaclab.sh --install
+
+# 步骤5：验证安装
+./isaaclab.sh -p scripts/tutorials/00_sim/create_empty.py</code></pre>
+            </div>
+
+            <p><strong>诚实的时间线：</strong>如果一切顺利，30-60分钟。如果CUDA版本冲突（它们会的），预算2-4小时。</p>
+          </div>
+        </section>
+
+        <!-- Section: 结论 -->
+        <section id="conclusion" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-flag-checkered"></i> 最终结论：2025年你应该使用哪个仿真器？</h2>
+          </div>
+          <div class="content-card">
+            <p><strong>六个月后，数百次实验，部署了真实机器人，这是我的立场：</strong></p>
+
+            <div class="highlight-box">
+              <i class="fas fa-lightbulb"></i>
+              <div>
+                <strong>Isaac Sim用于训练。MuJoCo用于验证。</strong>
+                <p>在Isaac Lab中用4,096环境、RTX渲染和大规模域随机化训练策略。然后在MuJoCo中验证物理以在部署前捕捉任何Isaac特定的伪影。</p>
+              </div>
+            </div>
+
+            <p>但密切关注Newton。NVIDIA、Google DeepMind和迪士尼研究院宣布统一物理引擎不只是企业公关 — 这是承认社区需要融合，而不是竞争。</p>
+
+            <h3>现实证据</h3>
+            <p>这不是夸张：</p>
+            <ul style="list-style: disc; margin-left: 2rem;">
+              <li>波士顿动力的Spot现在在RL控制下达到5.2 m/s（默认最大值的3倍）</li>
+              <li>Figure AI的人形机器人在11个月内完成了1,250+小时的宝马工厂工作</li>
+              <li>Unitree的H1达到3.3 m/s的世界纪录</li>
+            </ul>
+
+            <div class="success-box">
+              <i class="fas fa-check-circle"></i>
+              <div>
+                <strong>最终建议：</strong>
+                <p>选择能让你更快到达目标的工具。对于大多数有NVIDIA硬件的团队，那是Isaac Sim。对于大多数在TPU上或发表论文的研究者，那是MuJoCo。对于2026年的每个人，可能是Newton。</p>
+                <p><strong>仿真战争正在结束。机器人学习战争才刚刚开始。在2025年，机器人不关心你的仿真器偏好。它们关心的是能否行走。</strong></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section: FAQ -->
+        <section id="faq" class="isaac-section">
+          <div class="section-header">
+            <h2><i class="fas fa-question-circle"></i> 常见问题（FAQ）</h2>
+          </div>
+          <div class="content-card">
+            <div class="faq-list">
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>Isaac Sim和MuJoCo有什么区别？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>Isaac Sim是NVIDIA的GPU加速仿真器，具有照片级渲染和PhysX物理，适合基于视觉的训练。MuJoCo是DeepMind的轻量级开源物理引擎，为快速铰接体仿真和强化学习研究优化。Isaac Sim需要RTX GPU；MuJoCo可在任何平台上运行，包括CPU。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>对于强化学习，MuJoCo比Isaac Sim更好吗？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>取决于使用场景。MuJoCo提供更快的单环境仿真和更容易的学术研究设置。Isaac Sim擅长并行GPU仿真，同时训练数千个环境。对于纯RL训练速度，Isaac Lab可以比标准MuJoCo快得多，但MJX在TPU上缩小了这个差距。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>Newton物理引擎是什么？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>Newton是由NVIDIA、Google DeepMind和迪士尼研究院在Linux基金会下联合开发的开源物理引擎。它将MuJoCo Warp与NVIDIA的GPU加速结合，实现了比MJX快152倍的locomotion和313倍的manipulation。Newton将为下一代Isaac Lab仿真提供动力。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>Isaac Sim要多少钱？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>Isaac Sim软件可免费下载和用于开发。然而，它需要NVIDIA RTX GPU，推荐RTX 4090（1,600-2,000美元）以获得最佳性能。真正的成本是硬件：完整的工作站设置通常需要3,000-5,000美元。</p>
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                  <i class="fas fa-chevron-right"></i>
+                  <span>什么是机器人中的sim-to-real迁移？</span>
+                </button>
+                <div class="faq-answer" style="display: none;">
+                  <p>Sim-to-real迁移是在仿真中训练机器人策略并在物理硬件上部署的过程。关键技术包括域随机化、域适应和系统识别。Isaac Sim和MuJoCo都支持sim-to-real工作流，经过适当优化后成功率达84-93%。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ========== 页面整体布局 ========== */
+.isaac-sim-page {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.isaac-nav-container {
+  display: flex;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - 60px);
+}
+
+/* ========== 侧边栏 ========== */
+.isaac-sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  width: 260px;
+  height: calc(100vh - 60px);
+  background: var(--bg-glass);
+  border-right: 1px solid rgba(0, 212, 255, 0.1);
+  overflow-y: auto;
+  padding: 2rem 0;
+  z-index: 20;
+}
+
+.sidebar-header {
+  padding: 0 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-header h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-link:hover {
+  color: var(--primary-color);
+  background: rgba(0, 212, 255, 0.05);
+  border-left-color: var(--primary-color);
+}
+
+.toc-link.active {
+  color: var(--primary-color);
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+.toc-link i {
+  width: 1.2rem;
+  text-align: center;
+}
+
+.sidebar-references {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.sidebar-references h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.sidebar-references ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.sidebar-references li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-references a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.sidebar-references a:hover {
+  color: var(--primary-color);
+}
+
+/* ========== 主要内容区 ========== */
+.isaac-content {
+  margin-left: 260px;
+  flex: 1;
+}
+
+.isaac-hero {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.hero-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-content p:nth-of-type(1) {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.hero-desc {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.highlight-isaac {
+  color: #00D4FF;
+  font-weight: 700;
+}
+
+.highlight-mujoco {
+  color: #10B981;
+  font-weight: 700;
+}
+
+/* ========== 内容区域 ========== */
+.isaac-sections {
+  padding: 3rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.isaac-section {
+  margin-bottom: 4rem;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+}
+
+.section-header h2 i {
+  color: var(--primary-color);
+}
+
+/* ========== 内容卡片 ========== */
+.content-card {
+  background: var(--bg-glass);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.content-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.content-card h3:first-child {
+  margin-top: 0;
+}
+
+.content-card h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.content-card p {
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.content-card ul, .content-card ol {
+  margin: 1rem 0;
+}
+
+.content-card code {
+  background: rgba(0, 212, 255, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* ========== 表格 ========== */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.comparison-table thead {
+  border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+}
+
+.comparison-table th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.comparison-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.comparison-table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.comparison-table code {
+  background: rgba(0, 212, 255, 0.1);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+/* ========== 信息框 ========== */
+.info-box,
+.success-box,
+.warning-box,
+.highlight-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid;
+}
+
+.info-box {
+  background: rgba(0, 212, 255, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+.info-box i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.success-box {
+  background: rgba(16, 185, 129, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.success-box i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+}
+
+.warning-box {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--warning-color);
+}
+
+.warning-box i {
+  color: var(--warning-color);
+  font-size: 1.2rem;
+}
+
+.highlight-box {
+  background: rgba(124, 58, 237, 0.1);
+  border-left-color: var(--accent-color);
+}
+
+.highlight-box i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+}
+
+/* ========== 代码示例 ========== */
+.code-example {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-weight: 600;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-btn:hover {
+  background: rgba(0, 212, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.code-example pre {
+  margin: 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.code-example code {
+  color: var(--text-secondary);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* ========== 问题卡片 ========== */
+.issue-card {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.issue-header i {
+  font-size: 0.8rem;
+}
+
+.severity-error {
+  color: #ef4444;
+}
+
+.severity-warning {
+  color: #f59e0b;
+}
+
+.severity-info {
+  color: var(--primary-color);
+}
+
+.issue-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.issue-body {
+  padding: 1.5rem;
+}
+
+.issue-body p {
+  margin-bottom: 0.75rem;
+}
+
+.issue-body p:last-child {
+  margin-bottom: 0;
+}
+
+.issue-body strong {
+  color: var(--text-primary);
+}
+
+/* ========== FAQ ========== */
+.faq-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.faq-item {
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 212, 255, 0.05);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.faq-question:hover {
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.faq-question i {
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+}
+
+.faq-question.active i {
+  transform: rotate(90deg);
+}
+
+.faq-answer {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  line-height: 1.8;
+}
+
+/* ========== 页面头部 ========== */
+.page-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.page-tagline {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 1024px) {
+  .isaac-sidebar {
+    width: 220px;
+  }
+
+  .isaac-content {
+    margin-left: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .isaac-sidebar {
+    position: absolute;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 40;
+  }
+
+  .isaac-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .isaac-content {
+    margin-left: 0;
+  }
+
+  .isaac-sections {
+    padding: 1.5rem 1rem;
+  }
+
+  .content-card {
+    padding: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .comparison-table {
+    font-size: 0.9rem;
+  }
+
+  .comparison-table th,
+  .comparison-table td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+</style>
+
+<script>
+// TOC 链接激活
+document.addEventListener('DOMContentLoaded', function() {
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const sections = document.querySelectorAll('.isaac-section');
+
+  window.addEventListener('scroll', () => {
+    let currentSection = '';
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 100;
+      if (window.pageYOffset >= sectionTop) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href').slice(1) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  });
+});
+
+// FAQ 开关
+function toggleFAQ(button) {
+  const answer = button.nextElementSibling;
+  const isVisible = answer.style.display !== 'none';
+
+  answer.style.display = isVisible ? 'none' : 'block';
+  button.classList.toggle('active', !isVisible);
+}
+
+// 代码复制功能
+function copyCode(button) {
+  const codeBlock = button.closest('.code-example');
+  const code = codeBlock.querySelector('code').textContent;
+
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> 已复制';
+    setTimeout(() => {
+      button.innerHTML = originalText;
+    }, 2000);
+  });
+}
+
+// 平滑滚动
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  });
+});
+</script>
