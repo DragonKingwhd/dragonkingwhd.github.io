@@ -1,0 +1,271 @@
+---
+layout: default
+title: 知识库 - 技术文章合集
+permalink: /docs/
+---
+
+<div class="knowledge-base-page">
+  <!-- 页面头部 -->
+  <div class="kb-header">
+    <div class="kb-container">
+      <h1 class="kb-title">知识库</h1>
+      <p class="kb-subtitle">技术文章与深度分析合集</p>
+    </div>
+  </div>
+
+  <!-- 知识库文章列表 -->
+  <div class="kb-container">
+    <div class="kb-grid">
+
+      <!-- 文章卡片 1: Isaac Sim vs MuJoCo -->
+      <a href="/isaac-sim-vs-mujoco/" class="kb-card">
+        <div class="kb-card-header">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="kb-card-content">
+          <h3>Isaac Sim vs MuJoCo</h3>
+          <p class="kb-card-subtitle">4000美元的抉择：GPU算力 vs 物理精度</p>
+          <p class="kb-card-description">深入对比NVIDIA Isaac Lab和Google DeepMind MuJoCo的架构、性能、成本，以及在不同场景下的最优选择。包含完整的性能基准、代码示例和部署指南。</p>
+          <div class="kb-card-meta">
+            <span class="kb-tag">机器人仿真</span>
+            <span class="kb-tag">Isaac Sim</span>
+            <span class="kb-tag">MuJoCo</span>
+            <span class="kb-date">2025-01-10</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- 文章卡片 2: Sim2Sim部署 -->
+      <a href="/sim2sim-guide/" class="kb-card">
+        <div class="kb-card-header">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="kb-card-content">
+          <h3>Sim2Sim部署指南</h3>
+          <p class="kb-card-subtitle">从IsaacLab到Mujoco的策略迁移完全指南</p>
+          <p class="kb-card-description">深入探讨强化学习策略从NVIDIA IsaacLab仿真环境迁移到Mujoco物理引擎的完整过程，包括观测空间对齐、时间步参数同步，以及机器人抖动问题的系统性解决方案。</p>
+          <div class="kb-card-meta">
+            <span class="kb-tag">强化学习</span>
+            <span class="kb-tag">部署</span>
+            <span class="kb-tag">sim-to-sim</span>
+            <span class="kb-date">2025-01-09</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- 文章卡片 3: 材料属性 -->
+      <a href="/material-properties/" class="kb-card">
+        <div class="kb-card-header">
+          <i class="fas fa-flask"></i>
+        </div>
+        <div class="kb-card-content">
+          <h3>材料属性参考</h3>
+          <p class="kb-card-subtitle">常见材料的物理属性数据库</p>
+          <p class="kb-card-description">整理汇总常见工程材料的密度、弹性模量、泊松比、导热系数等关键物理属性，为仿真建模和工程设计提供参考数据。</p>
+          <div class="kb-card-meta">
+            <span class="kb-tag">材料学</span>
+            <span class="kb-tag">参考资料</span>
+            <span class="kb-date">2024-12-20</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- 底部统计 -->
+  <div class="kb-footer">
+    <div class="kb-container">
+      <p>📚 共 <span class="kb-count">3</span> 篇深度文章 | 持续更新中...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ========== 知识库页面样式 ========== */
+.knowledge-base-page {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: calc(100vh - 60px);
+}
+
+.kb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* 页面头部 */
+.kb-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 4rem 2rem;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.kb-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.kb-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 文章网格 */
+.kb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+/* 文章卡片 */
+.kb-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-glass);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.kb-card:hover {
+  border-color: var(--primary-color);
+  background: rgba(0, 212, 255, 0.05);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.15);
+}
+
+.kb-card-header {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.kb-card-header i {
+  font-size: 3rem;
+  color: var(--primary-color);
+}
+
+.kb-card-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.kb-card-content h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.kb-card-subtitle {
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.kb-card-description {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.kb-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.kb-tag {
+  display: inline-block;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: var(--primary-color);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.kb-date {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* 底部统计 */
+.kb-footer {
+  background: rgba(0, 212, 255, 0.05);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 2rem;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.kb-footer p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.kb-count {
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .kb-header {
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .kb-title {
+    font-size: 2rem;
+  }
+
+  .kb-subtitle {
+    font-size: 1rem;
+  }
+
+  .kb-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .kb-container {
+    padding: 0 1rem;
+  }
+}
+</style>
+
+<script>
+// 数据驱动的动态效果（可选）
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.kb-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+});
+</script>

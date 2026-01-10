@@ -36,7 +36,7 @@ navigation:
     url: /blog/
     icon: "fas fa-pen-fancy"
   - title: 知识库
-    url: /docs/
+    url: /knowledge-base/
     icon: "fas fa-book"
   - title: 工具
     url: /tools/
