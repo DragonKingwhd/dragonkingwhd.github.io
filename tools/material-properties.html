@@ -1,0 +1,348 @@
+---
+layout: null
+title: 材料属性查询工具
+permalink: /tools/material-properties/
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>材料属性查询工具</title>
+    <style>
+        :root {
+            --bg: #1e1e1e;
+            --panel: #252526;
+            --text: #d4d4d4;
+            --accent: #4ec9b0;
+            --border: #3e3e42;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Consolas, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: var(--accent); margin-bottom: 10px; }
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 14px; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        input[type="text"], select {
+            padding: 10px;
+            background: #111;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input[type="text"] { flex: 1; min-width: 200px; }
+        select { min-width: 150px; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover { background: #1177bb; }
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .material-card {
+            background: var(--panel);
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .material-card:hover {
+            background: #2d2d30;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+        }
+        .material-name { font-weight: bold; color: var(--accent); margin-bottom: 10px; font-size: 16px; }
+        .material-category { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .material-props { font-size: 13px; color: #aaa; }
+        .material-props div { margin: 5px 0; }
+        .detail-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .detail-header { color: var(--accent); font-size: 18px; font-weight: bold; margin-bottom: 20px; }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .property-item {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent);
+        }
+        .property-name { color: var(--accent); font-weight: bold; margin-bottom: 5px; }
+        .property-value { color: #b5cea8; font-family: Consolas; font-size: 14px; }
+        .property-unit { color: #888; font-size: 12px; margin-top: 5px; }
+        .unit-converter {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .converter-title { color: var(--accent); font-weight: bold; margin-bottom: 10px; }
+        .converter-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .converter-input input { width: 120px; }
+        .converter-input select { width: 120px; }
+        .converter-result { color: #b5cea8; margin-top: 10px; font-family: Consolas; }
+        .no-results { text-align: center; color: #888; padding: 40px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 材料属性查询工具</h1>
+        <p class="subtitle">专业的工程材料性能参数查询工具</p>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索材料名称...">
+            <select id="categoryFilter">
+                <option value="">所有分类</option>
+                <option value="碳纤维">碳纤维</option>
+                <option value="金属">金属</option>
+                <option value="合金">合金</option>
+                <option value="复合材料">复合材料</option>
+                <option value="高分子">高分子</option>
+            </select>
+            <button onclick="search()">搜索</button>
+            <button onclick="clearSearch()">清空</button>
+        </div>
+
+        <div class="materials-grid" id="materialsGrid"></div>
+        <div class="detail-panel hidden" id="detailPanel"></div>
+    </div>
+
+    <script>
+        const materials = [
+            {
+                name: "碳纤维复合材料 (CFRP)",
+                category: "碳纤维",
+                properties: {
+                    "弹性模量 (E)": { value: "230-240", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.20-0.30", unit: "无量纲" },
+                    "密度 (ρ)": { value: "1600", unit: "kg/m³" },
+                    "抗拉强度": { value: "3500-4000", unit: "MPa" },
+                    "剪切模量 (G)": { value: "15-20", unit: "GPa" }
+                }
+            },
+            {
+                name: "不锈钢 (304)",
+                category: "金属",
+                properties: {
+                    "弹性模量 (E)": { value: "193-200", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.27-0.30", unit: "无量纲" },
+                    "密度 (ρ)": { value: "8000", unit: "kg/m³" },
+                    "抗拉强度": { value: "515-620", unit: "MPa" },
+                    "剪切模量 (G)": { value: "77-81", unit: "GPa" }
+                }
+            },
+            {
+                name: "铝合金 (7075-T6)",
+                category: "合金",
+                properties: {
+                    "弹性模量 (E)": { value: "72", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.33", unit: "无量纲" },
+                    "密度 (ρ)": { value: "2810", unit: "kg/m³" },
+                    "抗拉强度": { value: "570", unit: "MPa" },
+                    "剪切模量 (G)": { value: "27", unit: "GPa" }
+                }
+            },
+            {
+                name: "钛合金 (Ti-6Al-4V)",
+                category: "合金",
+                properties: {
+                    "弹性模量 (E)": { value: "103-110", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.31-0.34", unit: "无量纲" },
+                    "密度 (ρ)": { value: "4430", unit: "kg/m³" },
+                    "抗拉强度": { value: "1160-1320", unit: "MPa" },
+                    "剪切模量 (G)": { value: "41-44", unit: "GPa" }
+                }
+            },
+            {
+                name: "玻璃纤维复合材料 (GFRP)",
+                category: "复合材料",
+                properties: {
+                    "弹性模量 (E)": { value: "40-50", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.25-0.35", unit: "无量纲" },
+                    "密度 (ρ)": { value: "1850-2000", unit: "kg/m³" },
+                    "抗拉强度": { value: "1000-1400", unit: "MPa" },
+                    "剪切模量 (G)": { value: "3-5", unit: "GPa" }
+                }
+            },
+            {
+                name: "结构钢 (Q235)",
+                category: "金属",
+                properties: {
+                    "弹性模量 (E)": { value: "200-210", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.27-0.30", unit: "无量纲" },
+                    "密度 (ρ)": { value: "7850", unit: "kg/m³" },
+                    "抗拉强度": { value: "235-370", unit: "MPa" },
+                    "剪切模量 (G)": { value: "80-85", unit: "GPa" }
+                }
+            },
+            {
+                name: "铜 (纯铜)",
+                category: "金属",
+                properties: {
+                    "弹性模量 (E)": { value: "110-130", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.34", unit: "无量纲" },
+                    "密度 (ρ)": { value: "8960", unit: "kg/m³" },
+                    "抗拉强度": { value: "200-400", unit: "MPa" },
+                    "剪切模量 (G)": { value: "44-48", unit: "GPa" }
+                }
+            },
+            {
+                name: "PEEK (聚醚醚酮)",
+                category: "高分子",
+                properties: {
+                    "弹性模量 (E)": { value: "3.6", unit: "GPa" },
+                    "泊松比 (ν)": { value: "0.40", unit: "无量纲" },
+                    "密度 (ρ)": { value: "1320", unit: "kg/m³" },
+                    "抗拉强度": { value: "100", unit: "MPa" },
+                    "剪切模量 (G)": { value: "1.3", unit: "GPa" }
+                }
+            }
+        ];
+
+        function renderMaterials(data) {
+            const grid = document.getElementById('materialsGrid');
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = '<div class="no-results">未找到匹配的材料</div>';
+                return;
+            }
+
+            data.forEach((mat, idx) => {
+                const card = document.createElement('div');
+                card.className = 'material-card';
+                card.onclick = () => showDetail(idx);
+
+                const props = Object.entries(mat.properties).slice(0, 3);
+                const propsHtml = props.map(([name, data]) =>
+                    `<div>${name}: <strong>${data.value}</strong> ${data.unit}</div>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="material-name">${mat.name}</div>
+                    <div class="material-category">${mat.category}</div>
+                    <div class="material-props">${propsHtml}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showDetail(idx) {
+            const mat = materials[idx];
+            const panel = document.getElementById('detailPanel');
+
+            let propsHtml = '';
+            Object.entries(mat.properties).forEach(([name, data]) => {
+                propsHtml += `
+                    <div class="property-item">
+                        <div class="property-name">${name}</div>
+                        <div class="property-value">${data.value}</div>
+                        <div class="property-unit">${data.unit}</div>
+                    </div>
+                `;
+            });
+
+            panel.innerHTML = `
+                <div class="detail-header">${mat.name}</div>
+                <div class="detail-grid">${propsHtml}</div>
+                <div class="unit-converter">
+                    <div class="converter-title">单位转换器</div>
+                    <div class="converter-input">
+                        <input type="number" id="convertValue" placeholder="输入数值" value="1">
+                        <select id="fromUnit">
+                            <option value="GPa">GPa</option>
+                            <option value="MPa">MPa</option>
+                            <option value="Pa">Pa</option>
+                        </select>
+                        <span>→</span>
+                        <select id="toUnit">
+                            <option value="MPa">MPa</option>
+                            <option value="GPa">GPa</option>
+                            <option value="Pa">Pa</option>
+                        </select>
+                        <button onclick="convertUnits()">转换</button>
+                    </div>
+                    <div class="converter-result" id="convertResult"></div>
+                </div>
+            `;
+            panel.classList.remove('hidden');
+        }
+
+        function convertUnits() {
+            const value = parseFloat(document.getElementById('convertValue').value);
+            const from = document.getElementById('fromUnit').value;
+            const to = document.getElementById('toUnit').value;
+
+            const conversions = {
+                'GPa': 1e9,
+                'MPa': 1e6,
+                'Pa': 1
+            };
+
+            const pa = value * conversions[from];
+            const result = pa / conversions[to];
+
+            document.getElementById('convertResult').innerHTML =
+                `<strong>${value} ${from} = ${result.toFixed(6)} ${to}</strong>`;
+        }
+
+        function search() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = materials.filter(mat => {
+                const matchSearch = mat.name.toLowerCase().includes(searchTerm);
+                const matchCategory = !category || mat.category === category;
+                return matchSearch && matchCategory;
+            });
+
+            renderMaterials(filtered);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('detailPanel').classList.add('hidden');
+            renderMaterials(materials);
+        }
+
+        // 初始化
+        renderMaterials(materials);
+    </script>
+</body>
+</html>
