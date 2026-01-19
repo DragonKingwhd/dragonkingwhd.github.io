@@ -1,342 +1,73 @@
----
-layout: default
-title: SolidWorks 转 URDF 工具
-permalink: /tools/sw-to-urdf/
----
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolidWorks 转 URDF/Isaac</title>
+    <style>
+        :root { --bg: #1e1e1e; --panel: #252526; --text: #d4d4d4; --accent: #4ec9b0; --border: #3e3e42; }
+        body { font-family: 'Segoe UI', Consolas, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box;}
+        h2 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; color: var(--accent); }
+        .container { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        .col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        textarea { flex: 1; background: #111; color: #9cdcfe; border: 1px solid var(--border); padding: 10px; resize: none; font-family: Consolas, monospace; font-size: 13px; }
+        .results { flex: 1; overflow-y: auto; background: #1e1e1e; border: 1px solid var(--border); padding: 10px; }
+        button { background: #0e639c; color: white; border: none; padding: 12px; cursor: pointer; font-size: 16px; border-radius: 4px; font-weight: bold; }
+        button:hover { background: #1177bb; }
+        .card { background: var(--panel); border-left: 5px solid var(--accent); padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .code-box { background: #111; padding: 10px; border: 1px solid #444; color: #ce9178; font-family: Consolas; font-size: 12px; white-space: pre-wrap; position: relative; margin: 10px 0; }
+        .copy-btn { position: absolute; top: 5px; right: 5px; background: #333; border: 1px solid #666; color: #ddd; padding: 2px 8px; cursor: pointer; font-size: 11px; }
+        .copy-btn:hover { background: #555; }
+        .grid { display: grid; grid-template-columns: 120px 1fr; gap: 8px; font-size: 13px; color: #ccc; }
+        .val { font-family: Consolas; background: #333; padding: 2px 6px; border-radius: 3px; color: #b5cea8; }
+        .label-with-help { display: flex; align-items: center; gap: 6px; }
+        .help-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background: #4ec9b0; color: #1e1e1e; border-radius: 50%; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; }
+        .help-icon:hover { background: #5dd9c1; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: #333; color: #ddd; text-align: left; border-radius: 4px; padding: 8px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0; transition: opacity 0.3s; font-size: 12px; border: 1px solid #4ec9b0; }
+        .tooltip .tooltiptext::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent; }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+        .err-log { color: #f14c4c; font-family: Consolas; font-size: 12px; margin-top: 10px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
 
-<style>
-    .tool-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
+    <h2>SolidWorks 报告转换器</h2>
 
-    .tool-header {
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid var(--primary-color);
-    }
-
-    .tool-header h1 {
-        margin: 0 0 0.5rem 0;
-        color: var(--primary-color);
-        font-size: 2rem;
-    }
-
-    .tool-header p {
-        color: var(--text-secondary);
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .tool-main {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    @media (max-width: 1024px) {
-        .tool-main {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .input-section, .output-section {
-        background: var(--bg-secondary);
-        border: 1px solid var(--bg-tertiary);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--primary-color);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .section-desc {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin: 0;
-    }
-
-    #input {
-        flex: 1;
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        border: 1px solid var(--bg-tertiary);
-        border-radius: var(--border-radius-sm);
-        padding: 1rem;
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-        resize: none;
-        min-height: 300px;
-    }
-
-    #input::placeholder {
-        color: var(--text-muted);
-    }
-
-    #output {
-        flex: 1;
-        background: var(--bg-primary);
-        border: 1px solid var(--bg-tertiary);
-        border-radius: var(--border-radius-sm);
-        padding: 1rem;
-        overflow-y: auto;
-        min-height: 300px;
-    }
-
-    .button-group {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: var(--border-radius-sm);
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary {
-        background: var(--primary-color);
-        color: var(--bg-primary);
-    }
-
-    .btn-primary:hover {
-        background: var(--accent-color);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .btn-secondary {
-        background: var(--bg-tertiary);
-        color: var(--text-primary);
-        border: 1px solid var(--primary-color);
-    }
-
-    .btn-secondary:hover {
-        background: var(--primary-color);
-        color: var(--bg-primary);
-    }
-
-    .status-message {
-        padding: 1rem;
-        border-radius: var(--border-radius-sm);
-        font-size: 0.9rem;
-        display: none;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .status-message.show {
-        display: flex;
-    }
-
-    .status-message.success {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-        border: 1px solid var(--success-color);
-    }
-
-    .status-message.error {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger-color);
-        border: 1px solid var(--danger-color);
-    }
-
-    .status-message.info {
-        background: rgba(0, 212, 255, 0.1);
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-    }
-
-    .result-card {
-        background: var(--bg-secondary);
-        border-left: 4px solid var(--primary-color);
-        border-radius: var(--border-radius-sm);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .result-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--primary-color);
-        margin: 0 0 1rem 0;
-    }
-
-    .result-subtitle {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin: 0;
-    }
-
-    .code-block {
-        background: var(--bg-primary);
-        border: 1px solid var(--bg-tertiary);
-        border-radius: var(--border-radius-sm);
-        padding: 1rem;
-        margin: 1rem 0;
-        position: relative;
-        overflow-x: auto;
-    }
-
-    .code-block code {
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        color: var(--text-primary);
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
-
-    .copy-btn {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--primary-color);
-        color: var(--primary-color);
-        padding: 0.4rem 0.8rem;
-        border-radius: var(--border-radius-sm);
-        cursor: pointer;
-        font-size: 0.8rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .copy-btn:hover {
-        background: var(--primary-color);
-        color: var(--bg-primary);
-    }
-
-    .data-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-
-    .data-item {
-        background: var(--bg-primary);
-        border: 1px solid var(--bg-tertiary);
-        border-radius: var(--border-radius-sm);
-        padding: 1rem;
-    }
-
-    .data-label {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-    }
-
-    .data-value {
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-        color: var(--primary-color);
-        word-break: break-all;
-    }
-
-    .help-text {
-        background: rgba(0, 212, 255, 0.05);
-        border-left: 3px solid var(--primary-color);
-        padding: 1rem;
-        border-radius: var(--border-radius-sm);
-        margin: 1rem 0;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-
-    .help-text strong {
-        color: var(--primary-color);
-    }
-</style>
-
-<div class="tool-container">
-    <div class="tool-header">
-        <h1><i class="fas fa-robot"></i> SolidWorks 转 URDF 工具</h1>
-        <p>将 SolidWorks 质量属性报告转换为 URDF 和 Isaac Sim 格式</p>
-    </div>
-
-    <div class="help-text">
-        <strong>使用说明：</strong>在 SolidWorks 中导出零件的质量属性报告（包含质量、重心、惯性张量等数据），粘贴到左侧输入框，点击"转换"按钮即可生成 URDF 格式的惯性参数。
-    </div>
-
-    <div class="tool-main">
-        <div class="input-section">
-            <h3 class="section-title">
-                <i class="fas fa-paste"></i> 输入数据
-            </h3>
-            <p class="section-desc">粘贴 SolidWorks 质量属性报告文本</p>
-            <textarea id="input" placeholder="在此粘贴 SolidWorks 报告文本...&#10;&#10;包含以下内容：&#10;- 质量 = ...&#10;- 重心 X/Y/Z = ...&#10;- 惯性张量 Lxx/Lxy/... = ..."></textarea>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="process()">
-                    <i class="fas fa-magic"></i> 立即转换
-                </button>
-                <button class="btn btn-secondary" onclick="clearInput()">
-                    <i class="fas fa-trash"></i> 清空
-                </button>
-            </div>
-            <div id="status" class="status-message"></div>
+    <div class="container">
+        <div class="col">
+            <div style="font-size:12px; color:#aaa;">将 SolidWorks 文本完整粘贴到下方 (包含质量、重心、Lxx等数据):</div>
+            <textarea id="input" placeholder="在此粘贴..."></textarea>
+            <button onclick="process()">🚀 立即转换</button>
+            <div id="log" class="err-log"></div>
         </div>
 
-        <div class="output-section">
-            <h3 class="section-title">
-                <i class="fas fa-file-code"></i> 转换结果
-            </h3>
-            <p class="section-desc">URDF 和 Isaac Sim 参数</p>
-            <div id="output">
-                <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                    <p>转换结果将显示在这里</p>
-                </div>
-            </div>
+        <div class="col results" id="output">
+            <div style="text-align:center; color:#555; margin-top:50px;">结果将显示在这里</div>
         </div>
     </div>
-</div>
 
 <script>
-    function showStatus(message, type = 'info') {
-        const el = document.getElementById('status');
-        el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
-        el.className = `status-message show ${type}`;
-    }
-
-    function clearInput() {
-        document.getElementById('input').value = '';
-        document.getElementById('output').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;"><i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i><p>转换结果将显示在这里</p></div>';
-        document.getElementById('status').className = 'status-message';
+    function log(msg, isError=false) {
+        const el = document.getElementById('log');
+        if(!msg) { el.innerText = ""; return; }
+        el.innerText = (isError ? "❌ " : "ℹ️ ") + msg;
+        el.style.color = isError ? "#f14c4c" : "#4ec9b0";
     }
 
     function process() {
         const text = document.getElementById('input').value;
         const out = document.getElementById('output');
-        out.innerHTML = '';
+        out.innerHTML = "";
+        log(""); // 清空日志
 
-        if (!text.trim()) {
-            showStatus('请先粘贴 SolidWorks 报告文本！', 'error');
-            return;
-        }
+        if (!text.trim()) { log("请先粘贴文本!", true); return; }
 
-        let cleanText = text.replace(/座标/g, '坐标');
+        // 1. 预处理：解决"座标系"和空格问题
+        // 将 "座标" 统一替换为 "坐标"，将连续空白符替换为单空格(保留换行用于分割)
+        let cleanText = text.replace(/座标/g, "坐标");
+
+        // 2. 尝试分割零件 (按 "xxx 的质量属性" 分割)
         let parts = [];
         const splitRegex = /(.+?)\s*的质量属性/g;
         let match;
@@ -345,14 +76,16 @@ permalink: /tools/sw-to-urdf/
         }
 
         if (parts.length === 0) {
-            parts.push({ index: 0, name: '未命名部件' });
+            // 如果没找到标题，强制把整段文本作为一个零件处理
+            parts.push({ index: 0, name: "未命名部件" });
         }
 
         let successCount = 0;
 
+        // 3. 逐个零件解析
         for (let i = 0; i < parts.length; i++) {
             const start = parts[i].index;
-            const end = (i + 1 < parts.length) ? parts[i + 1].index : cleanText.length;
+            const end = (i + 1 < parts.length) ? parts[i+1].index : cleanText.length;
             const content = cleanText.substring(start, end);
 
             try {
@@ -361,46 +94,60 @@ permalink: /tools/sw-to-urdf/
                 successCount++;
             } catch (e) {
                 console.error(e);
-                showStatus(`解析 "${parts[i].name}" 失败: ${e.message}`, 'error');
+                log(`解析 "${parts[i].name}" 失败: ${e.message}`, true);
             }
         }
 
         if (successCount > 0) {
-            showStatus(`成功解析 ${successCount} 个部件`, 'success');
+            log(`成功解析 ${successCount} 个部件。`);
         }
     }
 
     function parseOnePart(txt, name) {
+        // --- 1. 获取质量 ---
         const mMatch = txt.match(/质量\s*=\s*([\d\.]+)/);
-        if (!mMatch) throw new Error('未找到质量数据');
+        if (!mMatch) throw new Error("未找到 '质量 = ...' 数据");
         const mass = parseFloat(mMatch[1]);
 
+        // --- 2. 获取重心 ---
+        // 策略：找 "重心" 关键字后紧跟的 X, Y, Z
         const comRegex = /重心[\s\S]*?X\s*=\s*([-\d\.]+)[\s\S]*?Y\s*=\s*([-\d\.]+)[\s\S]*?Z\s*=\s*([-\d\.]+)/i;
         const cMatch = txt.match(comRegex);
-        if (!cMatch) throw new Error('未找到重心数据');
+        if (!cMatch) throw new Error("未找到 '重心' X/Y/Z 数据");
 
+        // 毫米转米
         const com = [
             parseFloat(cMatch[1]) / 1000,
             parseFloat(cMatch[2]) / 1000,
             parseFloat(cMatch[3]) / 1000
         ];
 
+        // --- 3. 获取惯性张量 (核心难点) ---
+        // 策略：先找到 "由重心决定...对齐" 这个锚点。
+        // 然后从这个锚点开始，向后搜寻 Lxx, Lxy...
+        // 这样可以避开前面可能出现的 "Ix, Iy, Iz" (主轴) 和后面的 "输出坐标系"
+
         const anchorRegex = /由重心决定[^(\n]*?对齐/i;
         const anchorMatch = txt.match(anchorRegex);
 
-        if (!anchorMatch) throw new Error('未找到惯性张量数据段落');
+        if (!anchorMatch) throw new Error("未找到 '由重心决定...并对齐' 的数据段落");
 
+        // 截取从锚点开始的后半段文本
         const inertiaText = txt.substring(anchorMatch.index);
 
+        // 提取 Lxx 或者 Ixx (忽略大小写)
+        // 你的文本里是 Lxx, 之间可能有 tab 或空格
         const getVal = (key) => {
+            // 正则解释：匹配 Lxx 或 Ixx，后面跟任意空白，跟等号，跟任意空白，跟数字
             const r = new RegExp(`[LI]${key}\\s*=\\s*([-\\d\\.]+)`, 'i');
             const m = inertiaText.match(r);
-            if (!m) return 0;
-            return parseFloat(m[1]) / 1000000;
+            if (!m) return 0; // 如果没找到，默认为0 (比如 Lxy有时不显示?) 通常都有
+            return parseFloat(m[1]) / 1000000; // kg*mm^2 -> kg*m^2
         };
 
+        // 验证至少找到了 Lxx，防止匹配错位置
         if (!inertiaText.match(/[LI]xx\s*=/i)) {
-            throw new Error('未找到惯性张量数据');
+            throw new Error("在重心段落中未找到 Lxx/Ixx 数据");
         }
 
         const I = [
@@ -409,6 +156,7 @@ permalink: /tools/sw-to-urdf/
             [getVal('zx'), getVal('zy'), getVal('zz')]
         ];
 
+        // 计算 Isaac Sim 参数
         const isaac = calculateIsaac(I);
 
         return { name, mass, com, urdf: I, isaac };
@@ -419,8 +167,9 @@ permalink: /tools/sw-to-urdf/
             const fmt = n => n.toExponential(5);
             const fmtFix = n => n.toFixed(6);
 
-            const ixx = fmt(d.urdf[0][0]), ixy = fmt(d.urdf[0][1]), ixz = fmt(d.urdf[0][2]);
-            const iyy = fmt(d.urdf[1][1]), iyz = fmt(d.urdf[1][2]), izz = fmt(d.urdf[2][2]);
+            // URDF Matrix
+            const ixx=fmt(d.urdf[0][0]), ixy=fmt(d.urdf[0][1]), ixz=fmt(d.urdf[0][2]);
+            const iyy=fmt(d.urdf[1][1]), iyz=fmt(d.urdf[1][2]), izz=fmt(d.urdf[2][2]);
 
             const urdfStr = `<link name="${d.name}">
   <inertial>
@@ -430,77 +179,84 @@ permalink: /tools/sw-to-urdf/
   </inertial>
 </link>`;
 
+            // Isaac Data
             const diagStr = d.isaac.eigenvalues.map(fmt).join(', ');
             const euler = d.isaac.euler;
             const eulerStr = `${euler.roll.toFixed(2)}°, ${euler.pitch.toFixed(2)}°, ${euler.yaw.toFixed(2)}°`;
 
             const div = document.createElement('div');
-            div.className = 'result-card';
+            div.className = 'card';
             div.innerHTML = `
-                <div class="result-title">${d.name}</div>
-                <div class="result-subtitle">单位已自动换算（mm → m, kg·mm² → kg·m²）</div>
-
-                <div class="code-block">
-                    <code>${escapeHtml(urdfStr)}</code>
-                    <button class="copy-btn" onclick="copyToClip(this)">
-                        <i class="fas fa-copy"></i> 复制 URDF
-                    </button>
+                <div style="font-weight:bold; color:#4ec9b0; margin-bottom:10px;">
+                    ${d.name} <span style="font-size:11px; color:#666; font-weight:normal;">(单位已自动换算)</span>
                 </div>
 
-                <div class="data-grid">
-                    <div class="data-item">
-                        <div class="data-label">质量 (kg)</div>
-                        <div class="data-value">${d.mass}</div>
+                <div class="code-box">${escapeHtml(urdfStr)}<button class="copy-btn" onclick="copyToClip(this)">复制 URDF</button></div>
+
+                <div class="grid">
+                    <div class="label-with-help">
+                        <span>Mass</span>
                     </div>
-                    <div class="data-item">
-                        <div class="data-label">重心 (m)</div>
-                        <div class="data-value">${fmtFix(d.com[0])}, ${fmtFix(d.com[1])}, ${fmtFix(d.com[2])}</div>
+                    <span class="val">${d.mass}</span>
+
+                    <div class="label-with-help">
+                        <span>CoM (m)</span>
+                        <div class="tooltip">
+                            <span class="help-icon">?</span>
+                            <span class="tooltiptext">Center of Mass coordinates in meters (X, Y, Z)</span>
+                        </div>
                     </div>
-                    <div class="data-item">
-                        <div class="data-label">对角惯量 (kg·m²)</div>
-                        <div class="data-value">${diagStr}</div>
+                    <span class="val">${fmtFix(d.com[0])}, ${fmtFix(d.com[1])}, ${fmtFix(d.com[2])}</span>
+
+                    <div class="label-with-help">
+                        <span>Diagonal Inertia</span>
                     </div>
-                    <div class="data-item">
-                        <div class="data-label">主轴欧拉角</div>
-                        <div class="data-value">${eulerStr}</div>
+                    <span class="val">${diagStr}</span>
+
+                    <div class="label-with-help">
+                        <span>Principal Axes</span>
+                        <div class="tooltip">
+                            <span class="help-icon">?</span>
+                            <span class="tooltiptext">Euler angles in degrees (Roll/X, Pitch/Y, Yaw/Z)</span>
+                        </div>
                     </div>
+                    <span class="val">${eulerStr}</span>
                 </div>
             `;
             container.appendChild(div);
-        } catch (e) {
-            console.error('Render error:', e);
+        } catch(e) {
+            console.error("Render error:", e);
             const div = document.createElement('div');
-            div.className = 'result-card';
-            div.innerHTML = `<div style="color: var(--danger-color);">渲染失败: ${e.message}</div>`;
+            div.className = 'card';
+            div.innerHTML = `<div style="color:#f14c4c;">渲染失败: ${e.message}</div>`;
             container.appendChild(div);
         }
     }
 
+    // --- 数学工具 ---
     function copyToClip(btn) {
-        const txt = btn.parentElement.innerText.replace('复制 URDF', '').trim();
+        const txt = btn.parentElement.innerText.replace("复制 URDF", "");
         navigator.clipboard.writeText(txt).then(() => {
-            const originText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> 已复制!';
-            setTimeout(() => btn.innerHTML = originText, 1500);
+            const originText = btn.innerText;
+            btn.innerText = "已复制!";
+            setTimeout(() => btn.innerText = originText, 1000);
         });
     }
+    function escapeHtml(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-    function escapeHtml(t) {
-        return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
+    // Jacobi & Quat Algorithm
     function calculateIsaac(m) {
         try {
             const res = jacobi(m);
             const quat = rotationMatrixToQuaternion(res.eigenvectors);
             const euler = quaternionToEuler(quat);
             return { eigenvalues: res.eigenvalues, quat: quat, euler: euler };
-        } catch (e) {
-            console.error('Isaac calculation error:', e);
+        } catch(e) {
+            console.error("Isaac calculation error:", e);
             return {
                 eigenvalues: [0, 0, 0],
-                quat: { w: 1, x: 0, y: 0, z: 0 },
-                euler: { roll: 0, pitch: 0, yaw: 0 }
+                quat: {w: 1, x: 0, y: 0, z: 0},
+                euler: {roll: 0, pitch: 0, yaw: 0}
             };
         }
     }
@@ -508,16 +264,16 @@ permalink: /tools/sw-to-urdf/
     function jacobi(A_in) {
         let n = 3;
         let A = JSON.parse(JSON.stringify(A_in));
-        let V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        let V = [[1,0,0],[0,1,0],[0,0,1]];
         let maxIter = 50;
 
-        for (let iter = 0; iter < maxIter; iter++) {
+        for(let iter = 0; iter < maxIter; iter++) {
             let maxVal = 0;
             let p = 0, q = 0;
 
-            for (let i = 0; i < n - 1; i++) {
-                for (let j = i + 1; j < n; j++) {
-                    if (Math.abs(A[i][j]) > maxVal) {
+            for(let i = 0; i < n-1; i++) {
+                for(let j = i+1; j < n; j++) {
+                    if(Math.abs(A[i][j]) > maxVal) {
                         maxVal = Math.abs(A[i][j]);
                         p = i;
                         q = j;
@@ -525,10 +281,10 @@ permalink: /tools/sw-to-urdf/
                 }
             }
 
-            if (maxVal < 1e-15) break;
+            if(maxVal < 1e-15) break;
 
             let phi;
-            if (A[p][p] === A[q][q]) {
+            if(A[p][p] === A[q][q]) {
                 phi = Math.PI / 4;
             } else {
                 phi = 0.5 * Math.atan(2 * A[p][q] / (A[p][p] - A[q][q]));
@@ -536,18 +292,18 @@ permalink: /tools/sw-to-urdf/
 
             let c = Math.cos(phi);
             let s = Math.sin(phi);
-            let App = c * c * A[p][p] + s * s * A[q][q] + 2 * c * s * A[p][q];
-            let Aqq = s * s * A[p][p] + c * c * A[q][q] - 2 * c * s * A[p][q];
+            let App = c*c*A[p][p] + s*s*A[q][q] + 2*c*s*A[p][q];
+            let Aqq = s*s*A[p][p] + c*c*A[q][q] - 2*c*s*A[p][q];
 
             A[p][q] = 0;
             A[q][p] = 0;
             A[p][p] = App;
             A[q][q] = Aqq;
 
-            for (let i = 0; i < n; i++) {
-                if (i !== p && i !== q) {
-                    let Aip = c * A[i][p] + s * A[i][q];
-                    let Aiq = -s * A[i][p] + c * A[i][q];
+            for(let i = 0; i < n; i++) {
+                if(i !== p && i !== q) {
+                    let Aip = c*A[i][p] + s*A[i][q];
+                    let Aiq = -s*A[i][p] + c*A[i][q];
                     A[i][p] = Aip;
                     A[p][i] = Aip;
                     A[i][q] = Aiq;
@@ -555,9 +311,9 @@ permalink: /tools/sw-to-urdf/
                 }
             }
 
-            for (let i = 0; i < n; i++) {
-                let Vip = c * V[i][p] + s * V[i][q];
-                let Viq = -s * V[i][p] + c * V[i][q];
+            for(let i = 0; i < n; i++) {
+                let Vip = c*V[i][p] + s*V[i][q];
+                let Viq = -s*V[i][p] + c*V[i][q];
                 V[i][p] = Vip;
                 V[i][q] = Viq;
             }
@@ -573,19 +329,19 @@ permalink: /tools/sw-to-urdf/
         let tr = R[0][0] + R[1][1] + R[2][2];
         let qw, qx, qy, qz;
 
-        if (tr > 0) {
+        if(tr > 0) {
             let S = Math.sqrt(tr + 1.0) * 2;
             qw = 0.25 * S;
             qx = (R[2][1] - R[1][2]) / S;
             qy = (R[0][2] - R[2][0]) / S;
             qz = (R[1][0] - R[0][1]) / S;
-        } else if ((R[0][0] > R[1][1]) && (R[0][0] > R[2][2])) {
+        } else if((R[0][0] > R[1][1]) && (R[0][0] > R[2][2])) {
             let S = Math.sqrt(1.0 + R[0][0] - R[1][1] - R[2][2]) * 2;
             qw = (R[2][1] - R[1][2]) / S;
             qx = 0.25 * S;
             qy = (R[0][1] + R[1][0]) / S;
             qz = (R[0][2] + R[2][0]) / S;
-        } else if (R[1][1] > R[2][2]) {
+        } else if(R[1][1] > R[2][2]) {
             let S = Math.sqrt(1.0 + R[1][1] - R[0][0] - R[2][2]) * 2;
             qw = (R[0][2] - R[2][0]) / S;
             qx = (R[0][1] + R[1][0]) / S;
@@ -599,21 +355,28 @@ permalink: /tools/sw-to-urdf/
             qz = 0.25 * S;
         }
 
-        return { w: qw, x: qx, y: qy, z: qz };
+        return {w: qw, x: qx, y: qy, z: qz};
     }
 
     function quaternionToEuler(q) {
+        // 四元数转欧拉角 (ZYX 顺序，返回度数)
+        // q = {w, x, y, z}
+
+        // Roll (绕 X 轴)
         const sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
         const cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
         const roll = Math.atan2(sinr_cosp, cosr_cosp);
 
+        // Pitch (绕 Y 轴)
         const sinp = 2 * (q.w * q.y - q.z * q.x);
         const pitch = Math.asin(Math.max(-1, Math.min(1, sinp)));
 
+        // Yaw (绕 Z 轴)
         const siny_cosp = 2 * (q.w * q.z + q.x * q.y);
         const cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
         const yaw = Math.atan2(siny_cosp, cosy_cosp);
 
+        // 转换为度数
         return {
             roll: roll * 180 / Math.PI,
             pitch: pitch * 180 / Math.PI,
@@ -621,3 +384,5 @@ permalink: /tools/sw-to-urdf/
         };
     }
 </script>
+</body>
+</html>
