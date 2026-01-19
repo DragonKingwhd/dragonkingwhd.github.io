@@ -80,6 +80,36 @@ permalink: /tools/
                 </div>
             </div>
             
+            <div class="card">
+                <div class="tool-icon">
+                    <i class="fas fa-robot" style="font-size: 2.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem; display: block;"></i>
+                </div>
+                <div class="tool-content">
+                    <h3>URDF 批量转换器</h3>
+                    <p>
+                        专业的机器人模型参数转换工具，支持将 URDF 文件中的惯性参数自动转换为 Isaac Sim 格式。
+                        自动计算主轴、对角化惯量张量、生成欧拉角和四元数表示。
+                    </p>
+
+                    <div class="tool-features" style="margin: 1rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <span class="feature" style="background: rgba(0, 212, 255, 0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">URDF 解析</span>
+                        <span class="feature" style="background: rgba(0, 212, 255, 0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">惯量对角化</span>
+                        <span class="feature" style="background: rgba(0, 212, 255, 0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">四元数转换</span>
+                        <span class="feature" style="background: rgba(0, 212, 255, 0.1); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem;">实时搜索</span>
+                    </div>
+
+                    <div class="tool-links" style="margin: 1.5rem 0; display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="urdf-converter.html" class="btn btn-primary" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> 打开工具
+                        </a>
+                    </div>
+
+                    <div class="tool-tech" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 212, 255, 0.2); color: var(--text-secondary); font-size: 0.9rem;">
+                        <strong>功能:</strong> Jacobi 特征值分解、旋转矩阵转换、本地处理无数据上传
+                    </div>
+                </div>
+            </div>
+
             <!-- 可以在这里添加更多工具 -->
             <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
                 <i class="fas fa-tools" style="font-size: 3rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;"></i>

@@ -1,0 +1,683 @@
+---
+layout: null
+title: URDF 批量转 Isaac Sim 参数工具
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URDF 批量转 Isaac Sim 参数工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #00d4ff;
+            --secondary-color: #ff6b6b;
+            --accent-color: #7c3aed;
+            --success-color: #10b981;
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1d29;
+            --bg-tertiary: #2a2d39;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #3e3e42;
+            --shadow-sm: 0 2px 4px rgba(0, 212, 255, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 212, 255, 0.15);
+            --shadow-lg: 0 8px 25px rgba(0, 212, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 顶部面板 */
+        .top-panel {
+            display: grid;
+            grid-template-columns: 1fr 250px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            background: rgba(26, 29, 41, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-section h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background-color: rgba(17, 17, 17, 0.8);
+            color: #9cdcfe;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            resize: vertical;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #666;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: var(--primary-color);
+        }
+
+        /* 搜索栏 */
+        .search-section {
+            margin-bottom: 25px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: rgba(26, 29, 41, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .search-bar::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* 结果统计 */
+        .results-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .stats-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .stats-text strong {
+            color: var(--primary-color);
+        }
+
+        /* 结果容器 */
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            min-height: 200px;
+        }
+
+        /* 卡片样式 */
+        .link-card {
+            background: rgba(26, 29, 41, 0.8);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .link-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+            background: rgba(26, 29, 41, 0.95);
+        }
+
+        .link-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .link-name i {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .prop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 13px;
+            gap: 10px;
+        }
+
+        .prop-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 140px;
+        }
+
+        .prop-val {
+            font-family: 'JetBrains Mono', monospace;
+            color: #b5cea8;
+            background: rgba(17, 17, 17, 0.8);
+            padding: 6px 10px;
+            border-radius: 4px;
+            flex: 1;
+            word-break: break-all;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .prop-val:hover {
+            border-color: var(--primary-color);
+            background: rgba(17, 17, 17, 0.95);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state small {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .top-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .results-container {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            textarea {
+                height: 150px;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            .prop-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .prop-label {
+                min-width: auto;
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* 成功提示 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h1><i class="fas fa-robot"></i> URDF 批量转换器</h1>
+            <p>将 URDF 文件参数自动转换为 Isaac Sim 格式</p>
+        </div>
+
+        <!-- 顶部面板 -->
+        <div class="top-panel">
+            <div class="input-section">
+                <h3><i class="fas fa-file-code"></i> URDF 输入</h3>
+                <textarea id="urdfInput" placeholder="请将完整的 URDF 文件内容粘贴到这里...&#10;&#10;支持 XML 格式，工具会自动提取惯性数据。"></textarea>
+            </div>
+            <div class="controls">
+                <button class="btn-primary" onclick="processURDF()">
+                    <i class="fas fa-magic"></i>
+                    <span>开始转换</span>
+                </button>
+                <div class="info-box">
+                    <strong><i class="fas fa-info-circle"></i> 提示</strong><br>
+                    ✓ 支持 XML 格式<br>
+                    ✓ 自动忽略无惯性数据的部件<br>
+                    ✓ 计算主轴和四元数<br>
+                    ✓ 本地处理，无数据上传
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索和统计 -->
+        <div class="search-section">
+            <input type="text" id="searchInput" class="search-bar" placeholder="🔍 搜索部件名称 (例如: foot, link_1)..." onkeyup="filterResults()">
+        </div>
+
+        <div class="results-stats">
+            <span class="stats-text">找到 <strong id="resultCount">0</strong> 个部件</span>
+        </div>
+
+        <!-- 结果容器 -->
+        <div class="results-container" id="resultsArea">
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>暂无数据</p>
+                <small>请粘贴 URDF 文件内容并点击"开始转换"</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allLinksData = [];
+
+        function processURDF() {
+            const rawText = document.getElementById('urdfInput').value;
+            if (!rawText.trim()) {
+                showToast('请先粘贴 URDF 内容', 'error');
+                return;
+            }
+
+            const parser = new DOMParser();
+            let xmlDoc;
+            try {
+                xmlDoc = parser.parseFromString(rawText, "text/xml");
+            } catch (e) {
+                showToast('XML 解析失败，请检查格式', 'error');
+                return;
+            }
+
+            const links = xmlDoc.getElementsByTagName("link");
+            allLinksData = [];
+
+            if (links.length === 0) {
+                showToast('未找到任何 link 标签', 'error');
+                return;
+            }
+
+            for (let i = 0; i < links.length; i++) {
+                const link = links[i];
+                const name = link.getAttribute("name") || `Unnamed_Link_${i}`;
+                const inertial = link.getElementsByTagName("inertial")[0];
+
+                if (inertial) {
+                    const data = parseInertialBlock(inertial, name);
+                    allLinksData.push(data);
+                }
+            }
+
+            renderResults(allLinksData);
+            showToast(`成功转换 ${allLinksData.length} 个部件`, 'success');
+        }
+
+        function parseInertialBlock(inertialNode, linkName) {
+            const massNode = inertialNode.getElementsByTagName("mass")[0];
+            const mass = massNode ? parseFloat(massNode.getAttribute("value")) : 0;
+
+            const originNode = inertialNode.getElementsByTagName("origin")[0];
+            const originXYZ = originNode ? originNode.getAttribute("xyz") : "0 0 0";
+
+            const inertiaNode = inertialNode.getElementsByTagName("inertia")[0];
+            let ixx=0, ixy=0, ixz=0, iyy=0, iyz=0, izz=0;
+
+            if (inertiaNode) {
+                ixx = parseFloat(inertiaNode.getAttribute("ixx") || 0);
+                ixy = parseFloat(inertiaNode.getAttribute("ixy") || 0);
+                ixz = parseFloat(inertiaNode.getAttribute("ixz") || 0);
+                iyy = parseFloat(inertiaNode.getAttribute("iyy") || 0);
+                iyz = parseFloat(inertiaNode.getAttribute("iyz") || 0);
+                izz = parseFloat(inertiaNode.getAttribute("izz") || 0);
+            }
+
+            const I = [[ixx, ixy, ixz], [ixy, iyy, iyz], [ixz, iyz, izz]];
+            const result = jacobi(I);
+
+            const euler = rotationMatrixToEuler(result.eigenvectors);
+            const quat = rotationMatrixToQuaternion(result.eigenvectors);
+
+            return {
+                name: linkName,
+                mass: mass,
+                com: originXYZ,
+                diagonal: result.eigenvalues,
+                euler: euler,
+                quat: quat
+            };
+        }
+
+        function renderResults(dataArray) {
+            const container = document.getElementById('resultsArea');
+            container.innerHTML = "";
+
+            document.getElementById('resultCount').textContent = dataArray.length;
+
+            if (dataArray.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>未找到有效的惯性数据</p><small>请检查 URDF 文件格式</small></div>';
+                return;
+            }
+
+            dataArray.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+                card.dataset.name = item.name.toLowerCase();
+
+                const diagStr = `${item.diagonal[0].toExponential(4)}, ${item.diagonal[1].toExponential(4)}, ${item.diagonal[2].toExponential(4)}`;
+                const eulerStr = `${item.euler[0].toFixed(2)}°, ${item.euler[1].toFixed(2)}°, ${item.euler[2].toFixed(2)}°`;
+                const quatStr = `${item.quat.w.toFixed(4)}, ${item.quat.x.toFixed(4)}, ${item.quat.y.toFixed(4)}, ${item.quat.z.toFixed(4)}`;
+
+                card.innerHTML = `
+                    <div class="link-name"><i class="fas fa-cube"></i> ${item.name}</div>
+
+                    <div class="prop-row">
+                        <span class="prop-label"><i class="fas fa-weight"></i> 质量 (kg)</span>
+                        <span class="prop-val">${item.mass.toFixed(6)}</span>
+                    </div>
+
+                    <div class="prop-row">
+                        <span class="prop-label"><i class="fas fa-crosshairs"></i> 质心 (m)</span>
+                        <span class="prop-val">${item.com}</span>
+                    </div>
+
+                    <div class="prop-row">
+                        <span class="prop-label"><i class="fas fa-matrix"></i> 对角惯量</span>
+                        <span class="prop-val" title="特征值">${diagStr}</span>
+                    </div>
+
+                    <div class="prop-row">
+                        <span class="prop-label"><i class="fas fa-rotate"></i> 欧拉角 (°)</span>
+                        <span class="prop-val">${eulerStr}</span>
+                    </div>
+
+                    <div class="prop-row">
+                        <span class="prop-label"><i class="fas fa-circle-notch"></i> 四元数</span>
+                        <span class="prop-val" style="font-size:12px;">${quatStr}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterResults() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.link-card');
+
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                if (name.includes(query)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#0e639c';
+            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 数学算法
+        function jacobi(matrix) {
+            let n = 3;
+            let A = JSON.parse(JSON.stringify(matrix));
+            let V = [[1,0,0], [0,1,0], [0,0,1]];
+            let maxIter = 50;
+
+            for (let iter = 0; iter < maxIter; iter++) {
+                let maxVal = 0;
+                let p = 0, q = 0;
+                for (let i = 0; i < n-1; i++) {
+                    for (let j = i+1; j < n; j++) {
+                        if (Math.abs(A[i][j]) > maxVal) {
+                            maxVal = Math.abs(A[i][j]);
+                            p = i; q = j;
+                        }
+                    }
+                }
+                if (maxVal < 1e-15) break;
+
+                let phi;
+                if (A[p][p] === A[q][q]) phi = Math.PI / 4;
+                else phi = 0.5 * Math.atan(2 * A[p][q] / (A[p][p] - A[q][q]));
+
+                let c = Math.cos(phi);
+                let s = Math.sin(phi);
+
+                let App = c*c*A[p][p] + s*s*A[q][q] + 2*c*s*A[p][q];
+                let Aqq = s*s*A[p][p] + c*c*A[q][q] - 2*c*s*A[p][q];
+                A[p][q] = 0; A[q][p] = 0; A[p][p] = App; A[q][q] = Aqq;
+
+                for (let i = 0; i < n; i++) {
+                    if (i !== p && i !== q) {
+                        let Aip = c*A[i][p] + s*A[i][q];
+                        let Aiq = -s*A[i][p] + c*A[i][q];
+                        A[i][p] = Aip; A[p][i] = Aip;
+                        A[i][q] = Aiq; A[q][i] = Aiq;
+                    }
+                }
+                for (let i = 0; i < n; i++) {
+                    let Vip = c*V[i][p] + s*V[i][q];
+                    let Viq = -s*V[i][p] + c*V[i][q];
+                    V[i][p] = Vip; V[i][q] = Viq;
+                }
+            }
+            return { eigenvalues: [A[0][0], A[1][1], A[2][2]], eigenvectors: V };
+        }
+
+        function rotationMatrixToEuler(R) {
+            let det = R[0][0]*(R[1][1]*R[2][2]-R[1][2]*R[2][1]) - R[0][1]*(R[1][0]*R[2][2]-R[1][2]*R[2][0]) + R[0][2]*(R[1][0]*R[2][1]-R[1][1]*R[2][0]);
+            if (det < 0) { R[0][0]=-R[0][0]; R[1][0]=-R[1][0]; R[2][0]=-R[2][0]; }
+
+            let sy = Math.sqrt(R[0][0]*R[0][0] + R[1][0]*R[1][0]);
+            let x, y, z;
+            if (sy > 1e-6) {
+                x = Math.atan2(R[2][1], R[2][2]);
+                y = Math.atan2(-R[2][0], sy);
+                z = Math.atan2(R[1][0], R[0][0]);
+            } else {
+                x = Math.atan2(-R[1][2], R[1][1]);
+                y = Math.atan2(-R[2][0], sy);
+                z = 0;
+            }
+            const rad = 180 / Math.PI;
+            return [x * rad, y * rad, z * rad];
+        }
+
+        function rotationMatrixToQuaternion(R) {
+            let tr = R[0][0] + R[1][1] + R[2][2];
+            let qw, qx, qy, qz;
+            if (tr > 0) {
+                let S = Math.sqrt(tr + 1.0) * 2;
+                qw = 0.25 * S; qx = (R[2][1] - R[1][2]) / S; qy = (R[0][2] - R[2][0]) / S; qz = (R[1][0] - R[0][1]) / S;
+            } else if ((R[0][0] > R[1][1]) && (R[0][0] > R[2][2])) {
+                let S = Math.sqrt(1.0 + R[0][0] - R[1][1] - R[2][2]) * 2;
+                qw = (R[2][1] - R[1][2]) / S; qx = 0.25 * S; qy = (R[0][1] + R[1][0]) / S; qz = (R[0][2] + R[2][0]) / S;
+            } else if (R[1][1] > R[2][2]) {
+                let S = Math.sqrt(1.0 + R[1][1] - R[0][0] - R[2][2]) * 2;
+                qw = (R[0][2] - R[2][0]) / S; qx = (R[0][1] + R[1][0]) / S; qy = 0.25 * S; qz = (R[1][2] + R[2][1]) / S;
+            } else {
+                let S = Math.sqrt(1.0 + R[2][2] - R[0][0] - R[1][1]) * 2;
+                qw = (R[1][0] - R[0][1]) / S; qx = (R[0][2] + R[2][0]) / S; qy = (R[1][2] + R[2][1]) / S; qz = 0.25 * S;
+            }
+            return { w: qw, x: qx, y: qy, z: qz };
+        }
+    </script>
+</body>
+</html>
