@@ -1,225 +1,225 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code (claude.ai/code) 在此仓库中工作时提供指导。
 
-## Project Overview
+## 项目概述
 
-This is a personal tech blog and portfolio website built with **Jekyll** and hosted on **GitHub Pages**. The site features a modern dark theme with responsive design, blog posts, tools, a diary section, and a guestbook with Gitalk comments integration.
+这是一个使用 **Jekyll** 构建、托管在 **GitHub Pages** 上的个人技术博客和作品集网站。网站采用现代深色主题，具有响应式设计，包含博客文章、工具集、日记部分和集成 Gitalk 评论系统的留言板。
 
-**Live site:** https://dragonkingwhd.github.io
+**在线网站：** https://dragonkingwhd.github.io
 
-## Build & Development Commands
+## 构建与开发命令
 
-### Prerequisites
-- Ruby 2.7+ with Bundler
+### 前置要求
+- Ruby 2.7+ 和 Bundler
 - Git
 
-### Common Commands
+### 常用命令
 
-**Install dependencies:**
+**安装依赖：**
 ```bash
 bundle install
 ```
 
-**Build the site locally:**
+**本地构建网站：**
 ```bash
 bundle exec jekyll build
 ```
 
-**Serve locally with live reload (development):**
+**本地开发服务器（带实时重载）：**
 ```bash
 bundle exec jekyll serve
 ```
-The site will be available at `http://localhost:4000`
+网站将在 `http://localhost:4000` 可访问
 
-**Deploy to GitHub Pages:**
+**部署到 GitHub Pages：**
 ```bash
 git add .
-git commit -m "Your commit message"
+git commit -m "你的提交信息"
 git push origin main
 ```
-GitHub Pages automatically builds and deploys on push to the main branch.
+GitHub Pages 会在推送到 main 分支时自动构建和部署。
 
-## Project Structure
+## 项目结构
 
-### Core Directories
+### 核心目录
 
-- **`_posts/`** - Blog articles in Markdown format. Files follow naming convention: `YYYY-MM-DD-title.md`
-- **`_diary_posts/`** - Diary entries (separate collection from blog posts)
-- **`_layouts/`** - Jekyll layout templates (default, post, diary, project, home)
-- **`_includes/`** - Reusable HTML components (navigation, footer, theme-switcher, gitalk comments)
-- **`_data/`** - YAML data files (external resources configuration)
-- **`assets/`** - Static assets (CSS, JavaScript, images, PDFs)
-  - `css/style.css` - Main stylesheet with CSS variables for theming
-  - `js/main.js` - Client-side JavaScript (navigation, smooth scroll, back-to-top button)
+- **`_posts/`** - 博客文章，使用 Markdown 格式。文件命名规范：`YYYY-MM-DD-title.md`
+- **`_diary_posts/`** - 日记条目（与博客文章分离的独立集合）
+- **`_layouts/`** - Jekyll 布局模板（default、post、diary、project、home）
+- **`_includes/`** - 可复用的 HTML 组件（导航、页脚、主题切换器、Gitalk 评论）
+- **`_data/`** - YAML 数据文件（外部资源配置）
+- **`assets/`** - 静态资源（CSS、JavaScript、图片、PDF）
+  - `css/style.css` - 主样式表，包含用于主题的 CSS 变量
+  - `js/main.js` - 客户端 JavaScript（导航、平滑滚动、返回顶部按钮）
 
-### Key Pages
+### 关键页面
 
-- **`index.html`** - Homepage with card-based navigation
-- **`blog.html`** - Blog listing page with search and category filtering
-- **`floating-diary.html`** - Diary entries display
-- **`guestbook.html`** - Guestbook with Gitalk comments
-- **`tools.html`** - Tools collection page
-- **`material-properties.html`** - Material properties tool
-- **`sim2sim-guide.html`** - Sim2Sim deployment guide
+- **`index.html`** - 首页，采用卡片式导航
+- **`blog.html`** - 博客列表页面，支持搜索和分类筛选
+- **`floating-diary.html`** - 日记条目显示
+- **`guestbook.html`** - 留言板，集成 Gitalk 评论
+- **`tools.html`** - 工具集合页面
+- **`material-properties.html`** - 材料属性工具
+- **`sim2sim-guide.html`** - Sim2Sim 部署指南
 
-### Configuration
+### 配置文件
 
-- **`_config.yml`** - Jekyll configuration with site metadata, navigation menu, Gitalk settings, and theme colors
-- **`Gemfile`** - Ruby dependencies (Jekyll 4.3.0, jekyll-feed, jekyll-sitemap, jekyll-seo-tag)
+- **`_config.yml`** - Jekyll 配置，包含网站元数据、导航菜单、Gitalk 设置和主题颜色
+- **`Gemfile`** - Ruby 依赖（Jekyll 4.3.0、jekyll-feed、jekyll-sitemap、jekyll-seo-tag）
 
-## Architecture & Key Patterns
+## 架构与关键模式
 
-### Jekyll Collections
+### Jekyll 集合
 
-The site uses three main content types configured as collections:
+网站使用三种主要内容类型，配置为集合：
 
-1. **Posts** (`_posts/`) - Blog articles with layout: `post`
-2. **Diary Posts** (`_diary_posts/`) - Personal diary entries with layout: `diary`
-3. **Skills** & **Docs** - Additional collections for future expansion
+1. **文章** (`_posts/`) - 博客文章，布局：`post`
+2. **日记** (`_diary_posts/`) - 个人日记条目，布局：`diary`
+3. **技能** 和 **文档** - 用于未来扩展的额外集合
 
-Each collection has default front matter settings in `_config.yml`.
+每个集合在 `_config.yml` 中都有默认的前置元数据设置。
 
-### Theming System
+### 主题系统
 
-The site implements a **dark/light theme switcher** using:
-- CSS custom properties (variables) in `style.css` with `--primary-color`, `--bg-primary`, `--text-primary`, etc.
-- `[data-theme="light"]` attribute selector for light mode overrides
-- `theme-switcher.html` component that toggles theme and persists preference
+网站实现了**深色/浅色主题切换器**，使用：
+- `style.css` 中的 CSS 自定义属性（变量），如 `--primary-color`、`--bg-primary`、`--text-primary` 等
+- `[data-theme="light"]` 属性选择器用于浅色模式覆盖
+- `theme-switcher.html` 组件，用于切换主题并持久化用户偏好
 
-### Comments System
+### 评论系统
 
-**Gitalk** is integrated for post comments:
-- Configuration in `_config.yml` with GitHub OAuth credentials
-- Included via `_includes/gitalk.html` in post layout
-- Requires GitHub OAuth App setup for comment functionality
+**Gitalk** 集成用于文章评论：
+- 在 `_config.yml` 中配置 GitHub OAuth 凭证
+- 通过 `_includes/gitalk.html` 在文章布局中包含
+- 需要设置 GitHub OAuth App 以启用评论功能
 
-### Navigation & Layout
+### 导航与布局
 
-- **`_layouts/default.html`** - Base layout with navbar, main content area, footer, and theme switcher
-- **`_layouts/post.html`** - Extends default, adds post metadata (date, author, categories, tags), post navigation, and share buttons
-- **`_layouts/diary.html`** - Similar to post layout for diary entries
-- Navigation menu items configured in `_config.yml` under `navigation` array
+- **`_layouts/default.html`** - 基础布局，包含导航栏、主内容区、页脚和主题切换器
+- **`_layouts/post.html`** - 扩展默认布局，添加文章元数据（日期、作者、分类、标签）、文章导航和分享按钮
+- **`_layouts/diary.html`** - 类似文章布局，用于日记条目
+- 导航菜单项在 `_config.yml` 的 `navigation` 数组中配置
 
-### Styling Approach
+### 样式方法
 
-- **CSS Variables** for consistent theming across light/dark modes
-- **Responsive Design** with mobile-first approach using media queries
-- **Font Stack**: Inter (sans-serif), JetBrains Mono (monospace), Noto Sans SC (Chinese)
-- **Icons**: Font Awesome 6.4.0 via CDN
-- **Color Scheme**: Cyan primary (#00d4ff), purple accent (#7c3aed), red secondary (#ff6b6b)
+- **CSS 变量** 用于在深色/浅色模式间保持一致的主题
+- **响应式设计** 采用移动优先方法，使用媒体查询
+- **字体栈**：Inter（无衬线）、JetBrains Mono（等宽）、Noto Sans SC（中文）
+- **图标**：Font Awesome 6.4.0 通过 CDN 加载
+- **配色方案**：青色主色（#00d4ff）、紫色强调色（#7c3aed）、红色辅助色（#ff6b6b）
 
-## Content Management
+## 内容管理
 
-### Creating Blog Posts
+### 创建博客文章
 
-1. Create a new file in `_posts/` with naming: `YYYY-MM-DD-title.md`
-2. Add front matter:
+1. 在 `_posts/` 中创建新文件，命名规范：`YYYY-MM-DD-title.md`
+2. 添加前置元数据：
 ```yaml
 ---
 layout: post
-title: "Your Title"
+title: "你的标题"
 date: YYYY-MM-DD HH:MM:SS +0800
-categories: [Category1, Category2]
-tags: [tag1, tag2]
-author: "Author Name"
-excerpt: "Brief description"
+categories: [分类1, 分类2]
+tags: [标签1, 标签2]
+author: "作者名"
+excerpt: "简短描述"
 ---
 ```
-3. Write content in Markdown (supports kramdown syntax)
+3. 使用 Markdown 编写内容（支持 kramdown 语法）
 
-### Creating Diary Entries
+### 创建日记条目
 
-1. Create a new file in `_diary_posts/` with naming: `YYYY-MM-DD-title.md`
-2. Add front matter (similar to posts, layout will be `diary`)
-3. Diary entries use the same Markdown format
+1. 在 `_diary_posts/` 中创建新文件，命名规范：`YYYY-MM-DD-title.md`
+2. 添加前置元数据（类似文章，布局将为 `diary`）
+3. 日记条目使用相同的 Markdown 格式
 
-### Front Matter Fields
+### 前置元数据字段
 
-- `layout` - Template to use (post, diary, default, etc.)
-- `title` - Page/post title
-- `date` - Publication date (used for sorting and permalinks)
-- `categories` - Array of categories (used for filtering in blog.html)
-- `tags` - Array of tags (displayed as hashtags)
-- `author` - Author name
-- `excerpt` - Short description (used in meta tags and listings)
+- `layout` - 使用的模板（post、diary、default 等）
+- `title` - 页面/文章标题
+- `date` - 发布日期（用于排序和永久链接）
+- `categories` - 分类数组（用于 blog.html 中的筛选）
+- `tags` - 标签数组（显示为井号标签）
+- `author` - 作者名
+- `excerpt` - 简短描述（用于元标签和列表）
 
-## Important Implementation Details
+## 重要实现细节
 
-### Permalink Structure
+### 永久链接结构
 
-Configured in `_config.yml`:
-- Posts: `/:categories/:year/:month/:day/:title:output_ext`
-- Diary: `/diary/:year/:month/:day/:title/`
+在 `_config.yml` 中配置：
+- 文章：`/:categories/:year/:month/:day/:title:output_ext`
+- 日记：`/diary/:year/:month/:day/:title/`
 
-### Excluded Files
+### 排除文件
 
-The following are excluded from Jekyll build (in `_config.yml`):
-- Gemfile, Gemfile.lock
+以下文件在 Jekyll 构建中被排除（在 `_config.yml` 中）：
+- Gemfile、Gemfile.lock
 - README.md
-- vendor/ directory
+- vendor/ 目录
 
-### Plugins
+### 插件
 
-- `jekyll-feed` - Generates RSS feed
-- `jekyll-sitemap` - Generates sitemap.xml
-- `jekyll-seo-tag` - SEO meta tags (available but not actively used in current layouts)
+- `jekyll-feed` - 生成 RSS 源
+- `jekyll-sitemap` - 生成 sitemap.xml
+- `jekyll-seo-tag` - SEO 元标签（可用但当前布局中未主动使用）
 
-### External Services
+### 外部服务
 
-- **Gitalk Comments** - Requires GitHub OAuth App credentials in `_config.yml`
-- **Busuanzi Analytics** - Visitor counter script loaded in post layout
-- **Dify Chatbot** - Embedded chatbot on homepage (token in index.html)
-- **Google Fonts** - Inter, JetBrains Mono, Noto Sans SC loaded via CDN
+- **Gitalk 评论** - 需要在 `_config.yml` 中配置 GitHub OAuth App 凭证
+- **不蒜子分析** - 在文章布局中加载的访客计数脚本
+- **Dify 聊天机器人** - 嵌入在首页的聊天机器人（令牌在 index.html 中）
+- **Google Fonts** - Inter、JetBrains Mono、Noto Sans SC 通过 CDN 加载
 
-## Common Development Tasks
+## 常见开发任务
 
-### Adding a New Blog Post
+### 添加新博客文章
 
 ```bash
-# Create file in _posts/
-# Add front matter with layout: post
-# Write content in Markdown
-# Test locally: bundle exec jekyll serve
-# Push to main branch
+# 在 _posts/ 中创建文件
+# 添加前置元数据，layout: post
+# 使用 Markdown 编写内容
+# 本地测试：bundle exec jekyll serve
+# 推送到 main 分支
 ```
 
-### Modifying Styles
+### 修改样式
 
-- Edit `assets/css/style.css`
-- Use CSS variables for colors to maintain theme consistency
-- Test both light and dark themes
+- 编辑 `assets/css/style.css`
+- 使用 CSS 变量设置颜色，以保持主题一致性
+- 测试深色和浅色两种主题
 
-### Updating Navigation
+### 更新导航
 
-Edit `_config.yml` under `navigation` array:
+编辑 `_config.yml` 中的 `navigation` 数组：
 ```yaml
 navigation:
-  - title: Page Title
+  - title: 页面标题
     url: /page-url/
     icon: "fas fa-icon-name"
 ```
 
-### Adding New Pages
+### 添加新页面
 
-1. Create `.html` file in root or subdirectory
-2. Add front matter with `layout: default` or custom layout
-3. Use Jekyll Liquid templating for dynamic content
+1. 在根目录或子目录中创建 `.html` 文件
+2. 添加前置元数据，`layout: default` 或自定义布局
+3. 使用 Jekyll Liquid 模板语言处理动态内容
 
-### Updating Site Configuration
+### 更新网站配置
 
-Edit `_config.yml` for:
-- Site title, description, author info
-- Navigation menu
-- Theme colors
-- Gitalk settings
-- Collection definitions
+编辑 `_config.yml` 以修改：
+- 网站标题、描述、作者信息
+- 导航菜单
+- 主题颜色
+- Gitalk 设置
+- 集合定义
 
-## Notes for Future Development
+## 未来开发注意事项
 
-- The site uses **kramdown** markdown processor with **rouge** syntax highlighting
-- All external resources (fonts, icons, libraries) are loaded via CDN for reliability
-- The theme switcher persists user preference in localStorage
-- Mobile navigation uses a hamburger menu that closes when a link is clicked
-- Post navigation (previous/next) is automatically generated by Jekyll
-- The site is optimized for GitHub Pages deployment (no server-side processing)
+- 网站使用 **kramdown** markdown 处理器和 **rouge** 语法高亮
+- 所有外部资源（字体、图标、库）通过 CDN 加载以确保可靠性
+- 主题切换器在 localStorage 中持久化用户偏好
+- 移动导航使用汉堡菜单，点击链接后自动关闭
+- 文章导航（上一篇/下一篇）由 Jekyll 自动生成
+- 网站针对 GitHub Pages 部署进行了优化（无服务器端处理）
