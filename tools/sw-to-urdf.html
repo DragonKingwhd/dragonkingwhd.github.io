@@ -1,0 +1,623 @@
+---
+layout: default
+title: SolidWorks 转 URDF 工具
+permalink: /tools/sw-to-urdf/
+---
+
+<style>
+    .tool-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .tool-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .tool-header h1 {
+        margin: 0 0 0.5rem 0;
+        color: var(--primary-color);
+        font-size: 2rem;
+    }
+
+    .tool-header p {
+        color: var(--text-secondary);
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .tool-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .tool-main {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .input-section, .output-section {
+        background: var(--bg-secondary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-desc {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    #input {
+        flex: 1;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: var(--border-radius-sm);
+        padding: 1rem;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        resize: none;
+        min-height: 300px;
+    }
+
+    #input::placeholder {
+        color: var(--text-muted);
+    }
+
+    #output {
+        flex: 1;
+        background: var(--bg-primary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: var(--border-radius-sm);
+        padding: 1rem;
+        overflow-y: auto;
+        min-height: 300px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--accent-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .status-message {
+        padding: 1rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.9rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-message.show {
+        display: flex;
+    }
+
+    .status-message.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+    }
+
+    .status-message.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+        border: 1px solid var(--danger-color);
+    }
+
+    .status-message.info {
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .result-card {
+        background: var(--bg-secondary);
+        border-left: 4px solid var(--primary-color);
+        border-radius: var(--border-radius-sm);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .result-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin: 0 0 1rem 0;
+    }
+
+    .result-subtitle {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .code-block {
+        background: var(--bg-primary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: var(--border-radius-sm);
+        padding: 1rem;
+        margin: 1rem 0;
+        position: relative;
+        overflow-x: auto;
+    }
+
+    .code-block code {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+    }
+
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .data-item {
+        background: var(--bg-primary);
+        border: 1px solid var(--bg-tertiary);
+        border-radius: var(--border-radius-sm);
+        padding: 1rem;
+    }
+
+    .data-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .data-value {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--primary-color);
+        word-break: break-all;
+    }
+
+    .help-text {
+        background: rgba(0, 212, 255, 0.05);
+        border-left: 3px solid var(--primary-color);
+        padding: 1rem;
+        border-radius: var(--border-radius-sm);
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .help-text strong {
+        color: var(--primary-color);
+    }
+</style>
+
+<div class="tool-container">
+    <div class="tool-header">
+        <h1><i class="fas fa-robot"></i> SolidWorks 转 URDF 工具</h1>
+        <p>将 SolidWorks 质量属性报告转换为 URDF 和 Isaac Sim 格式</p>
+    </div>
+
+    <div class="help-text">
+        <strong>使用说明：</strong>在 SolidWorks 中导出零件的质量属性报告（包含质量、重心、惯性张量等数据），粘贴到左侧输入框，点击"转换"按钮即可生成 URDF 格式的惯性参数。
+    </div>
+
+    <div class="tool-main">
+        <div class="input-section">
+            <h3 class="section-title">
+                <i class="fas fa-paste"></i> 输入数据
+            </h3>
+            <p class="section-desc">粘贴 SolidWorks 质量属性报告文本</p>
+            <textarea id="input" placeholder="在此粘贴 SolidWorks 报告文本...&#10;&#10;包含以下内容：&#10;- 质量 = ...&#10;- 重心 X/Y/Z = ...&#10;- 惯性张量 Lxx/Lxy/... = ..."></textarea>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="process()">
+                    <i class="fas fa-magic"></i> 立即转换
+                </button>
+                <button class="btn btn-secondary" onclick="clearInput()">
+                    <i class="fas fa-trash"></i> 清空
+                </button>
+            </div>
+            <div id="status" class="status-message"></div>
+        </div>
+
+        <div class="output-section">
+            <h3 class="section-title">
+                <i class="fas fa-file-code"></i> 转换结果
+            </h3>
+            <p class="section-desc">URDF 和 Isaac Sim 参数</p>
+            <div id="output">
+                <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                    <p>转换结果将显示在这里</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showStatus(message, type = 'info') {
+        const el = document.getElementById('status');
+        el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+        el.className = `status-message show ${type}`;
+    }
+
+    function clearInput() {
+        document.getElementById('input').value = '';
+        document.getElementById('output').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;"><i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i><p>转换结果将显示在这里</p></div>';
+        document.getElementById('status').className = 'status-message';
+    }
+
+    function process() {
+        const text = document.getElementById('input').value;
+        const out = document.getElementById('output');
+        out.innerHTML = '';
+
+        if (!text.trim()) {
+            showStatus('请先粘贴 SolidWorks 报告文本！', 'error');
+            return;
+        }
+
+        let cleanText = text.replace(/座标/g, '坐标');
+        let parts = [];
+        const splitRegex = /(.+?)\s*的质量属性/g;
+        let match;
+        while ((match = splitRegex.exec(cleanText)) !== null) {
+            parts.push({ index: match.index, name: match[1].trim() });
+        }
+
+        if (parts.length === 0) {
+            parts.push({ index: 0, name: '未命名部件' });
+        }
+
+        let successCount = 0;
+
+        for (let i = 0; i < parts.length; i++) {
+            const start = parts[i].index;
+            const end = (i + 1 < parts.length) ? parts[i + 1].index : cleanText.length;
+            const content = cleanText.substring(start, end);
+
+            try {
+                const data = parseOnePart(content, parts[i].name);
+                renderCard(data, out);
+                successCount++;
+            } catch (e) {
+                console.error(e);
+                showStatus(`解析 "${parts[i].name}" 失败: ${e.message}`, 'error');
+            }
+        }
+
+        if (successCount > 0) {
+            showStatus(`成功解析 ${successCount} 个部件`, 'success');
+        }
+    }
+
+    function parseOnePart(txt, name) {
+        const mMatch = txt.match(/质量\s*=\s*([\d\.]+)/);
+        if (!mMatch) throw new Error('未找到质量数据');
+        const mass = parseFloat(mMatch[1]);
+
+        const comRegex = /重心[\s\S]*?X\s*=\s*([-\d\.]+)[\s\S]*?Y\s*=\s*([-\d\.]+)[\s\S]*?Z\s*=\s*([-\d\.]+)/i;
+        const cMatch = txt.match(comRegex);
+        if (!cMatch) throw new Error('未找到重心数据');
+
+        const com = [
+            parseFloat(cMatch[1]) / 1000,
+            parseFloat(cMatch[2]) / 1000,
+            parseFloat(cMatch[3]) / 1000
+        ];
+
+        const anchorRegex = /由重心决定[^(\n]*?对齐/i;
+        const anchorMatch = txt.match(anchorRegex);
+
+        if (!anchorMatch) throw new Error('未找到惯性张量数据段落');
+
+        const inertiaText = txt.substring(anchorMatch.index);
+
+        const getVal = (key) => {
+            const r = new RegExp(`[LI]${key}\\s*=\\s*([-\\d\\.]+)`, 'i');
+            const m = inertiaText.match(r);
+            if (!m) return 0;
+            return parseFloat(m[1]) / 1000000;
+        };
+
+        if (!inertiaText.match(/[LI]xx\s*=/i)) {
+            throw new Error('未找到惯性张量数据');
+        }
+
+        const I = [
+            [getVal('xx'), getVal('xy'), getVal('xz')],
+            [getVal('yx'), getVal('yy'), getVal('yz')],
+            [getVal('zx'), getVal('zy'), getVal('zz')]
+        ];
+
+        const isaac = calculateIsaac(I);
+
+        return { name, mass, com, urdf: I, isaac };
+    }
+
+    function renderCard(d, container) {
+        try {
+            const fmt = n => n.toExponential(5);
+            const fmtFix = n => n.toFixed(6);
+
+            const ixx = fmt(d.urdf[0][0]), ixy = fmt(d.urdf[0][1]), ixz = fmt(d.urdf[0][2]);
+            const iyy = fmt(d.urdf[1][1]), iyz = fmt(d.urdf[1][2]), izz = fmt(d.urdf[2][2]);
+
+            const urdfStr = `<link name="${d.name}">
+  <inertial>
+    <origin xyz="${fmtFix(d.com[0])} ${fmtFix(d.com[1])} ${fmtFix(d.com[2])}" rpy="0 0 0" />
+    <mass value="${d.mass}" />
+    <inertia ixx="${ixx}" ixy="${ixy}" ixz="${ixz}" iyy="${iyy}" iyz="${iyz}" izz="${izz}" />
+  </inertial>
+</link>`;
+
+            const diagStr = d.isaac.eigenvalues.map(fmt).join(', ');
+            const euler = d.isaac.euler;
+            const eulerStr = `${euler.roll.toFixed(2)}°, ${euler.pitch.toFixed(2)}°, ${euler.yaw.toFixed(2)}°`;
+
+            const div = document.createElement('div');
+            div.className = 'result-card';
+            div.innerHTML = `
+                <div class="result-title">${d.name}</div>
+                <div class="result-subtitle">单位已自动换算（mm → m, kg·mm² → kg·m²）</div>
+
+                <div class="code-block">
+                    <code>${escapeHtml(urdfStr)}</code>
+                    <button class="copy-btn" onclick="copyToClip(this)">
+                        <i class="fas fa-copy"></i> 复制 URDF
+                    </button>
+                </div>
+
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-label">质量 (kg)</div>
+                        <div class="data-value">${d.mass}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">重心 (m)</div>
+                        <div class="data-value">${fmtFix(d.com[0])}, ${fmtFix(d.com[1])}, ${fmtFix(d.com[2])}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">对角惯量 (kg·m²)</div>
+                        <div class="data-value">${diagStr}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">主轴欧拉角</div>
+                        <div class="data-value">${eulerStr}</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        } catch (e) {
+            console.error('Render error:', e);
+            const div = document.createElement('div');
+            div.className = 'result-card';
+            div.innerHTML = `<div style="color: var(--danger-color);">渲染失败: ${e.message}</div>`;
+            container.appendChild(div);
+        }
+    }
+
+    function copyToClip(btn) {
+        const txt = btn.parentElement.innerText.replace('复制 URDF', '').trim();
+        navigator.clipboard.writeText(txt).then(() => {
+            const originText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制!';
+            setTimeout(() => btn.innerHTML = originText, 1500);
+        });
+    }
+
+    function escapeHtml(t) {
+        return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function calculateIsaac(m) {
+        try {
+            const res = jacobi(m);
+            const quat = rotationMatrixToQuaternion(res.eigenvectors);
+            const euler = quaternionToEuler(quat);
+            return { eigenvalues: res.eigenvalues, quat: quat, euler: euler };
+        } catch (e) {
+            console.error('Isaac calculation error:', e);
+            return {
+                eigenvalues: [0, 0, 0],
+                quat: { w: 1, x: 0, y: 0, z: 0 },
+                euler: { roll: 0, pitch: 0, yaw: 0 }
+            };
+        }
+    }
+
+    function jacobi(A_in) {
+        let n = 3;
+        let A = JSON.parse(JSON.stringify(A_in));
+        let V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        let maxIter = 50;
+
+        for (let iter = 0; iter < maxIter; iter++) {
+            let maxVal = 0;
+            let p = 0, q = 0;
+
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (Math.abs(A[i][j]) > maxVal) {
+                        maxVal = Math.abs(A[i][j]);
+                        p = i;
+                        q = j;
+                    }
+                }
+            }
+
+            if (maxVal < 1e-15) break;
+
+            let phi;
+            if (A[p][p] === A[q][q]) {
+                phi = Math.PI / 4;
+            } else {
+                phi = 0.5 * Math.atan(2 * A[p][q] / (A[p][p] - A[q][q]));
+            }
+
+            let c = Math.cos(phi);
+            let s = Math.sin(phi);
+            let App = c * c * A[p][p] + s * s * A[q][q] + 2 * c * s * A[p][q];
+            let Aqq = s * s * A[p][p] + c * c * A[q][q] - 2 * c * s * A[p][q];
+
+            A[p][q] = 0;
+            A[q][p] = 0;
+            A[p][p] = App;
+            A[q][q] = Aqq;
+
+            for (let i = 0; i < n; i++) {
+                if (i !== p && i !== q) {
+                    let Aip = c * A[i][p] + s * A[i][q];
+                    let Aiq = -s * A[i][p] + c * A[i][q];
+                    A[i][p] = Aip;
+                    A[p][i] = Aip;
+                    A[i][q] = Aiq;
+                    A[q][i] = Aiq;
+                }
+            }
+
+            for (let i = 0; i < n; i++) {
+                let Vip = c * V[i][p] + s * V[i][q];
+                let Viq = -s * V[i][p] + c * V[i][q];
+                V[i][p] = Vip;
+                V[i][q] = Viq;
+            }
+        }
+
+        return {
+            eigenvalues: [A[0][0], A[1][1], A[2][2]],
+            eigenvectors: V
+        };
+    }
+
+    function rotationMatrixToQuaternion(R) {
+        let tr = R[0][0] + R[1][1] + R[2][2];
+        let qw, qx, qy, qz;
+
+        if (tr > 0) {
+            let S = Math.sqrt(tr + 1.0) * 2;
+            qw = 0.25 * S;
+            qx = (R[2][1] - R[1][2]) / S;
+            qy = (R[0][2] - R[2][0]) / S;
+            qz = (R[1][0] - R[0][1]) / S;
+        } else if ((R[0][0] > R[1][1]) && (R[0][0] > R[2][2])) {
+            let S = Math.sqrt(1.0 + R[0][0] - R[1][1] - R[2][2]) * 2;
+            qw = (R[2][1] - R[1][2]) / S;
+            qx = 0.25 * S;
+            qy = (R[0][1] + R[1][0]) / S;
+            qz = (R[0][2] + R[2][0]) / S;
+        } else if (R[1][1] > R[2][2]) {
+            let S = Math.sqrt(1.0 + R[1][1] - R[0][0] - R[2][2]) * 2;
+            qw = (R[0][2] - R[2][0]) / S;
+            qx = (R[0][1] + R[1][0]) / S;
+            qy = 0.25 * S;
+            qz = (R[1][2] + R[2][1]) / S;
+        } else {
+            let S = Math.sqrt(1.0 + R[2][2] - R[0][0] - R[1][1]) * 2;
+            qw = (R[1][0] - R[0][1]) / S;
+            qx = (R[0][2] + R[2][0]) / S;
+            qy = (R[1][2] + R[2][1]) / S;
+            qz = 0.25 * S;
+        }
+
+        return { w: qw, x: qx, y: qy, z: qz };
+    }
+
+    function quaternionToEuler(q) {
+        const sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+        const cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        const roll = Math.atan2(sinr_cosp, cosr_cosp);
+
+        const sinp = 2 * (q.w * q.y - q.z * q.x);
+        const pitch = Math.asin(Math.max(-1, Math.min(1, sinp)));
+
+        const siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+        const cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        const yaw = Math.atan2(siny_cosp, cosy_cosp);
+
+        return {
+            roll: roll * 180 / Math.PI,
+            pitch: pitch * 180 / Math.PI,
+            yaw: yaw * 180 / Math.PI
+        };
+    }
+</script>
