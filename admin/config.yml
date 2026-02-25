@@ -1,0 +1,43 @@
+backend:
+  name: github
+  repo: DragonKingwhd/dragonkingwhd.github.io
+  branch: main
+  auth_type: pkce
+  app_id: Ov23liSOpCFDo1ZkZGZD
+
+media_folder: "assets/images/uploads"
+public_folder: "/assets/images/uploads"
+locale: "zh_Hans"
+
+collections:
+  - name: "posts"
+    label: "博客文章"
+    label_singular: "博客文章"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    editor:
+      preview: false
+    fields:
+      - {label: "Layout", name: "layout", widget: "hidden", default: "post"}
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "发布日期", name: "date", widget: "datetime", format: "YYYY-MM-DD HH:mm:ss +0800"}
+      - {label: "分类", name: "categories", widget: "list", default: []}
+      - {label: "标签", name: "tags", widget: "list", default: []}
+      - {label: "作者", name: "author", widget: "string", default: "王海东"}
+      - {label: "摘要", name: "excerpt", widget: "text", required: false}
+      - {label: "正文", name: "body", widget: "markdown"}
+
+  - name: "diary"
+    label: "浮生日记"
+    label_singular: "日记"
+    folder: "_diary_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    editor:
+      preview: false
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "日期", name: "date", widget: "datetime", format: "YYYY-MM-DD"}
+      - {label: "心情", name: "mood", widget: "string", default: "🌟", required: false}
+      - {label: "正文", name: "body", widget: "markdown"}
