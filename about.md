@@ -12,7 +12,7 @@ permalink: /about/
             </div>
             <div class="about-text">
                 <h1>关于我</h1>
-                <p class="lead">你好！我是一名热爱技术的开发者</p>
+                <p class="lead">你好！我是一名机器人与机械工程方向的研究者和开发者</p>
                 <div class="social-links">
                     {% if site.social.github %}
                     <a href="https://github.com/{{ site.social.github }}" target="_blank">
@@ -49,7 +49,7 @@ permalink: /about/
             <div class="about-section">
                 <h2><i class="fas fa-user"></i> 个人简介</h2>
                 <p>
-                    我是一名充满热情的程序员，喜欢探索新技术，解决有挑战性的问题。
+                    我是一名机器人与机械工程方向的研究者，专注于强化学习、仿真与控制系统。
                     在这个博客里，我会分享我的学习经验、技术心得和一些有趣的项目。
                 </p>
                 <p>
@@ -62,32 +62,32 @@ permalink: /about/
                 <h2><i class="fas fa-code"></i> 技能专长</h2>
                 <div class="skills-grid">
                     <div class="skill-category">
-                        <h3>前端开发</h3>
+                        <h3>机器人与控制</h3>
                         <div class="skills">
-                            <span class="skill">HTML/CSS</span>
-                            <span class="skill">JavaScript</span>
-                            <span class="skill">React</span>
-                            <span class="skill">Vue.js</span>
+                            <span class="skill">机器人学</span>
+                            <span class="skill">强化学习</span>
+                            <span class="skill">控制系统</span>
+                            <span class="skill">机械工程</span>
                         </div>
                     </div>
-                    
+
                     <div class="skill-category">
-                        <h3>后端开发</h3>
+                        <h3>编程语言</h3>
                         <div class="skills">
                             <span class="skill">Python</span>
-                            <span class="skill">Node.js</span>
-                            <span class="skill">Java</span>
-                            <span class="skill">数据库</span>
+                            <span class="skill">C/C++</span>
+                            <span class="skill">MATLAB</span>
+                            <span class="skill">JavaScript</span>
                         </div>
                     </div>
-                    
+
                     <div class="skill-category">
-                        <h3>工具与框架</h3>
+                        <h3>仿真与工具</h3>
                         <div class="skills">
-                            <span class="skill">Git</span>
-                            <span class="skill">Docker</span>
-                            <span class="skill">Linux</span>
-                            <span class="skill">AWS</span>
+                            <span class="skill">Isaac Sim</span>
+                            <span class="skill">MuJoCo</span>
+                            <span class="skill">SolidWorks</span>
+                            <span class="skill">Git/Linux</span>
                         </div>
                     </div>
                 </div>

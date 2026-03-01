@@ -5,7 +5,7 @@ description: >-
   天下英雄如过江之鲫
 
 baseurl: ""
-url: "https://dragonkingwhd.github.io"
+url: "https://dragonkingai.com"
 
 # 构建设置
 markdown: kramdown
@@ -16,6 +16,7 @@ permalink: /:categories/:year/:month/:day/:title:output_ext
 plugins:
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-seo-tag
 
 # 排除文件
 exclude:
@@ -36,7 +37,7 @@ navigation:
     url: /blog/
     icon: "fas fa-pen-fancy"
   - title: 知识库
-    url: /knowledge-base/
+    url: /docs/
     icon: "fas fa-book"
   - title: 工具
     url: /tools/

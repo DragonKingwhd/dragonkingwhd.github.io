@@ -4,7 +4,7 @@ title: "CS61A 学习计划 - Structure and Interpretation of Computer Programs"
 date: 2025-09-12
 categories: [学习, 计算机科学]
 tags: [CS61A, Python, 编程, 学习计划, Berkeley]
-author: "王海东"
+author: "Dragonking"
 ---
 
 ## 课程概述

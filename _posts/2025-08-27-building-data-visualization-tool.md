@@ -4,7 +4,7 @@ title: "从零构建数据可视化工具：技术选型与实现思路"
 date: 2025-08-27
 categories: [前端开发, 数据可视化]
 tags: [JavaScript, Chart.js, SVG, 数据处理, 项目经验]
-author: "Your Name"
+author: "Dragonking"
 ---
 
 最近我完成了一个数据可视化工具的开发，支持多种文件格式、滤波算法和曲线样式。在这篇文章中，我想分享这个项目的技术选型思路和关键实现细节。

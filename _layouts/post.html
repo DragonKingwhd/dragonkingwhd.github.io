@@ -23,17 +23,17 @@ layout: default
                 <span class="post-categories">
                     <i class="fas fa-folder"></i>
                     {% for category in page.categories %}
-                    <a href="/categories/{{ category | slugify }}">{{ category }}</a>
+                    <span>{{ category }}</span>
                     {% unless forloop.last %}, {% endunless %}
                     {% endfor %}
                 </span>
                 {% endif %}
-                
+
                 {% if page.tags.size > 0 %}
                 <div class="post-tags">
                     <i class="fas fa-tags"></i>
                     {% for tag in page.tags %}
-                    <a href="/tags/{{ tag | slugify }}" class="tag">#{{ tag }}</a>
+                    <span class="tag">#{{ tag }}</span>
                     {% endfor %}
                 </div>
                 {% endif %}
