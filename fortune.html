@@ -1,0 +1,723 @@
+---
+layout: null
+title: 赛博抽签筒
+permalink: /fortune/
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博抽签筒 | Cyber Fortune Oracle</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --purple: #7c3aed;
+            --purple-light: #a855f7;
+            --purple-glow: rgba(124, 58, 237, 0.4);
+            --cyan: #00d4ff;
+            --gold: #fbbf24;
+            --bg: #0a0a12;
+            --card-bg: rgba(255,255,255,0.04);
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Noto Sans SC', sans-serif;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Cyber Grid Background */
+        .cyber-bg {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Scan Line */
+        .scanline {
+            position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 1; pointer-events: none;
+            background: linear-gradient(90deg, transparent, var(--purple-glow), transparent);
+            animation: scanMove 4s linear infinite;
+        }
+        @keyframes scanMove { 0% { top: -4px; } 100% { top: 100vh; } }
+
+        /* Particle Canvas */
+        #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* Main Container */
+        .main {
+            position: relative; z-index: 2;
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+
+        /* Back Link */
+        .back-link {
+            position: fixed; top: 20px; left: 20px; z-index: 10;
+            color: #888; text-decoration: none; font-size: 14px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--purple-light); }
+
+        /* ===== PHASE 1: IDLE ===== */
+        .phase { display: none; flex-direction: column; align-items: center; text-align: center; }
+        .phase.active { display: flex; }
+
+        /* Fortune Cylinder */
+        .cylinder-wrap {
+            position: relative; width: 180px; height: 260px; margin-bottom: 40px;
+        }
+
+        .cylinder {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 120px; height: 160px;
+            background: linear-gradient(180deg, rgba(124,58,237,0.15), rgba(124,58,237,0.05));
+            border: 2px solid rgba(124,58,237,0.4);
+            border-radius: 12px 12px 20px 20px;
+            overflow: hidden;
+        }
+
+        .cylinder::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 20px;
+            background: linear-gradient(180deg, rgba(124,58,237,0.3), transparent);
+            border-bottom: 1px solid rgba(124,58,237,0.2);
+            border-radius: 12px 12px 0 0;
+        }
+
+        .stick {
+            position: absolute; bottom: 30px; width: 6px; border-radius: 3px;
+            transform-origin: bottom center;
+        }
+        .stick:nth-child(1) { left: 30px; height: 140px; background: linear-gradient(to top, #a855f7, #d8b4fe); transform: rotate(-6deg); }
+        .stick:nth-child(2) { left: 42px; height: 150px; background: linear-gradient(to top, #7c3aed, #c084fc); transform: rotate(-2deg); }
+        .stick:nth-child(3) { left: 54px; height: 145px; background: linear-gradient(to top, #8b5cf6, #ddd6fe); transform: rotate(3deg); }
+        .stick:nth-child(4) { left: 66px; height: 135px; background: linear-gradient(to top, #a855f7, #e9d5ff); transform: rotate(7deg); }
+        .stick:nth-child(5) { left: 78px; height: 142px; background: linear-gradient(to top, #6d28d9, #c4b5fd); transform: rotate(-4deg); }
+
+        /* Idle float animation */
+        .cylinder-wrap.idle .stick { animation: idleFloat 3s ease-in-out infinite; }
+        .cylinder-wrap.idle .stick:nth-child(2) { animation-delay: 0.2s; }
+        .cylinder-wrap.idle .stick:nth-child(3) { animation-delay: 0.4s; }
+        .cylinder-wrap.idle .stick:nth-child(4) { animation-delay: 0.6s; }
+        .cylinder-wrap.idle .stick:nth-child(5) { animation-delay: 0.8s; }
+        @keyframes idleFloat {
+            0%,100% { transform: translateY(0) var(--rot, rotate(0deg)); }
+            50% { transform: translateY(-6px) var(--rot, rotate(0deg)); }
+        }
+
+        /* Shaking animation */
+        .cylinder-wrap.shaking { animation: shake 0.12s ease-in-out infinite; }
+        .cylinder-wrap.shaking .stick { animation: stickBounce 0.15s ease-in-out infinite; }
+        .cylinder-wrap.shaking .stick:nth-child(2) { animation-delay: 0.03s; }
+        .cylinder-wrap.shaking .stick:nth-child(3) { animation-delay: 0.06s; }
+        .cylinder-wrap.shaking .stick:nth-child(4) { animation-delay: 0.09s; }
+        .cylinder-wrap.shaking .stick:nth-child(5) { animation-delay: 0.12s; }
+        @keyframes shake {
+            0%,100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+        @keyframes stickBounce {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* Flying stick */
+        .flying-stick {
+            position: absolute; top: 20px; left: 50%; width: 6px; height: 100px;
+            background: linear-gradient(to top, var(--gold), #fde68a);
+            border-radius: 3px;
+            transform: translateX(-50%) translateY(80px);
+            opacity: 0;
+            box-shadow: 0 0 15px rgba(251,191,36,0.6);
+        }
+        .flying-stick.fly {
+            animation: flyOut 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes flyOut {
+            0% { transform: translateX(-50%) translateY(80px) rotate(0deg); opacity: 0; }
+            30% { opacity: 1; }
+            100% { transform: translateX(-50%) translateY(-100px) rotate(15deg); opacity: 0; }
+        }
+
+        .page-title {
+            font-size: 36px; font-weight: 900;
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 12px; color: #888; letter-spacing: 5px; text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        /* Glitch text */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text); position: absolute; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: hidden;
+        }
+        .glitch::before {
+            animation: glitch1 3s infinite linear alternate-reverse;
+            clip-path: inset(0 0 80% 0);
+            color: #ff6b6b;
+        }
+        .glitch::after {
+            animation: glitch2 3s infinite linear alternate-reverse;
+            clip-path: inset(80% 0 0 0);
+            color: var(--cyan);
+        }
+        @keyframes glitch1 {
+            0%,90%,100% { transform: translate(0); }
+            92% { transform: translate(-3px, 1px); }
+            94% { transform: translate(3px, -1px); }
+        }
+        @keyframes glitch2 {
+            0%,90%,100% { transform: translate(0); }
+            91% { transform: translate(2px, 1px); }
+            93% { transform: translate(-2px, -1px); }
+        }
+
+        /* Draw Button */
+        .draw-btn {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, var(--purple), #6d28d9);
+            border: 1px solid rgba(168,85,247,0.5);
+            border-radius: 8px;
+            color: #fff; font-size: 18px; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .draw-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--purple-glow);
+        }
+        .draw-btn:active { transform: translateY(0); }
+        .draw-btn::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            animation: btnShine 3s infinite;
+        }
+        @keyframes btnShine { 0%,70%,100% { transform: translateX(-100%); } 80% { transform: translateX(100%); } }
+
+        .draw-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ===== PHASE 3: RESULT ===== */
+        .result-card {
+            width: 100%; max-width: 460px; perspective: 800px;
+        }
+
+        .result-card-inner {
+            background: var(--card-bg);
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 16px;
+            padding: 40px 32px;
+            transform: rotateY(90deg);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .result-card-inner.revealed {
+            transform: rotateY(0deg);
+            opacity: 1;
+        }
+
+        /* Hexagon Badge */
+        .hex-badge {
+            width: 100px; height: 100px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+        .hex-badge svg { width: 100%; height: 100%; }
+        .hex-badge .hex-text {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 900;
+        }
+
+        .fortune-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px; color: #888; letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .fortune-level {
+            font-size: 28px; font-weight: 900; margin-bottom: 20px;
+        }
+
+        .fortune-poem {
+            font-size: 16px; line-height: 2.2; color: #d8b4fe;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(124,58,237,0.06);
+            border-left: 3px solid var(--purple);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .fortune-interp {
+            font-size: 14px; color: #aaa; line-height: 1.8;
+            margin-bottom: 24px;
+        }
+
+        /* Terminal advice */
+        .terminal {
+            background: #0d0d0d;
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-align: left;
+            margin-bottom: 28px;
+        }
+        .terminal-header {
+            display: flex; align-items: center; gap: 6px;
+            margin-bottom: 10px; padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .terminal-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .terminal-dot:nth-child(1) { background: #ff5f57; }
+        .terminal-dot:nth-child(2) { background: #ffbd2e; }
+        .terminal-dot:nth-child(3) { background: #28c840; }
+        .terminal-prompt { color: var(--cyan); }
+        .terminal-text { color: #a3e635; line-height: 1.7; }
+
+        /* Action buttons */
+        .actions {
+            display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 12px 28px;
+            border-radius: 8px; border: 1px solid rgba(124,58,237,0.3);
+            background: rgba(124,58,237,0.1);
+            color: #d8b4fe; font-size: 14px; font-weight: 700; font-family: inherit;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .action-btn:hover {
+            background: rgba(124,58,237,0.2);
+            border-color: var(--purple-light);
+        }
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--purple), #6d28d9);
+            color: #fff; border-color: transparent;
+        }
+        .action-btn.primary:hover {
+            box-shadow: 0 4px 20px var(--purple-glow);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: rgba(124,58,237,0.9); color: #fff;
+            padding: 12px 24px; border-radius: 8px; font-size: 14px;
+            opacity: 0; transition: all 0.3s; z-index: 100; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Level Colors */
+        .level-great { color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.5); }
+        .level-good { color: #a3e635; text-shadow: 0 0 20px rgba(163,230,53,0.3); }
+        .level-mid { color: #d8b4fe; }
+        .level-bad { color: #f87171; text-shadow: 0 0 20px rgba(248,113,113,0.3); }
+        .level-worst { color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title { font-size: 28px; }
+            .cylinder-wrap { width: 140px; height: 220px; }
+            .cylinder { width: 100px; height: 130px; }
+            .stick:nth-child(1) { left: 22px; height: 110px; }
+            .stick:nth-child(2) { left: 32px; height: 120px; }
+            .stick:nth-child(3) { left: 42px; height: 115px; }
+            .stick:nth-child(4) { left: 52px; height: 105px; }
+            .stick:nth-child(5) { left: 62px; height: 112px; }
+            .result-card-inner { padding: 28px 20px; }
+            .fortune-poem { font-size: 15px; }
+            .terminal { font-size: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .page-title { font-size: 24px; }
+            .page-subtitle { font-size: 10px; letter-spacing: 3px; }
+            .draw-btn { padding: 14px 36px; font-size: 16px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            .scanline { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-bg"></div>
+    <div class="scanline"></div>
+    <canvas id="particles"></canvas>
+
+    <a href="/" class="back-link">← 返回首页</a>
+
+    <div class="main">
+        <!-- Phase 1: Idle -->
+        <div id="phase-idle" class="phase active">
+            <div class="cylinder-wrap idle" id="cylinder">
+                <div class="cylinder">
+                    <div class="stick"></div>
+                    <div class="stick"></div>
+                    <div class="stick"></div>
+                    <div class="stick"></div>
+                    <div class="stick"></div>
+                </div>
+                <div class="flying-stick" id="flyingStick"></div>
+            </div>
+            <div class="page-title glitch" data-text="赛博抽签筒">赛博抽签筒</div>
+            <div class="page-subtitle">Cyber Fortune Oracle</div>
+            <button class="draw-btn" id="drawBtn" onclick="startDraw()">开始抽签</button>
+        </div>
+
+        <!-- Phase 3: Result -->
+        <div id="phase-result" class="phase">
+            <div class="result-card">
+                <div class="result-card-inner" id="resultCard">
+                    <div class="hex-badge">
+                        <svg viewBox="0 0 100 100">
+                            <polygon points="50,3 97,25 97,75 50,97 3,75 3,25"
+                                fill="none" stroke-width="2" id="hexStroke"/>
+                        </svg>
+                        <div class="hex-text" id="hexText"></div>
+                    </div>
+                    <div class="fortune-number" id="fortuneNum"></div>
+                    <div class="fortune-level" id="fortuneLevel"></div>
+                    <div class="fortune-poem" id="fortunePoem"></div>
+                    <div class="fortune-interp" id="fortuneInterp"></div>
+                    <div class="terminal">
+                        <div class="terminal-header">
+                            <div class="terminal-dot"></div>
+                            <div class="terminal-dot"></div>
+                            <div class="terminal-dot"></div>
+                        </div>
+                        <div class="terminal-prompt">$ oracle --advice</div>
+                        <div class="terminal-text" id="fortuneAdvice"></div>
+                    </div>
+                    <div class="actions">
+                        <button class="action-btn primary" onclick="resetDraw()">再抽一签</button>
+                        <button class="action-btn" onclick="shareFortune()">分享签文</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ===== 99 Fortune Sticks Data =====
+    const fortunes = [
+        // 大吉 (6)
+        {id:1,level:"大吉",poem:"紫气东来万象新，\n风云际会正当春。\n乘龙直上九霄路，\n功名利禄尽随身。",interpretation:"诸事大顺，万事如意。时运已至，正宜大展宏图，一切努力皆有丰厚回报。",cyberAdvice:"所有系统绿灯亮起，代码零 bug 通过。推送到 main 分支，自信部署！"},
+        {id:2,level:"大吉",poem:"金鳞岂是池中物，\n一遇风云便化龙。\n扶摇直上三千里，\n俯瞰人间万里空。",interpretation:"龙腾虎跃之兆，大事可成。贵人相助，机遇频至，宜果断行动。",cyberAdvice:"你的 pull request 将获得所有 reviewer 的 approve。这是重构祖传代码的最佳时机。"},
+        {id:3,level:"大吉",poem:"春风得意马蹄疾，\n一朝看尽长安花。\n天赐良机不可失，\n乘风破浪正此时。",interpretation:"如春风化雨，百花齐放。事业、学业、感情全面丰收之象，把握当下。",cyberAdvice:"npm install 一路畅通，依赖无冲突。今天适合上线新功能！"},
+        {id:4,level:"大吉",poem:"北斗南辰皆拱照，\n东风西雨总关情。\n鸿运当头天降福，\n前程万里步步赢。",interpretation:"天时地利人和俱备，百事皆宜。大胆追求心中所想，必有所成。",cyberAdvice:"服务器响应 200，延迟 < 10ms。你的技术方案已经是最优解。"},
+        {id:5,level:"大吉",poem:"满天星斗映金光，\n一轮明月照四方。\n千里之行今始步，\n步步生辉万年长。",interpretation:"光芒四射之象。不仅自身运势极佳，还能带动身边人一同向好。",cyberAdvice:"你写的工具函数将被整个团队采用。开源项目即将迎来第一个 star。"},
+        {id:6,level:"大吉",poem:"瑞雪兆丰年岁好，\n春回大地百花开。\n鹏程万里今朝起，\n一飞冲天志不改。",interpretation:"万象更新，大吉大利。过去的困难已经过去，崭新的篇章正在展开。",cyberAdvice:"生产环境零告警已持续 30 天。是时候申请升职加薪了。"},
+
+        // 中吉 (8)
+        {id:7,level:"中吉",poem:"云开月朗天清净，\n花落花开自有时。\n坚持初心行正道，\n前程似锦不须疑。",interpretation:"运势上升中，只需保持现有方向，好消息不久将至。",cyberAdvice:"单元测试覆盖率达到 85%，继续保持，100% 就在前方。"},
+        {id:8,level:"中吉",poem:"风吹杨柳千丝动，\n雨润桃花万朵红。\n稳步向前莫回首，\n光明就在不远中。",interpretation:"时来运转的前奏。虽未达巅峰，但已在上升轨道，切勿急躁。",cyberAdvice:"编译时间从 30s 优化到 15s。方向正确，继续重构。"},
+        {id:9,level:"中吉",poem:"久旱逢甘露正浓，\n他乡遇故人相逢。\n守得云开见月明，\n一切皆在掌握中。",interpretation:"柳暗花明之兆。近期可能遇到意想不到的好消息或贵人。",cyberAdvice:"Stack Overflow 上的解答正好匹配你的 bug。复制粘贴，一次通过。"},
+        {id:10,level:"中吉",poem:"东风送暖入屠苏，\n百尺竿头进一步。\n莫道前路无知己，\n天下谁人不识君。",interpretation:"社交运极佳，贵人运旺。多参加聚会和交流，会有意外收获。",cyberAdvice:"今天的技术分享会将认识到你未来的导师。打开摄像头，积极发言。"},
+        {id:11,level:"中吉",poem:"碧水青山皆入画，\n轻舟已过万重山。\n回望来时路漫漫，\n从今更上一层楼。",interpretation:"过去的努力开始显现成果。保持谦逊，继续前行，更大的成就在后面。",cyberAdvice:"你的开源贡献已被 merge。继续提交 PR，maintainer 已经记住你了。"},
+        {id:12,level:"中吉",poem:"星光不负赶路人，\n江河不废日夜奔。\n积土成山风雨兴，\n厚积薄发正逢春。",interpretation:"积累正在转化为实力。量变即将引发质变，坚持就是胜利。",cyberAdvice:"GitHub 连续提交 streak 已达 60 天。绿色方格即将铺满全年。"},
+        {id:13,level:"中吉",poem:"桂花飘香秋意浓，\n月明风清夜正宁。\n心怀远志常精进，\n自有天工助有情。",interpretation:"内心平静是最大的力量。保持专注和热情，好运自然来。",cyberAdvice:"你的 side project 用户量稳步增长。保持迭代，Product Hunt 在等你。"},
+        {id:14,level:"中吉",poem:"晨钟暮鼓催人醒，\n一叶扁舟渡远溪。\n但行好事莫问果，\n前路自有花满蹊。",interpretation:"善因善果，行善积德。近期的善举将在意想不到的时候得到回报。",cyberAdvice:"帮助新人解决了入门问题。你的 karma 值正在飙升。"},
+
+        // 小吉 (8)
+        {id:15,level:"小吉",poem:"小桥流水人家近，\n淡淡清风拂面来。\n虽无大喜亦无忧，\n细水长流福自开。",interpretation:"平稳安好之象。虽无大起大落，但处处有小确幸，知足常乐。",cyberAdvice:"代码 review 只有 2 个 minor comments。改完即可 merge。"},
+        {id:16,level:"小吉",poem:"春种一粒粟，\n秋收万颗子。\n小事不可轻，\n积少终成器。",interpretation:"从小事做起，不要忽视每一个细节。今天的小进步是明天大成功的基石。",cyberAdvice:"修复了一个 typo，但避免了未来一个线上 bug。小 commit 大功德。"},
+        {id:17,level:"小吉",poem:"竹外桃花三两枝，\n春江水暖鸭先知。\n小有收获心欢喜，\n来日方长莫着急。",interpretation:"有小的收获和惊喜。不要因为进展缓慢而焦虑，一切都在向好发展。",cyberAdvice:"今天学会了一个新的 vim 快捷键。效率提升 3%，日积月累。"},
+        {id:18,level:"小吉",poem:"庭前小径通幽处，\n院内清风自在吹。\n得闲便是有福人，\n何须汲汲求功利。",interpretation:"适合休息和调整的时期。放慢脚步，享受生活，灵感往往来自放松。",cyberAdvice:"适合整理 bookmark 和清理 Chrome 标签页。数字断舍离从今天开始。"},
+        {id:19,level:"小吉",poem:"柳暗花明又一村，\n山穷水复疑无路。\n换个角度看世界，\n处处皆是新出路。",interpretation:"换个思路可能会有意外发现。不要固执于一种方法，灵活应变。",cyberAdvice:"试试换一个搜索关键词。答案可能在你没想到的文档里。"},
+        {id:20,level:"小吉",poem:"一叶轻舟随波去，\n两岸青山入眼来。\n顺势而为不强求，\n自在逍遥乐开怀。",interpretation:"顺其自然，不必强求。有些事情放一放反而会有更好的结果。",cyberAdvice:"那个 bug 放到明天再看。睡一觉后你会立刻发现问题所在。"},
+        {id:21,level:"小吉",poem:"秋水共长天一色，\n落霞与孤鹜齐飞。\n眼前虽是寻常景，\n心中自有不凡意。",interpretation:"平凡中蕴含着不平凡。保持对生活的热爱，美好就在身边。",cyberAdvice:"console.log 调试法虽然原始，但今天它会帮你找到问题。"},
+        {id:22,level:"小吉",poem:"细雨润无声入夜，\n微风送暖过窗前。\n不求闻达于天下，\n只愿安稳度流年。",interpretation:"安稳踏实之象。适合稳扎稳打，巩固基础，为将来做准备。",cyberAdvice:"今天适合写文档和注释。未来的你会感谢现在的你。"},
+
+        // 吉 (12)
+        {id:23,level:"吉",poem:"东风送暖百花开，\n万紫千红春满园。\n闲庭信步观天下，\n处处和顺皆安然。",interpretation:"整体运势平稳向好。日常生活顺利，适合按部就班推进计划。",cyberAdvice:"CI/CD 流水线绿灯通过。按计划发版即可。"},
+        {id:24,level:"吉",poem:"青松挺立风霜中，\n不惧寒冬不惧风。\n稳扎稳打步步实，\n终见春回万象荣。",interpretation:"坚持的力量。只要不放弃，目标一定能够达成。",cyberAdvice:"keep coding。你离解决这个问题只差最后 10 行代码。"},
+        {id:25,level:"吉",poem:"明月松间照清泉，\n石上流水声潺潺。\n心如止水无烦恼，\n自得其乐在人间。",interpretation:"内心宁静带来好运。保持平和心态，事情会自然向好的方向发展。",cyberAdvice:"冥想 10 分钟再写代码。你的 bug 修复速度将提升一倍。"},
+        {id:26,level:"吉",poem:"路遥知马力日久，\n风正帆悬一路行。\n平安便是真富贵，\n健康就是大功名。",interpretation:"平安健康是最大的福气。珍惜当下拥有的一切，感恩前行。",cyberAdvice:"记得站起来活动一下。程序员最大的 bug 是久坐不动。"},
+        {id:27,level:"吉",poem:"云淡风轻近午天，\n傍花随柳过前川。\n时来运转皆如意，\n且把新桃换旧符。",interpretation:"生活中的小变化会带来好运。适合尝试新事物，开启新篇章。",cyberAdvice:"试试那个新框架。技术选型没有绝对的对错，重要的是开始。"},
+        {id:28,level:"吉",poem:"山高水远路漫漫，\n一步一景一重天。\n莫问征途多少里，\n抬头便见月团圆。",interpretation:"旅途中的风景也很重要。享受过程，不要只盯着目的地。",cyberAdvice:"代码写完了但还没测试？先喝杯咖啡，然后慢慢 debug。"},
+        {id:29,level:"吉",poem:"满园春色关不住，\n一枝红杏出墙来。\n有才何须愁无路，\n展翅高飞待时来。",interpretation:"才华不会被埋没。继续提升自己，展示的机会即将到来。",cyberAdvice:"你的技术博客文章浏览量在稳步增长。坚持写作，读者正在路上。"},
+        {id:30,level:"吉",poem:"风和日暖春光好，\n鸟语花香满径幽。\n但得安闲便是福，\n何须名利苦追求。",interpretation:"知足者常乐。当下的生活已经很好，适合停下来欣赏身边的美好。",cyberAdvice:"关掉 Slack 通知，专注当前任务。Deep work 比什么都重要。"},
+        {id:31,level:"吉",poem:"千里之行始足下，\n万丈高楼从地起。\n不积跬步无以远，\n日日精进自可期。",interpretation:"基础很重要。扎实的基本功是一切成就的根基，不要急于求成。",cyberAdvice:"回顾一下数据结构与算法。面试或不面试，基础永远有用。"},
+        {id:32,level:"吉",poem:"天生我材必有用，\n千金散尽还复来。\n莫叹今朝多困苦，\n明日风光自然回。",interpretation:"自信是最好的运气。相信自己的能力，低谷只是暂时的。",cyberAdvice:"被拒的那个 PR 改改思路重新提交。reviewer 的建议其实很有道理。"},
+        {id:33,level:"吉",poem:"独坐幽篁里弹琴，\n深林不知有人听。\n但做好事天知道，\n莫问前程自然明。",interpretation:"默默耕耘终有收获。不要太在意外界的评价，做好自己就够了。",cyberAdvice:"你写的那段代码虽然没人夸，但它在生产环境默默运行零故障。"},
+        {id:34,level:"吉",poem:"秋高气爽云舒卷，\n水落石出见真章。\n从容不迫心自在，\n万事随缘自吉祥。",interpretation:"从容淡定的态度会带来好结果。不必紧张，一切尽在掌握。",cyberAdvice:"代码提交前再 review 一遍。从容检查好过匆忙 hotfix。"},
+
+        // 半吉 (8)
+        {id:35,level:"半吉",poem:"半晴半雨春时节，\n且喜且忧各半分。\n凡事三思而后行，\n进退有度保安身。",interpretation:"好坏参半之象。好事中可能藏着隐忧，需要细心观察和判断。",cyberAdvice:"测试通过了，但 code coverage 下降了 2%。功能没问题，质量需注意。"},
+        {id:36,level:"半吉",poem:"花开半朵最娇艳，\n月到中秋分外明。\n事到将成须谨慎，\n功亏一篑枉费心。",interpretation:"事情接近成功但需最后一把力。越是接近目标，越要小心谨慎。",cyberAdvice:"Feature 基本完成，但 edge case 还没处理。别急着 merge，补全测试。"},
+        {id:37,level:"半吉",poem:"风吹云散又聚来，\n潮起潮落自往还。\n得失之间莫介怀，\n平常心是道中仙。",interpretation:"有得有失是常态。不要因为一时的得失而患得患失，保持平常心。",cyberAdvice:"重构让代码更优雅了，但引入了一个新的 warning。权衡利弊继续前进。"},
+        {id:38,level:"半吉",poem:"行舟偶遇顺风起，\n中途忽逢浪头高。\n稳住舵盘心莫慌，\n风平浪静自然到。",interpretation:"顺利中可能遇到小波折。不要慌张，保持冷静就能平稳度过。",cyberAdvice:"部署成功但监控出现了一个小告警。检查日志，大概率是误报。"},
+        {id:39,level:"半吉",poem:"旧友重逢话当年，\n新知初见亦投缘。\n人情冷暖皆尝遍，\n方知珍惜眼前缘。",interpretation:"人际关系有好有坏。珍惜对你好的人，对负面关系保持距离。",cyberAdvice:"同事的 code review 意见一半有用一半多余。取其精华，礼貌回复。"},
+        {id:40,level:"半吉",poem:"山重水复疑无路，\n忽见前方有微光。\n虽非坦途通天道，\n曲折前行亦无妨。",interpretation:"道路曲折但方向正确。虽然过程不是一帆风顺，但最终能到达目的地。",cyberAdvice:"StackOverflow 的高赞答案过时了，但评论区有个更新的方案可以用。"},
+        {id:41,level:"半吉",poem:"月有阴晴圆缺时，\n人有悲欢离合处。\n半喜半忧寻常事，\n且行且珍惜此途。",interpretation:"生活不会永远完美，接受不完美才是智慧。享受过程中的每一刻。",cyberAdvice:"项目 deadline 提前了但需求也缩减了。总体来说还算公平。"},
+        {id:42,level:"半吉",poem:"左手繁花右手刺，\n进一步来退一步。\n不偏不倚中庸道，\n稳中求进最为宜。",interpretation:"平衡是关键。不要走极端，在各方面保持适度，稳中求进。",cyberAdvice:"性能优化了 20% 但可读性下降了。考虑加些注释找到平衡点。"},
+
+        // 末吉 (10)
+        {id:43,level:"末吉",poem:"乌云散去见天明，\n困境之后有转机。\n虽然此刻多波折，\n守得花开终有期。",interpretation:"目前运势一般，但正在好转中。坚持一下，光明就在前方。",cyberAdvice:"bug 还没找到根因，但已排除了 80% 的可能性。继续排查，快了。"},
+        {id:44,level:"末吉",poem:"冬去春来万物生，\n冰雪消融水自清。\n暂时蛰伏非无志，\n来日方长自有成。",interpretation:"现在是蛰伏积累的时期。不要急于表现，默默准备，时机到了自然会发光。",cyberAdvice:"学习的新技术暂时用不上，但下个项目可能正好需要。"},
+        {id:45,level:"末吉",poem:"细流虽小能穿石，\n绳锯木断水滴成。\n今日虽无大收获，\n日积月累自功成。",interpretation:"收获虽小但持续积累。不要小看每天的一点点进步，时间会证明一切。",cyberAdvice:"今天只写了 10 行代码，但每一行都是关键逻辑。质量 > 数量。"},
+        {id:46,level:"末吉",poem:"枯木逢春发新枝，\n老树开花别样姿。\n莫道如今时运晚，\n有志不在年高低。",interpretation:"永远不会太晚。无论现在处于什么阶段，只要开始行动就有希望。",cyberAdvice:"觉得自己起步晚了？Linux 之父也不是一天建成 kernel 的。开始就好。"},
+        {id:47,level:"末吉",poem:"长夜将尽天欲晓，\n晨曦微露在东方。\n黎明之前最为暗，\n挺过此关见曙光。",interpretation:"黎明前的黑暗。现在可能最困难，但坚持下去就是胜利。",cyberAdvice:"连续 debug 了 3 小时？最后的答案往往藏在最不起眼的地方。"},
+        {id:48,level:"末吉",poem:"船到桥头自然直，\n车到山前必有路。\n眼前困难虽不少，\n终将过去莫踌躇。",interpretation:"困难是暂时的。不要被眼前的问题吓倒，船到桥头自然直。",cyberAdvice:"编译错误 99 个？别慌，通常修好第一个，剩下的都是连锁反应。"},
+        {id:49,level:"末吉",poem:"蜗牛角上争何事，\n石火光中寄此身。\n放下执念心自宽，\n退一步来海天阔。",interpretation:"不要在小事上纠结。退一步海阔天空，放下执念反而能看到更多可能。",cyberAdvice:"和同事争论 tabs vs spaces？选一个 .editorconfig 统一就好。"},
+        {id:50,level:"末吉",poem:"雨后彩虹挂天边，\n风霜过后见晴天。\n莫为今日多烦恼，\n明朝自有好运连。",interpretation:"阴雨之后必见彩虹。当前的烦恼都会过去，好日子就在前头。",cyberAdvice:"今天的 bug 是明天的经验。记得写到你的踩坑笔记里。"},
+        {id:51,level:"末吉",poem:"浅水难养大鱼游，\n小池终究困蛟龙。\n暂居此处勤修炼，\n他日江海任纵横。",interpretation:"当前环境可能限制了你的发挥。耐心等待或主动寻求更大的平台。",cyberAdvice:"现在的项目虽然不够有挑战性，但正好练手。简历上的项目经验 +1。"},
+        {id:52,level:"末吉",poem:"种子入土暂无声，\n静待春雷一声鸣。\n根深叶茂需时日，\n不鸣则已鸣必惊。",interpretation:"潜龙在渊，蓄势待发。现在的低调是为了将来的一鸣惊人。",cyberAdvice:"你默默维护的内部工具即将被全公司采用。坚持优化下去。"},
+
+        // 末小吉 (8)
+        {id:53,level:"末小吉",poem:"灯火阑珊处独立，\n众里寻他千百回。\n虽未遇见心中愿，\n转角或有好安排。",interpretation:"想要的还没到来，但不必灰心。命运自有安排，保持耐心。",cyberAdvice:"搜了半天没找到合适的 npm 包。也许自己写一个更快？"},
+        {id:54,level:"末小吉",poem:"半壁残阳照水面，\n孤舟独钓寒江雪。\n耐得寂寞方成器，\n守住初心终不灭。",interpretation:"孤独中的坚守。成功路上总是孤独的，但你并不是真的一个人。",cyberAdvice:"深夜加班只有你一个人？代码不会辜负每一个认真的程序员。"},
+        {id:55,level:"末小吉",poem:"一波未平一波起，\n才下眉头上心头。\n且将烦恼付流水，\n清风明月两悠悠。",interpretation:"最近烦恼较多，但都不是大问题。学会释然，轻装上阵。",cyberAdvice:"Jira 上的 ticket 永远关不完。优先处理 P0，其他的明天再说。"},
+        {id:56,level:"末小吉",poem:"巧妇难为无米炊，\n英雄无用武之地。\n暂且忍耐蓄精力，\n风云变幻自有期。",interpretation:"时机未到，不必强求。把精力用在提升自己上，等待属于你的舞台。",cyberAdvice:"老板说预算不够不能用新技术栈。先在 side project 里练手吧。"},
+        {id:57,level:"末小吉",poem:"孤灯夜读人憔悴，\n寒窗苦读志未移。\n十年磨剑无人问，\n一朝出鞘天下知。",interpretation:"默默付出的阶段。虽然辛苦，但这些经历终将成为你最宝贵的财富。",cyberAdvice:"啃了一周的源码终于看懂了核心逻辑。这份理解比任何教程都深刻。"},
+        {id:58,level:"末小吉",poem:"路漫漫其修远兮，\n上下求索不停歇。\n虽然前路多坎坷，\n一步一步亦可达。",interpretation:"道路虽长但方向正确。不要想太远，专注于脚下的每一步。",cyberAdvice:"距离项目上线还有很多工作。拆分成小任务，一个一个完成。"},
+        {id:59,level:"末小吉",poem:"拨开云雾见青天，\n守得枯荣过流年。\n小吉虽非大富贵，\n平安便是最圆全。",interpretation:"虽然不是大吉，但有小确幸。平安顺遂就是最好的运气。",cyberAdvice:"代码能跑就是好代码。别过度优化了，先交付再说。"},
+        {id:60,level:"末小吉",poem:"竹杖芒鞋轻胜马，\n一蓑烟雨任平生。\n不以物喜不以悲，\n泰然自若过此生。",interpretation:"心态比运气更重要。保持豁达的心态，好运自然会来。",cyberAdvice:"leetcode 只 beats 30%？能 AC 就行。面试聊思路比背最优解重要。"},
+
+        // 凶 (10)
+        {id:61,level:"凶",poem:"秋风萧瑟落叶飞，\n寒鸦栖树月西垂。\n此时不宜行远路，\n退守静候待春归。",interpretation:"运势低迷，不宜冒险行动。保守应对，等待时机好转。",cyberAdvice:"今天不宜部署到生产环境。多写几个测试用例再说。"},
+        {id:62,level:"凶",poem:"浮云遮日暗无光，\n独行荒野路茫茫。\n切莫贪功求冒进，\n稳住阵脚待天亮。",interpretation:"前路不明，需要格外谨慎。不要在信息不充分时做重大决定。",cyberAdvice:"需求文档模糊不清？先和产品经理确认再动手写代码。"},
+        {id:63,level:"凶",poem:"屋漏偏逢连夜雨，\n船迟又遇打头风。\n逆境之中需坚忍，\n守得安宁便成功。",interpretation:"诸事不顺之象。不要灰心，逆境是对意志的考验，挺过去就好。",cyberAdvice:"本地环境突然跑不起来了。别急，先 git stash，重新 pull。"},
+        {id:64,level:"凶",poem:"暗流涌动水面平，\n表面无事暗藏惊。\n小心行事防暗箭，\n谨言慎行保安宁。",interpretation:"表面平静下暗藏危机。对身边的人和事多留个心眼，防人之心不可无。",cyberAdvice:"那段看起来没问题的代码可能有隐藏 bug。加上日志监控以防万一。"},
+        {id:65,level:"凶",poem:"孤雁失群悲声切，\n独木难支大厦倾。\n此时不宜独自闯，\n寻求帮助莫逞能。",interpretation:"不要独自硬扛。遇到困难时寻求帮助不是软弱，而是智慧。",cyberAdvice:"一个人搞不定的 bug 就发到群里问。团队协作是程序员最大的 buff。"},
+        {id:66,level:"凶",poem:"风急天高猿啸哀，\n渚清沙白鸟飞回。\n多事之秋需警惕，\n静观其变莫轻来。",interpretation:"多事之秋，宜静不宜动。减少不必要的行动，观察形势变化再做打算。",cyberAdvice:"最近 npm 安全漏洞频发，别乱升级依赖。先看 changelog 再决定。"},
+        {id:67,level:"凶",poem:"井底之蛙观天小，\n管中窥豹见一斑。\n莫执一隅以为是，\n退步思量天地宽。",interpretation:"视野受限可能导致判断失误。多听听不同的意见，跳出思维定式。",cyberAdvice:"你确定你的方案是最优的吗？让同事也看看，也许有更好的思路。"},
+        {id:68,level:"凶",poem:"夜半钟声到客船，\n愁绪万千难入眠。\n暂且放下手中事，\n休息充足再向前。",interpretation:"身心疲惫之象。不要硬撑，适当的休息比拼命工作更有效率。",cyberAdvice:"连续编码超过 6 小时？强制休息。疲劳编程产生的 bug 比写的代码还多。"},
+        {id:69,level:"凶",poem:"逆水行舟不进退，\n负重前行步步难。\n放下包袱轻装走，\n柳暗花明在前端。",interpretation:"负担太重会影响前进。学会取舍，放下不必要的东西才能走得更远。",cyberAdvice:"技术债太多了？和团队一起制定偿还计划，别一个人背。"},
+        {id:70,level:"凶",poem:"落花有意随流水，\n流水无情送落花。\n一厢情愿终成空，\n不如转身看天涯。",interpretation:"有些事强求不得。如果一直努力都没有结果，也许需要换个方向。",cyberAdvice:"那个 feature 推了三个月还没排上 sprint？也许该换个项目了。"},
+
+        // 小凶 (8)
+        {id:71,level:"小凶",poem:"微雨湿衣人不觉，\n闲花落地暗伤春。\n小事烦心虽不重，\n积少成多亦累人。",interpretation:"小麻烦不断。虽然每件事都不大，但积累起来会消耗精力。及时处理。",cyberAdvice:"linter warning 只有 3 个，但别忽视它们。小 warning 积累成大问题。"},
+        {id:72,level:"小凶",poem:"薄冰行路须小心，\n一步不慎坠深渊。\n谨慎二字记心间，\n平安度过这一关。",interpretation:"需要格外小心谨慎。做事多检查几遍，细节决定成败。",cyberAdvice:"SQL 操作前先在测试环境跑一遍。WHERE 条件别写错了。"},
+        {id:73,level:"小凶",poem:"拣尽寒枝不肯栖，\n寂寞沙洲冷风吹。\n理想虽高莫好高，\n脚踏实地是真谛。",interpretation:"理想很丰满，现实很骨感。先脚踏实地解决眼前的问题再说。",cyberAdvice:"别想着一次重构整个系统。先从最痛的那个模块开始。"},
+        {id:74,level:"小凶",poem:"误入歧途知返时，\n迷途知返尚未迟。\n若发现路不对头，\n趁早回头是正事。",interpretation:"如果发现方向错了，及时调整。亡羊补牢，犹未为晚。",cyberAdvice:"写了 200 行才发现方向错了？git stash，重新想想架构。"},
+        {id:75,level:"小凶",poem:"桃花虽好刺伤人，\n美酒虽醇易醉魂。\n贪恋眼前小便利，\n终将付出大代价。",interpretation:"不要贪图小便宜。短期利益可能带来长期隐患，三思而后行。",cyberAdvice:"那个 hack 虽然能绕过问题，但会给后人留坑。写正经的 fix。"},
+        {id:76,level:"小凶",poem:"乱花渐欲迷人眼，\n浅草才能没马蹄。\n选择太多反成累，\n聚焦一处方为奇。",interpretation:"选择太多反而迷茫。做减法，聚焦最重要的事情。",cyberAdvice:"同时学 5 种新技术？停下来，选一个最需要的深入学习。"},
+        {id:77,level:"小凶",poem:"心急吃不了热豆腐，\n欲速则达反不成。\n慢工出细活方好，\n急躁只会添烦恼。",interpretation:"急躁是大忌。越着急越容易出错，放慢节奏反而更快。",cyberAdvice:"快速修复的 hotfix 往往引入新 bug。深呼吸，从容解决。"},
+        {id:78,level:"小凶",poem:"独木桥上人拥挤，\n狭路相逢勇者赢。\n竞争虽烈莫气馁，\n苦练内功是王道。",interpretation:"竞争压力较大。不要和别人比较，专注于提升自己的核心竞争力。",cyberAdvice:"别焦虑别人的 GitHub 绿点图。每个人的节奏不同，做好自己就好。"},
+
+        // 半凶 (8)
+        {id:79,level:"半凶",poem:"半壁江山风雨中，\n左支右绌难从容。\n且战且退保实力，\n留得青山有始终。",interpretation:"目前处于守势。不要强行出击，保存实力等待反击的时机。",cyberAdvice:"sprint 任务太多做不完？和 PM 协商调整优先级，别硬扛。"},
+        {id:80,level:"半凶",poem:"折戟沉沙铁未销，\n东风不与周郎便。\n时运不济莫强求，\n养精蓄锐待来年。",interpretation:"时运不济，不宜强求。把精力放在自我提升上，等待下一个机会。",cyberAdvice:"面试被拒了？复盘总结，刷题补短板。下次机会可能更好。"},
+        {id:81,level:"半凶",poem:"风刀霜剑严相逼，\n前有深谷后有虎。\n两害相权取其轻，\n壮士断腕亦英雄。",interpretation:"两难之境，需要果断取舍。有时候放弃也是一种勇气。",cyberAdvice:"重构和新功能只能选一个？先交付新功能，技术债记到 backlog。"},
+        {id:82,level:"半凶",poem:"大雾弥漫路难行，\n举步维艰看不清。\n切莫盲目向前冲，\n等待雾散再启程。",interpretation:"前路模糊不清时，停下来比乱闯更明智。等条件清晰了再行动。",cyberAdvice:"需求不确定就别急着写代码。先画个流程图理清思路。"},
+        {id:83,level:"半凶",poem:"一着不慎满盘输，\n棋到中局需深思。\n此时万事要小心，\n谋定后动是良规。",interpretation:"关键时期，一步也不能走错。做重大决定前反复推敲，谋定而后动。",cyberAdvice:"生产数据库操作请三重检查 SQL 语句。备份！备份！备份！"},
+        {id:84,level:"半凶",poem:"借酒浇愁愁更愁，\n抽刀断水水更流。\n逃避不是解决法，\n直面问题勇抬头。",interpretation:"逃避解决不了问题。勇敢面对困难，你比想象中更强大。",cyberAdvice:"别用 // TODO: fix later 来逃避问题。现在就修，不然永远是 later。"},
+        {id:85,level:"半凶",poem:"浪淘风簸几回新，\n前路荆棘仍须行。\n虽有坎坷终可过，\n但需小心步步吟。",interpretation:"困难可以克服，但需要步步为营。不要冒进，稳扎稳打才能平安过关。",cyberAdvice:"线上出了 P1 bug？先止血回滚，再分析根因。别带着 bug 继续跑。"},
+        {id:86,level:"半凶",poem:"草木皆兵疑心重，\n杯弓蛇影自惊魂。\n放下猜忌开心胸，\n坦诚相待化干戈。",interpretation:"不要疑神疑鬼。很多时候问题出在自己的心态上，开放心态化解矛盾。",cyberAdvice:"觉得同事在针对你的代码？也许只是 review 风格不同。约个 1on1 聊聊。"},
+
+        // 末凶 (7)
+        {id:87,level:"末凶",poem:"残灯将尽夜茫茫，\n独坐寒窗泪两行。\n莫道此生多磨难，\n风雨过后见艳阳。",interpretation:"最困难的时期即将过去。虽然现在很辛苦，但坚持下去就能迎来转机。",cyberAdvice:"项目延期了，加班了一周。但产品上线那天，一切都值了。"},
+        {id:88,level:"末凶",poem:"覆水难收悔已迟，\n事已至此莫再悲。\n前车之鉴后车师，\n吸取教训再出发。",interpretation:"已经发生的事无法改变。接受现实，吸取教训，重新出发。",cyberAdvice:"误删了生产数据？先恢复备份，然后完善运维流程。每次事故都是成长。"},
+        {id:89,level:"末凶",poem:"寒冬腊月雪纷飞，\n万物凋零百花灰。\n忍过三九严寒日，\n春暖花开自然回。",interpretation:"最寒冷的时候也是最接近春天的时候。再坚持一下，转机就在眼前。",cyberAdvice:"连续加班两周快撑不住了？和领导申请调休。可持续发展 > 短期冲刺。"},
+        {id:90,level:"末凶",poem:"塞翁失马未必祸，\n失之东隅收桑榆。\n今日之败明日鉴，\n焉知祸福不相依。",interpretation:"塞翁失马，焉知非福。今天的失败可能是明天成功的垫脚石。",cyberAdvice:"项目被砍了？你积累的技术经验不会消失。更好的项目在等你。"},
+        {id:91,level:"末凶",poem:"断桥残雪路难寻，\n独行天涯步步沉。\n回首来路虽多难，\n咬牙再走一段程。",interpretation:"前路艰难，但已经走了这么远，不要轻易放弃。再坚持一下。",cyberAdvice:"距离解决这个 bug 只差临门一脚了。喝杯咖啡，重新看一遍日志。"},
+        {id:92,level:"末凶",poem:"风雨如晦鸡鸣声，\n乱世沉浮不由人。\n随波逐流非良策，\n坚守本心方为真。",interpretation:"在混乱中保持自我。外界环境再差，也不要丧失自己的原则和底线。",cyberAdvice:"公司文化再卷也别丢了自己的节奏。高效工作 > 无效加班。"},
+        {id:93,level:"末凶",poem:"山穷水尽似无路，\n峰回路转别有天。\n最暗之夜终将去，\n黎明曙光照人间。",interpretation:"困境的尽头就是转机。不要在最后一刻放弃，希望就在下一个转角。",cyberAdvice:"试了所有方法都不行？重启电脑试试。不是玩笑，真的有用。"},
+
+        // 大凶 (6)
+        {id:94,level:"大凶",poem:"黑云压城城欲摧，\n风雨飘摇动地来。\n此时最忌贸然动，\n固守阵地待云开。",interpretation:"运势极差，诸事不宜。绝对不要在此时做重大决定或冒险行动，以守为攻。",cyberAdvice:"今天千万别 push 到 production！任何改动都留到下周一再说。"},
+        {id:95,level:"大凶",poem:"四面楚歌声声急，\n十面埋伏步步危。\n退无可退方知悔，\n早知今日何必痴。",interpretation:"四面受敌之象。立即停止一切冒险行为，保护好自己最重要。",cyberAdvice:"git push --force 之前三思！没有备份的回滚是最可怕的噩梦。"},
+        {id:96,level:"大凶",poem:"惊涛骇浪卷天来，\n小舟颠簸摇不开。\n抱紧桅杆莫松手，\n风暴过后自安排。",interpretation:"巨大的风浪中，唯一能做的就是紧紧抓住不放手。坚持就是胜利。",cyberAdvice:"线上全面崩溃？别慌。回滚到上一个稳定版本，开 war room 逐一排查。"},
+        {id:97,level:"大凶",poem:"千里冰封万里雪，\n天寒地冻路断绝。\n此时莫要出远门，\n围炉取暖待春节。",interpretation:"万事不通之象。此时宜静不宜动，蛰伏等待，切忌妄动。",cyberAdvice:"所有 CI 都红了，依赖全崩了。今天不写代码了，去看看技术文档吧。"},
+        {id:98,level:"大凶",poem:"飞蛾扑火自取灭，\n不见棺材不落泪。\n悬崖勒马为上策，\n亡羊补牢犹未晚。",interpretation:"如果正在做一件明知有风险的事，立即停下。悬崖勒马，为时未晚。",cyberAdvice:"没写测试就部署？没做备份就改数据？立刻停手！先补齐安全措施。"},
+        {id:99,level:"大凶",poem:"山崩地裂天地暗，\n洪水滔天难回挽。\n浴火重生凤凰飞，\n置之死地而后生。",interpretation:"物极必反，否极泰来。最坏的时候也意味着触底反弹的开始。相信自己，绝处逢生。",cyberAdvice:"rm -rf / 的恐惧。但记住：最严重的灾难催生最完善的容灾方案。触底反弹！"}
+    ];
+
+    // Level classification for colors
+    const levelColors = {
+        '大吉': 'level-great', '中吉': 'level-good', '小吉': 'level-good',
+        '吉': 'level-mid', '半吉': 'level-mid', '末吉': 'level-mid', '末小吉': 'level-mid',
+        '凶': 'level-bad', '小凶': 'level-bad', '半凶': 'level-bad',
+        '末凶': 'level-bad', '大凶': 'level-worst'
+    };
+
+    const hexColors = {
+        '大吉': '#fbbf24', '中吉': '#a3e635', '小吉': '#a3e635',
+        '吉': '#a855f7', '半吉': '#a855f7', '末吉': '#a855f7', '末小吉': '#a855f7',
+        '凶': '#f87171', '小凶': '#f87171', '半凶': '#f87171',
+        '末凶': '#f87171', '大凶': '#ef4444'
+    };
+
+    let isDrawing = false;
+    let currentFortune = null;
+
+    // Prevent repeated same fortune using localStorage
+    function getRandomFortune() {
+        const lastId = parseInt(localStorage.getItem('lastFortuneId') || '0');
+        let fortune;
+        do {
+            fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+        } while (fortune.id === lastId && fortunes.length > 1);
+        localStorage.setItem('lastFortuneId', fortune.id.toString());
+        return fortune;
+    }
+
+    function startDraw() {
+        if (isDrawing) return;
+        isDrawing = true;
+
+        const btn = document.getElementById('drawBtn');
+        btn.disabled = true;
+        btn.textContent = '摇签中...';
+
+        const cylinder = document.getElementById('cylinder');
+        cylinder.classList.remove('idle');
+        cylinder.classList.add('shaking');
+
+        // After shaking, fly out stick and show result
+        setTimeout(() => {
+            const flyStick = document.getElementById('flyingStick');
+            flyStick.classList.add('fly');
+
+            setTimeout(() => {
+                cylinder.classList.remove('shaking');
+                flyStick.classList.remove('fly');
+
+                currentFortune = getRandomFortune();
+                showResult(currentFortune);
+            }, 600);
+        }, 1500);
+    }
+
+    function showResult(f) {
+        document.getElementById('phase-idle').classList.remove('active');
+        document.getElementById('phase-result').classList.add('active');
+
+        const colorClass = levelColors[f.level] || 'level-mid';
+        const hexColor = hexColors[f.level] || '#a855f7';
+
+        document.getElementById('hexStroke').setAttribute('stroke', hexColor);
+        const hexText = document.getElementById('hexText');
+        hexText.textContent = f.level;
+        hexText.className = 'hex-text ' + colorClass;
+
+        document.getElementById('fortuneNum').textContent = 'NO. ' + String(f.id).padStart(3, '0');
+
+        const levelEl = document.getElementById('fortuneLevel');
+        levelEl.textContent = '【' + f.level + '】';
+        levelEl.className = 'fortune-level ' + colorClass;
+
+        document.getElementById('fortunePoem').innerHTML = f.poem.replace(/\n/g, '<br>');
+        document.getElementById('fortuneInterp').textContent = f.interpretation;
+        document.getElementById('fortuneAdvice').textContent = f.cyberAdvice;
+
+        // Flip-in animation
+        requestAnimationFrame(() => {
+            document.getElementById('resultCard').classList.add('revealed');
+        });
+    }
+
+    function resetDraw() {
+        const card = document.getElementById('resultCard');
+        card.classList.remove('revealed');
+
+        setTimeout(() => {
+            document.getElementById('phase-result').classList.remove('active');
+            document.getElementById('phase-idle').classList.add('active');
+
+            const btn = document.getElementById('drawBtn');
+            btn.disabled = false;
+            btn.textContent = '开始抽签';
+
+            const cylinder = document.getElementById('cylinder');
+            cylinder.classList.add('idle');
+
+            isDrawing = false;
+        }, 400);
+    }
+
+    function shareFortune() {
+        if (!currentFortune) return;
+        const f = currentFortune;
+        const text = `🔮 赛博抽签筒 — 第${f.id}签【${f.level}】\n\n${f.poem}\n\n📖 ${f.interpretation}\n\n💻 ${f.cyberAdvice}\n\n来试试你的运气 → ${location.href}`;
+
+        if (navigator.share) {
+            navigator.share({ title: '赛博抽签筒', text: text }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('签文已复制到剪贴板');
+            }).catch(() => {
+                showToast('分享失败，请手动复制');
+            });
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ===== Particle Background =====
+    (function initParticles() {
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const count = 40;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 2 + 0.5,
+                dx: (Math.random() - 0.5) * 0.3,
+                dy: (Math.random() - 0.5) * 0.3,
+                alpha: Math.random() * 0.3 + 0.1
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(124, 58, 237, ${p.alpha})`;
+                ctx.fill();
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            });
+            requestAnimationFrame(draw);
+        }
+
+        // Respect reduced motion
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            draw();
+        }
+    })();
+    </script>
+</body>
+</html>
