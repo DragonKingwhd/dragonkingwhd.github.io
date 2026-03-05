@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isaac Lab 3D 视场角计算器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --panel-color: #252526;
+            --text-color: #d4d4d4;
+            --accent-color: #007acc;
+            --border-color: #3e3e42;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h2 { margin-top: 0; color: #fff; }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        .panel {
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+        input[type="range"] { width: 100%; margin: 5px 0; }
+        .input-row { display: flex; justify-content: space-between; align-items: center; }
+        input[type="number"] {
+            background: #3c3c3c;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 4px;
+            width: 60px;
+            border-radius: 4px;
+        }
+        #canvas-container {
+            position: relative;
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 4px;
+            height: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .view-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background: rgba(60, 60, 60, 0.8);
+            border: 1px solid #666;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: var(--accent-color); border-color: var(--accent-color); }
+        .btn.active { background: var(--accent-color); border-color: var(--accent-color); }
+        .result-box {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .result-label { color: #aaa; }
+        .result-value { color: #4ec9b0; float: right; }
+        pre {
+            background: #101010;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            color: #9cdcfe;
+            border: 1px solid #444;
+            position: relative;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #444;
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.8em;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #555; }
+        .legend { display: flex; gap: 15px; font-size: 0.8em; margin-bottom: 10px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 12px; height: 12px; border-radius: 2px; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--accent-color);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .panel { min-width: unset; }
+            #canvas-container { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Isaac Lab 3D 视场角配置工具</h2>
+
+    <div class="container">
+        <div class="panel" style="flex: 0 0 350px;">
+            <h3>参数配置</h3>
+
+            <div class="control-group">
+                <div class="input-row">
+                    <label>安装高度 (m)</label>
+                    <input type="number" id="input_h" value="0.9" step="0.05" min="0.1" max="5.0">
+                </div>
+                <input type="range" id="range_h" min="0.1" max="5.0" step="0.05" value="0.9">
+            </div>
+
+            <div class="control-group">
+                <div class="input-row">
+                    <label>俯仰角 (Pitch) (°)</label>
+                    <input type="number" id="input_p" value="15" step="1" min="0" max="89">
+                </div>
+                <input type="range" id="range_p" min="0" max="89" step="1" value="15">
+                <small style="color:#888">0°=平视, 90°=垂直向下 (请勿设为90)</small>
+            </div>
+
+            <div class="control-group">
+                <div class="input-row">
+                    <label>水平 FOV (°)</label>
+                    <input type="number" id="input_fov_h" value="90" step="1" min="10" max="170">
+                </div>
+                <input type="range" id="range_fov_h" min="10" max="170" step="1" value="90">
+            </div>
+
+            <div class="control-group">
+                <div class="input-row">
+                    <label>垂直 FOV (°)</label>
+                    <input type="number" id="input_fov_v" value="65" step="1" min="10" max="170">
+                </div>
+                <input type="range" id="range_fov_v" min="10" max="170" step="1" value="65">
+            </div>
+
+            <hr style="border-color:#444">
+
+            <h3>计算结果</h3>
+            <div class="result-box">
+                <div><span class="result-label">近端盲区 (Blind Spot):</span> <span class="result-value" id="res_blind">--</span></div>
+                <div><span class="result-label">最远可视距离:</span> <span class="result-value" id="res_far">--</span></div>
+                <div><span class="result-label">远端宽度 (Width):</span> <span class="result-value" id="res_width">--</span></div>
+            </div>
+
+            <h4>RayCaster 配置参数:</h4>
+            <div class="result-box">
+                <div><span class="result-label">pos (offset):</span> <span class="result-value" id="res_pos">--</span></div>
+                <div><span class="result-label">size (w, h):</span> <span class="result-value" id="res_size">--</span></div>
+            </div>
+
+            <button class="btn" style="width:100%; margin-top:10px" onclick="copyCode()">复制代码</button>
+        </div>
+
+        <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                <h3>3D 预览</h3>
+                <div class="legend">
+                    <div class="legend-item"><div class="dot" style="background:#00ffff"></div>机器人</div>
+                    <div class="legend-item"><div class="dot" style="background:rgba(255, 99, 71, 1)"></div>真实视野(地面)</div>
+                    <div class="legend-item"><div class="dot" style="background:#44ff44"></div>RayCaster区域</div>
+                </div>
+            </div>
+
+            <div id="canvas-container">
+                <div class="view-controls">
+                    <button class="btn active" id="btn-3d" onclick="setCameraMode('3d')">3D 自由视角</button>
+                    <button class="btn" id="btn-top" onclick="setCameraMode('top')">俯视图 (Top)</button>
+                </div>
+            </div>
+
+            <h3>Python 配置代码</h3>
+            <pre><code id="codeBlock"></code></pre>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">配置代码已复制！</div>
+
+    <script>
+        // --- Three.js Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
+        scene.fog = new THREE.Fog(0x111111, 20, 50);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(5, 5, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        scene.add(new THREE.GridHelper(40, 40, 0x444444, 0x222222));
+        scene.add(new THREE.AxesHelper(2));
+
+        // --- Scene Objects ---
+        const robotGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.4, 16);
+        const robot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x00ffff }));
+        robot.position.y = 0.2;
+        scene.add(robot);
+
+        const raycasterBox = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0x44ff44, wireframe: true, transparent: true, opacity: 0.5 })
+        );
+        scene.add(raycasterBox);
+
+        const frustumMat = new THREE.MeshBasicMaterial({ color: 0xff6347, side: THREE.DoubleSide, transparent: true, opacity: 0.2 });
+        const frustumLineMat = new THREE.LineBasicMaterial({ color: 0xff6347 });
+        const frustumMesh = new THREE.Mesh(new THREE.BufferGeometry(), frustumMat);
+        const frustumLines = new THREE.LineSegments(new THREE.BufferGeometry(), frustumLineMat);
+        scene.add(frustumMesh);
+        scene.add(frustumLines);
+
+        const camBody = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, 0.05, 0.15),
+            new THREE.MeshBasicMaterial({ color: 0xaaaaaa })
+        );
+        scene.add(camBody);
+
+        // --- UI Sync ---
+        const paramIds = ['h', 'p', 'fov_h', 'fov_v'];
+        const inputs = {}, ranges = {};
+        paramIds.forEach(function(id) {
+            inputs[id] = document.getElementById('input_' + id);
+            ranges[id] = document.getElementById('range_' + id);
+            inputs[id].addEventListener('input', function() { ranges[id].value = inputs[id].value; updateCalculation(); });
+            ranges[id].addEventListener('input', function() { inputs[id].value = ranges[id].value; updateCalculation(); });
+        });
+
+        // --- Core Calculation ---
+        function updateCalculation() {
+            var h = parseFloat(inputs.h.value);
+            var pitchDeg = parseFloat(inputs.p.value);
+            var fovHDeg = parseFloat(inputs.fov_h.value);
+            var fovVDeg = parseFloat(inputs.fov_v.value);
+
+            var pitch = pitchDeg * (Math.PI / 180);
+            var halfFovV = (fovVDeg / 2) * (Math.PI / 180);
+            var halfFovH = (fovHDeg / 2) * (Math.PI / 180);
+
+            var angleBottom = pitch + halfFovV;
+            var angleTop = pitch - halfFovV;
+
+            var distNear, distFar;
+            var isInfinite = false;
+
+            distNear = (angleBottom <= 0) ? 50.0 : h / Math.tan(angleBottom);
+
+            if (angleTop <= 0.02) {
+                distFar = 20.0;
+                isInfinite = true;
+            } else {
+                distFar = h / Math.tan(angleTop);
+                if (distFar > 20) { distFar = 20; isInfinite = true; }
+            }
+
+            var widthNear = 2 * distNear * Math.tan(halfFovH);
+            var widthFar = 2 * distFar * Math.tan(halfFovH);
+
+            var length = distFar - distNear;
+            var centerY = distNear + (length / 2);
+            var maxWidth = Math.max(widthNear, widthFar);
+
+            // Update results
+            document.getElementById('res_blind').innerText = distNear.toFixed(2) + ' m';
+            document.getElementById('res_far').innerText = (isInfinite ? '>20' : distFar.toFixed(2)) + ' m';
+            document.getElementById('res_width').innerText = maxWidth.toFixed(2) + ' m';
+            document.getElementById('res_pos').innerText = '(0.0, ' + centerY.toFixed(2) + ', 0.0)';
+            document.getElementById('res_size').innerText = '(' + maxWidth.toFixed(2) + ', ' + length.toFixed(2) + ')';
+
+            // Update code block
+            document.getElementById('codeBlock').innerText =
+                '# RayCaster Configuration\n' +
+                'Elevation_map = RayCasterCfg(\n' +
+                '    prim_path="{ENV_REGEX_NS}/Robot/quganzhuliang",\n' +
+                '    # Offset: Center of the scan area relative to robot\n' +
+                '    # Note: Isaac Sim uses Y for forward in some robot configs, check your axis!\n' +
+                '    # If Y is forward: pos=(0.0, ' + centerY.toFixed(2) + ', 0.0)\n' +
+                '    offset=RayCasterCfg.OffsetCfg(pos=(0.0, ' + centerY.toFixed(2) + ', 0.0)),\n' +
+                '    ray_alignment="yaw",\n' +
+                '    # Size: (Width, Length)\n' +
+                '    pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=(' + maxWidth.toFixed(2) + ', ' + length.toFixed(2) + ')),\n' +
+                '    debug_vis=True,\n' +
+                '    mesh_prim_paths=["/World/ground"],\n' +
+                ')';
+
+            // Update 3D scene
+            camBody.position.set(0, h, 0);
+            camBody.rotation.x = -pitch;
+
+            var pNL = new THREE.Vector3(-widthNear / 2, 0.01, -distNear);
+            var pNR = new THREE.Vector3(widthNear / 2, 0.01, -distNear);
+            var pFL = new THREE.Vector3(-widthFar / 2, 0.01, -distFar);
+            var pFR = new THREE.Vector3(widthFar / 2, 0.01, -distFar);
+            var apex = new THREE.Vector3(0, h, 0);
+
+            // Dispose old geometries to prevent memory leaks
+            frustumMesh.geometry.dispose();
+            frustumLines.geometry.dispose();
+
+            var vertices = new Float32Array([
+                pNL.x, pNL.y, pNL.z, pFL.x, pFL.y, pFL.z, pFR.x, pFR.y, pFR.z,
+                pFR.x, pFR.y, pFR.z, pNR.x, pNR.y, pNR.z, pNL.x, pNL.y, pNL.z
+            ]);
+            var meshGeo = new THREE.BufferGeometry();
+            meshGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            meshGeo.computeVertexNormals();
+            frustumMesh.geometry = meshGeo;
+
+            var lineVertices = new Float32Array([
+                apex.x, apex.y, apex.z, pNL.x, pNL.y, pNL.z,
+                apex.x, apex.y, apex.z, pNR.x, pNR.y, pNR.z,
+                apex.x, apex.y, apex.z, pFL.x, pFL.y, pFL.z,
+                apex.x, apex.y, apex.z, pFR.x, pFR.y, pFR.z,
+                pNL.x, pNL.y, pNL.z, pFL.x, pFL.y, pFL.z,
+                pFL.x, pFL.y, pFL.z, pFR.x, pFR.y, pFR.z,
+                pFR.x, pFR.y, pFR.z, pNR.x, pNR.y, pNR.z,
+                pNR.x, pNR.y, pNR.z, pNL.x, pNL.y, pNL.z
+            ]);
+            var lineGeo = new THREE.BufferGeometry();
+            lineGeo.setAttribute('position', new THREE.BufferAttribute(lineVertices, 3));
+            frustumLines.geometry = lineGeo;
+
+            raycasterBox.position.set(0, 0.02, -centerY);
+            raycasterBox.scale.set(maxWidth, 0.05, length);
+        }
+
+        // --- Copy with toast feedback ---
+        function copyCode() {
+            var code = document.getElementById('codeBlock').innerText;
+            navigator.clipboard.writeText(code).then(function() {
+                var toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(function() { toast.classList.remove('show'); }, 2000);
+            });
+        }
+
+        // --- Camera Modes ---
+        function setCameraMode(mode) {
+            var btn3d = document.getElementById('btn-3d');
+            var btnTop = document.getElementById('btn-top');
+            if (mode === 'top') {
+                var targetZ = -5;
+                camera.position.set(0, 15, targetZ);
+                camera.lookAt(0, 0, targetZ);
+                controls.target.set(0, 0, targetZ);
+                controls.enableRotate = false;
+                btn3d.classList.remove('active');
+                btnTop.classList.add('active');
+            } else {
+                camera.position.set(8, 5, 2);
+                controls.target.set(0, 0, -5);
+                controls.enableRotate = true;
+                btn3d.classList.add('active');
+                btnTop.classList.remove('active');
+            }
+            controls.update();
+        }
+
+        // --- Resize ---
+        window.addEventListener('resize', function() {
+            var width = container.clientWidth;
+            var height = container.clientHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        updateCalculation();
+        animate();
+    </script>
+</body>
+</html>
