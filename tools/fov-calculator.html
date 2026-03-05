@@ -192,6 +192,18 @@
     <div class="container">
         <div class="panel panel-left">
 
+            <!-- Robot Origin -->
+            <div class="section-title"><span class="icon">&#x1f916;</span> 机器人原点</div>
+
+            <div class="control-group">
+                <div class="input-row">
+                    <label>原点离地高度 (m)</label>
+                    <input type="number" id="input_origin_z" value="0.4" step="0.05" min="0">
+                </div>
+                <input type="range" id="range_origin_z" min="0" max="2.0" step="0.05" value="0.4">
+                <small>机器人坐标系原点相对地面的高度</small>
+            </div>
+
             <!-- Camera Params -->
             <div class="section-title"><span class="icon">&#x1f4f7;</span> 相机参数</div>
 
@@ -303,7 +315,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                 <h3 style="margin:0;">3D 预览</h3>
                 <div class="legend">
-                    <div class="legend-item"><div class="dot" style="background:#00ffff"></div>机器人原点</div>
+                    <div class="legend-item"><div class="dot" style="background:#00ffff"></div>机器人原点(坐标轴)</div>
                     <div class="legend-item"><div class="dot" style="background:#aaa"></div>相机</div>
                     <div class="legend-item"><div class="dot" style="background:rgba(255,99,71,1)"></div>视野投影</div>
                     <div class="legend-item"><div class="dot" style="background:#ffaa44"></div>高程图区域</div>
@@ -352,22 +364,23 @@
 
         scene.add(new THREE.GridHelper(40, 40, 0x444444, 0x222222));
 
-        // Axes at robot origin
-        scene.add(new THREE.AxesHelper(1.5));
-
         // === Scene Objects ===
 
-        // Robot body
-        var robotGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.35, 16);
-        var robot = new THREE.Mesh(robotGeo, new THREE.MeshLambertMaterial({ color: 0x00ffff }));
-        robot.position.y = 0.175;
-        scene.add(robot);
+        // Robot origin axes (will be repositioned dynamically)
+        var robotAxes = new THREE.AxesHelper(1.0);
+        scene.add(robotAxes);
 
-        // Robot direction arrow (forward = -Z in Three.js = +Y in robot frame)
+        // Robot forward arrow (will be repositioned dynamically)
         var arrowDir = new THREE.Vector3(0, 0, -1);
-        var arrowOrigin = new THREE.Vector3(0, 0.35, 0);
-        var arrowHelper = new THREE.ArrowHelper(arrowDir, arrowOrigin, 0.8, 0x00ffff, 0.15, 0.1);
+        var arrowHelper = new THREE.ArrowHelper(arrowDir, new THREE.Vector3(0, 0, 0), 0.6, 0x00ffff, 0.12, 0.08);
         scene.add(arrowHelper);
+
+        // Small sphere to mark robot origin
+        var originMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0x00ffff })
+        );
+        scene.add(originMarker);
 
         // Camera body
         var camBody = new THREE.Mesh(
@@ -408,7 +421,7 @@
 
         // === Input Binding ===
         var allInputIds = [
-            'cam_x', 'cam_y', 'cam_z', 'p', 'fov_h', 'fov_v',
+            'origin_z', 'cam_x', 'cam_y', 'cam_z', 'p', 'fov_h', 'fov_v',
             'em_ox', 'em_oy', 'em_w', 'em_l', 'em_res'
         ];
         var inputs = {};
@@ -421,7 +434,7 @@
         });
 
         // Range sliders sync
-        ['p', 'fov_h', 'fov_v'].forEach(function(id) {
+        ['origin_z', 'p', 'fov_h', 'fov_v'].forEach(function(id) {
             var range = document.getElementById('range_' + id);
             if (range) {
                 range.addEventListener('input', function() { inputs[id].value = range.value; updateCalculation(); });
@@ -438,10 +451,16 @@
 
         // === Core Calculation ===
         function updateCalculation() {
-            // Camera position in robot frame
+            // Robot origin height above ground
+            var originZ = parseFloat(inputs.origin_z.value) || 0.4;
+
+            // Camera position in robot frame (relative to robot origin)
             var camX = parseFloat(inputs.cam_x.value) || 0;
             var camY = parseFloat(inputs.cam_y.value) || 0;
             var camZ = parseFloat(inputs.cam_z.value) || 0.9;
+
+            // Camera absolute height above ground
+            var camAbsZ = originZ + camZ;
 
             var pitchDeg = parseFloat(inputs.p.value) || 15;
             var fovHDeg = parseFloat(inputs.fov_h.value) || 90;
@@ -465,13 +484,14 @@
             var isInfinite = false;
 
             // Ground intersection distances (forward from camera, in robot Y direction)
+            // Uses absolute height (originZ + camZ) for ground intersection
             var distNear, distFar;
-            distNear = (angleBottom <= 0) ? 50.0 : camZ / Math.tan(angleBottom);
+            distNear = (angleBottom <= 0) ? 50.0 : camAbsZ / Math.tan(angleBottom);
             if (angleTop <= 0.02) {
                 distFar = 20.0;
                 isInfinite = true;
             } else {
-                distFar = camZ / Math.tan(angleTop);
+                distFar = camAbsZ / Math.tan(angleTop);
                 if (distFar > 20) { distFar = 20; isInfinite = true; }
             }
 
@@ -548,12 +568,21 @@
                 '    mesh_prim_paths=["/World/ground"],\n' +
                 ')\n' +
                 '\n' +
-                '# Camera mount position: (' + camX.toFixed(2) + ', ' + camY.toFixed(2) + ', ' + camZ.toFixed(2) + ')\n' +
+                '# Robot origin height: ' + originZ.toFixed(2) + 'm above ground\n' +
+                '# Camera mount (relative to origin): (' + camX.toFixed(2) + ', ' + camY.toFixed(2) + ', ' + camZ.toFixed(2) + ')\n' +
+                '# Camera absolute height: ' + camAbsZ.toFixed(2) + 'm\n' +
                 '# Camera pitch: ' + pitchDeg + '\u00b0, FOV: ' + fovHDeg + '\u00b0 x ' + fovVDeg + '\u00b0\n' +
                 '# FOV ground coverage: ' + distNear.toFixed(2) + 'm ~ ' + (isInfinite ? '>20' : distFar.toFixed(2)) + 'm forward from camera';
 
             // === Update 3D Scene ===
-            var camPos3 = robotToThree(camX, camY, camZ);
+            // Robot origin in Three.js (at originZ height above ground)
+            var originPos3 = robotToThree(0, 0, originZ);
+            robotAxes.position.copy(originPos3);
+            arrowHelper.position.copy(originPos3);
+            originMarker.position.copy(originPos3);
+
+            // Camera position: robot origin + camera offset (in robot frame)
+            var camPos3 = robotToThree(camX, camY, originZ + camZ);
 
             // Camera body
             camBody.position.copy(camPos3);
@@ -562,7 +591,7 @@
 
             // Connection line from robot origin to camera
             var connPos = connLine.geometry.attributes.position;
-            connPos.setXYZ(0, 0, 0.2, 0);
+            connPos.setXYZ(0, originPos3.x, originPos3.y, originPos3.z);
             connPos.setXYZ(1, camPos3.x, camPos3.y, camPos3.z);
             connPos.needsUpdate = true;
             connLine.computeLineDistances();
