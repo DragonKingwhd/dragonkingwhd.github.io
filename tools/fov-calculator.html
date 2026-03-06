@@ -14,6 +14,9 @@
             --text-color: #d4d4d4;
             --accent-color: #007acc;
             --border-color: #3e3e42;
+            --left-color: #44bb44;
+            --right-color: #ee8844;
+            --overlap-color: #4488ff;
         }
         * { box-sizing: border-box; }
         body {
@@ -29,11 +32,10 @@
             overflow-x: hidden;
         }
         h2 { margin-top: 0; color: #fff; }
-        h3 { margin-top: 10px; }
         .container {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 16px;
             max-width: 1500px;
             width: 100%;
         }
@@ -41,13 +43,13 @@
             background-color: var(--panel-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 20px;
+            padding: 16px;
             flex: 1;
-            min-width: 300px;
+            min-width: 280px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         .panel-left {
-            flex: 0 0 380px;
+            flex: 0 0 370px;
             max-height: calc(100vh - 80px);
             overflow-y: auto;
         }
@@ -55,45 +57,39 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 15px 0 10px 0;
-            padding-bottom: 5px;
+            margin: 12px 0 8px 0;
+            padding-bottom: 4px;
             border-bottom: 1px solid var(--border-color);
-            font-size: 1em;
+            font-size: 0.95em;
+            font-weight: bold;
             color: #fff;
         }
-        .section-title .icon { color: var(--accent-color); }
-        .control-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 0.85em; }
-        input[type="range"] { width: 100%; margin: 3px 0; }
+        .section-title .icon { font-style: normal; }
+        .section-title.left { color: var(--left-color); border-color: rgba(68,187,68,0.3); }
+        .section-title.right { color: var(--right-color); border-color: rgba(238,136,68,0.3); }
+        .control-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 3px; font-weight: bold; font-size: 0.82em; }
+        input[type="range"] { width: 100%; margin: 2px 0; }
         .input-row { display: flex; justify-content: space-between; align-items: center; }
         input[type="number"] {
             background: #3c3c3c;
             border: 1px solid #555;
             color: #fff;
-            padding: 4px;
-            width: 65px;
+            padding: 3px;
+            width: 62px;
             border-radius: 4px;
+            font-size: 0.85em;
         }
-        .xyz-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .xyz-row .xyz-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .xyz-row .xyz-label {
-            font-size: 0.75em;
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
+        .xyz-row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .xyz-row .xyz-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .xyz-row .xyz-label { font-size: 0.72em; font-weight: bold; margin-bottom: 2px; }
         .xyz-row .xyz-label.x { color: #ff6b6b; }
         .xyz-row .xyz-label.y { color: #44ff44; }
         .xyz-row .xyz-label.z { color: #6bb5ff; }
         .xyz-row input[type="number"] { width: 100%; text-align: center; }
+        .dual-row { display: flex; gap: 10px; }
+        .dual-row > div { flex: 1; }
+        .dual-row label { font-size: 0.78em; }
         #canvas-container {
             position: relative;
             background: #000;
@@ -109,74 +105,68 @@
             right: 10px;
             z-index: 10;
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         .btn {
-            background: rgba(60, 60, 60, 0.8);
+            background: rgba(60, 60, 60, 0.85);
             border: 1px solid #666;
             color: white;
-            padding: 5px 15px;
+            padding: 4px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em;
             transition: background 0.2s;
         }
         .btn:hover { background: var(--accent-color); border-color: var(--accent-color); }
         .btn.active { background: var(--accent-color); border-color: var(--accent-color); }
         .result-box {
             background: #333;
-            padding: 10px;
+            padding: 8px 10px;
             border-radius: 4px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-family: monospace;
-            font-size: 0.85em;
-            line-height: 1.6;
+            font-size: 0.82em;
+            line-height: 1.5;
         }
         .result-label { color: #aaa; }
         .result-value { color: #4ec9b0; float: right; }
         .coverage-status {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-size: 0.85em;
         }
-        .coverage-full { background: rgba(68, 255, 68, 0.15); color: #44ff44; border: 1px solid rgba(68, 255, 68, 0.3); }
-        .coverage-partial { background: rgba(255, 200, 0, 0.15); color: #ffc800; border: 1px solid rgba(255, 200, 0, 0.3); }
-        .coverage-none { background: rgba(255, 80, 80, 0.15); color: #ff5050; border: 1px solid rgba(255, 80, 80, 0.3); }
+        .coverage-full { background: rgba(68,255,68,0.12); color: #44ff44; border: 1px solid rgba(68,255,68,0.25); }
+        .coverage-partial { background: rgba(255,200,0,0.12); color: #ffc800; border: 1px solid rgba(255,200,0,0.25); }
+        .coverage-none { background: rgba(255,80,80,0.12); color: #ff5050; border: 1px solid rgba(255,80,80,0.25); }
         pre {
             background: #101010;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
             overflow-x: auto;
             color: #9cdcfe;
             border: 1px solid #444;
-            position: relative;
-            max-height: 220px;
+            max-height: 240px;
             overflow-y: auto;
-            font-size: 0.85em;
+            font-size: 0.8em;
+            line-height: 1.4;
         }
-        .legend { display: flex; gap: 12px; font-size: 0.8em; margin-bottom: 10px; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .dot { width: 12px; height: 12px; border-radius: 2px; }
+        .legend { display: flex; gap: 10px; font-size: 0.75em; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 2px; }
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
+            position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: var(--accent-color);
-            color: #fff;
-            padding: 10px 24px;
-            border-radius: 6px;
-            font-size: 0.95em;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s, transform 0.3s;
-            z-index: 100;
+            background: var(--accent-color); color: #fff;
+            padding: 8px 20px; border-radius: 6px; font-size: 0.9em;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s; z-index: 100;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        small { color: #888; font-size: 0.8em; }
+        small { color: #777; font-size: 0.78em; }
+        hr { border: none; border-top: 1px solid #444; margin: 10px 0; }
         @media (max-width: 768px) {
             .container { flex-direction: column; }
             .panel { min-width: unset; }
@@ -187,556 +177,604 @@
 </head>
 <body>
 
-    <h2>Isaac Lab 3D 视场角配置工具</h2>
+<h2>Isaac Lab 双目深度相机视场角配置工具</h2>
 
-    <div class="container">
-        <div class="panel panel-left">
+<div class="container">
+<div class="panel panel-left">
 
-            <!-- Robot Origin -->
-            <div class="section-title"><span class="icon">&#x1f916;</span> 机器人原点</div>
-
-            <div class="control-group">
-                <div class="input-row">
-                    <label>原点离地高度 (m)</label>
-                    <input type="number" id="input_origin_z" value="0.4" step="0.05" min="0">
-                </div>
-                <input type="range" id="range_origin_z" min="0" max="2.0" step="0.05" value="0.4">
-                <small>机器人坐标系原点相对地面的高度</small>
-            </div>
-
-            <!-- Camera Params -->
-            <div class="section-title"><span class="icon">&#x1f4f7;</span> 相机参数</div>
-
-            <div class="control-group">
-                <label>相机安装位置 (相对机器人原点, m)</label>
-                <div class="xyz-row">
-                    <div class="xyz-item">
-                        <span class="xyz-label x">X (左右)</span>
-                        <input type="number" id="input_cam_x" value="0" step="0.05">
-                    </div>
-                    <div class="xyz-item">
-                        <span class="xyz-label y">Y (前后)</span>
-                        <input type="number" id="input_cam_y" value="0" step="0.05">
-                    </div>
-                    <div class="xyz-item">
-                        <span class="xyz-label z">Z (高度)</span>
-                        <input type="number" id="input_cam_z" value="0.9" step="0.05">
-                    </div>
-                </div>
-                <small>X+右 X-左 | Y+前 Y-后 | Z+上</small>
-            </div>
-
-            <div class="control-group">
-                <div class="input-row">
-                    <label>俯仰角 Pitch (°)</label>
-                    <input type="number" id="input_p" value="15" step="1" min="0" max="89">
-                </div>
-                <input type="range" id="range_p" min="0" max="89" step="1" value="15">
-                <small>0°=平视, 90°=垂直向下</small>
-            </div>
-
-            <div class="control-group">
-                <div class="input-row">
-                    <label>水平 FOV (°)</label>
-                    <input type="number" id="input_fov_h" value="90" step="1" min="10" max="170">
-                </div>
-                <input type="range" id="range_fov_h" min="10" max="170" step="1" value="90">
-            </div>
-
-            <div class="control-group">
-                <div class="input-row">
-                    <label>垂直 FOV (°)</label>
-                    <input type="number" id="input_fov_v" value="65" step="1" min="10" max="170">
-                </div>
-                <input type="range" id="range_fov_v" min="10" max="170" step="1" value="65">
-            </div>
-
-            <!-- Elevation Map Params -->
-            <div class="section-title"><span class="icon">&#x1f5fa;</span> 高程图区域 (RayCaster)</div>
-
-            <div class="control-group">
-                <label>区域中心偏移 (相对机器人原点, m)</label>
-                <div class="xyz-row">
-                    <div class="xyz-item">
-                        <span class="xyz-label x">X (左右)</span>
-                        <input type="number" id="input_em_ox" value="0" step="0.05">
-                    </div>
-                    <div class="xyz-item">
-                        <span class="xyz-label y">Y (前方)</span>
-                        <input type="number" id="input_em_oy" value="3.0" step="0.1">
-                    </div>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>区域尺寸 (m)</label>
-                <div class="xyz-row">
-                    <div class="xyz-item">
-                        <span class="xyz-label" style="color:#ffaa44;">宽度 W</span>
-                        <input type="number" id="input_em_w" value="4.0" step="0.1" min="0.1">
-                    </div>
-                    <div class="xyz-item">
-                        <span class="xyz-label" style="color:#ffaa44;">长度 L</span>
-                        <input type="number" id="input_em_l" value="4.0" step="0.1" min="0.1">
-                    </div>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <div class="input-row">
-                    <label>网格分辨率 (m)</label>
-                    <input type="number" id="input_em_res" value="0.1" step="0.01" min="0.01" max="1.0">
-                </div>
-            </div>
-
-            <hr style="border-color:#444">
-
-            <!-- Results -->
-            <div class="section-title"><span class="icon">&#x1f4ca;</span> 计算结果</div>
-
-            <div id="coverage_status" class="coverage-status coverage-full">-- 覆盖检测 --</div>
-
-            <div class="result-box">
-                <div><span class="result-label">视野近端距离:</span> <span class="result-value" id="res_blind">--</span></div>
-                <div><span class="result-label">视野远端距离:</span> <span class="result-value" id="res_far">--</span></div>
-                <div><span class="result-label">视野远端宽度:</span> <span class="result-value" id="res_width">--</span></div>
-            </div>
-
-            <div class="result-box">
-                <div><span class="result-label">高程图 offset:</span> <span class="result-value" id="res_pos">--</span></div>
-                <div><span class="result-label">高程图 size:</span> <span class="result-value" id="res_size">--</span></div>
-                <div><span class="result-label">网格点数:</span> <span class="result-value" id="res_grid">--</span></div>
-            </div>
-
-            <button class="btn" style="width:100%; margin-top:10px" onclick="copyCode()">复制配置代码</button>
+    <div class="section-title"><span class="icon">&#x1f916;</span> 机器人原点</div>
+    <div class="control-group">
+        <div class="input-row">
+            <label>原点离地高度 (m)</label>
+            <input type="number" id="input_origin_z" value="0.4" step="0.05" min="0">
         </div>
+        <input type="range" id="range_origin_z" min="0" max="2.0" step="0.05" value="0.4">
+    </div>
 
-        <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <h3 style="margin:0;">3D 预览</h3>
-                <div class="legend">
-                    <div class="legend-item"><div class="dot" style="background:#00ffff"></div>机器人原点(坐标轴)</div>
-                    <div class="legend-item"><div class="dot" style="background:#aaa"></div>相机</div>
-                    <div class="legend-item"><div class="dot" style="background:rgba(255,99,71,1)"></div>视野投影</div>
-                    <div class="legend-item"><div class="dot" style="background:#ffaa44"></div>高程图区域</div>
-                </div>
-            </div>
+    <div class="section-title"><span class="icon">&#x1f4f7;</span> 相机安装 (相对机器人原点)</div>
+    <div class="control-group">
+        <div class="xyz-row">
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_cam_x" value="0" step="0.05"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_cam_y" value="0" step="0.05"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_cam_z" value="0.5" step="0.05"></div>
+        </div>
+        <small>X+右 | Y+前 | Z+上 (相对机器人原点)</small>
+    </div>
 
-            <div id="canvas-container">
-                <div class="view-controls">
-                    <button class="btn active" id="btn-3d" onclick="setCameraMode('3d')">3D 自由视角</button>
-                    <button class="btn" id="btn-top" onclick="setCameraMode('top')">俯视图</button>
-                    <button class="btn" id="btn-side" onclick="setCameraMode('side')">侧视图</button>
-                </div>
-            </div>
+    <div class="control-group">
+        <div class="input-row">
+            <label>俯仰角 Pitch (°)</label>
+            <input type="number" id="input_pitch" value="15" step="1" min="0" max="89">
+        </div>
+        <input type="range" id="range_pitch" min="0" max="89" step="1" value="15">
+        <small>0°=平视, 90°=垂直向下</small>
+    </div>
 
-            <h3>Python 配置代码</h3>
-            <pre><code id="codeBlock"></code></pre>
+    <div class="section-title left"><span class="icon">&#x1f7e2;</span> Left IR (相对相机中心)</div>
+    <div class="control-group">
+        <div class="xyz-row">
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_l_x" value="-0.045" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_l_y" value="0" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_l_z" value="0" step="0.005"></div>
+        </div>
+    </div>
+    <div class="dual-row">
+        <div class="control-group">
+            <div class="input-row"><label>H-FOV (°)</label><input type="number" id="input_l_hfov" value="87" step="1" min="10" max="170"></div>
+            <input type="range" id="range_l_hfov" min="10" max="170" step="1" value="87">
+        </div>
+        <div class="control-group">
+            <div class="input-row"><label>V-FOV (°)</label><input type="number" id="input_l_vfov" value="58" step="1" min="10" max="170"></div>
+            <input type="range" id="range_l_vfov" min="10" max="170" step="1" value="58">
         </div>
     </div>
 
-    <div class="toast" id="toast">配置代码已复制！</div>
+    <div class="section-title right"><span class="icon">&#x1f7e0;</span> Right IR (相对相机中心)</div>
+    <div class="control-group">
+        <div class="xyz-row">
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_r_x" value="0.045" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_r_y" value="0" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_r_z" value="0" step="0.005"></div>
+        </div>
+    </div>
+    <div class="dual-row">
+        <div class="control-group">
+            <div class="input-row"><label>H-FOV (°)</label><input type="number" id="input_r_hfov" value="87" step="1" min="10" max="170"></div>
+            <input type="range" id="range_r_hfov" min="10" max="170" step="1" value="87">
+        </div>
+        <div class="control-group">
+            <div class="input-row"><label>V-FOV (°)</label><input type="number" id="input_r_vfov" value="58" step="1" min="10" max="170"></div>
+            <input type="range" id="range_r_vfov" min="10" max="170" step="1" value="58">
+        </div>
+    </div>
 
-    <script>
-        // === Three.js Setup ===
-        var container = document.getElementById('canvas-container');
-        var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x111111);
-        scene.fog = new THREE.Fog(0x111111, 25, 60);
+    <div class="section-title"><span class="icon">&#x1f5fa;</span> 高程图区域 (RayCaster)</div>
+    <div class="control-group">
+        <label>区域中心偏移 (相对机器人原点, m)</label>
+        <div class="xyz-row">
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_em_ox" value="0" step="0.05"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_em_oy" value="3.0" step="0.1"></div>
+        </div>
+    </div>
+    <div class="control-group">
+        <label>区域尺寸 (m)</label>
+        <div class="xyz-row">
+            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">宽 W</span><input type="number" id="input_em_w" value="4.0" step="0.1" min="0.1"></div>
+            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">长 L</span><input type="number" id="input_em_l" value="4.0" step="0.1" min="0.1"></div>
+            <div class="xyz-item"><span class="xyz-label" style="color:#aaa;">分辨率</span><input type="number" id="input_em_res" value="0.1" step="0.01" min="0.01" max="1.0"></div>
+        </div>
+    </div>
 
-        var camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-        camera.position.set(8, 5, 2);
+    <hr>
+    <div class="section-title"><span class="icon">&#x1f4ca;</span> 计算结果</div>
+    <div id="coverage_status" class="coverage-status coverage-full">-- 覆盖检测 --</div>
+    <div class="result-box">
+        <div><span class="result-label">Baseline:</span> <span class="result-value" id="res_baseline">--</span></div>
+        <div><span class="result-label">重叠区近端:</span> <span class="result-value" id="res_ovlp_near">--</span></div>
+        <div><span class="result-label">重叠区远端:</span> <span class="result-value" id="res_ovlp_far">--</span></div>
+        <div><span class="result-label">重叠区宽度:</span> <span class="result-value" id="res_ovlp_w">--</span></div>
+    </div>
+    <div class="result-box">
+        <div><span class="result-label">高程图 offset:</span> <span class="result-value" id="res_pos">--</span></div>
+        <div><span class="result-label">高程图 size:</span> <span class="result-value" id="res_size">--</span></div>
+        <div><span class="result-label">网格点数:</span> <span class="result-value" id="res_grid">--</span></div>
+    </div>
+    <button class="btn" style="width:100%; margin-top:8px" onclick="copyCode()">复制配置代码</button>
+</div>
 
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
+<div class="panel" style="flex:1; display:flex; flex-direction:column;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+        <h3 style="margin:0; font-size:1em;">3D 预览</h3>
+        <div class="legend">
+            <div class="legend-item"><div class="dot" style="background:#00ffff"></div>原点</div>
+            <div class="legend-item"><div class="dot" style="background:var(--left-color)"></div>Left IR</div>
+            <div class="legend-item"><div class="dot" style="background:var(--right-color)"></div>Right IR</div>
+            <div class="legend-item"><div class="dot" style="background:var(--overlap-color)"></div>重叠区</div>
+            <div class="legend-item"><div class="dot" style="background:#ffaa44"></div>高程图</div>
+        </div>
+    </div>
+    <div id="canvas-container">
+        <div class="view-controls">
+            <button class="btn active" id="btn-3d" onclick="setCameraMode('3d')">3D</button>
+            <button class="btn" id="btn-top" onclick="setCameraMode('top')">俯视</button>
+            <button class="btn" id="btn-side" onclick="setCameraMode('side')">侧视</button>
+            <button class="btn" id="btn-front" onclick="setCameraMode('front')">前视</button>
+        </div>
+    </div>
+    <h3 style="font-size:1em;">Python 配置代码</h3>
+    <pre><code id="codeBlock"></code></pre>
+</div>
+</div>
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 10, 5);
-        scene.add(dirLight);
+<div class="toast" id="toast">配置代码已复制！</div>
 
-        var controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.target.set(0, 0, -3);
+<script>
+// === Three.js Setup ===
+var container = document.getElementById('canvas-container');
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+scene.fog = new THREE.Fog(0x111111, 30, 65);
 
-        scene.add(new THREE.GridHelper(40, 40, 0x444444, 0x222222));
+var viewCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+viewCamera.position.set(6, 4, 3);
 
-        // === Scene Objects ===
+var renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
 
-        // Robot origin axes (will be repositioned dynamically)
-        var robotAxes = new THREE.AxesHelper(1.0);
-        scene.add(robotAxes);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dLight.position.set(5, 10, 5);
+scene.add(dLight);
 
-        // Robot forward arrow (will be repositioned dynamically)
-        var arrowDir = new THREE.Vector3(0, 0, -1);
-        var arrowHelper = new THREE.ArrowHelper(arrowDir, new THREE.Vector3(0, 0, 0), 0.6, 0x00ffff, 0.12, 0.08);
-        scene.add(arrowHelper);
+var orbit = new THREE.OrbitControls(viewCamera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.dampingFactor = 0.05;
+orbit.target.set(0, 0, -3);
 
-        // Small sphere to mark robot origin
-        var originMarker = new THREE.Mesh(
-            new THREE.SphereGeometry(0.06, 12, 12),
-            new THREE.MeshBasicMaterial({ color: 0x00ffff })
-        );
-        scene.add(originMarker);
+scene.add(new THREE.GridHelper(40, 40, 0x444444, 0x222222));
 
-        // Camera body
-        var camBody = new THREE.Mesh(
-            new THREE.BoxGeometry(0.12, 0.08, 0.18),
-            new THREE.MeshLambertMaterial({ color: 0xaaaaaa })
-        );
-        scene.add(camBody);
+// === Scene Objects ===
+// Robot origin
+var robotAxes = new THREE.AxesHelper(0.8);
+scene.add(robotAxes);
+var originMarker = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x00ffff })
+);
+scene.add(originMarker);
+// Forward arrow
+var fwdArrow = new THREE.ArrowHelper(
+    new THREE.Vector3(0, 0, -1), new THREE.Vector3(), 0.5, 0x00ffff, 0.1, 0.06
+);
+scene.add(fwdArrow);
 
-        // Camera-to-robot connection line
-        var connLineMat = new THREE.LineDashedMaterial({ color: 0x888888, dashSize: 0.1, gapSize: 0.05 });
-        var connLineGeo = new THREE.BufferGeometry();
-        connLineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
-        var connLine = new THREE.Line(connLineGeo, connLineMat);
-        connLine.computeLineDistances();
-        scene.add(connLine);
+// Camera body (gray box at camera mount point)
+var camBody = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12, 0.06, 0.04),
+    new THREE.MeshLambertMaterial({ color: 0x888888 })
+);
+scene.add(camBody);
 
-        // FOV frustum
-        var frustumMat = new THREE.MeshBasicMaterial({ color: 0xff6347, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
-        var frustumLineMat = new THREE.LineBasicMaterial({ color: 0xff6347, transparent: true, opacity: 0.7 });
-        var frustumMesh = new THREE.Mesh(new THREE.BufferGeometry(), frustumMat);
-        var frustumLines = new THREE.LineSegments(new THREE.BufferGeometry(), frustumLineMat);
-        scene.add(frustumMesh);
-        scene.add(frustumLines);
+// Left IR marker
+var leftMarker = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0x44bb44 })
+);
+scene.add(leftMarker);
+// Right IR marker
+var rightMarker = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xee8844 })
+);
+scene.add(rightMarker);
 
-        // Elevation map area (orange)
-        var emMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
-        var emLineMat = new THREE.LineBasicMaterial({ color: 0xffaa44, linewidth: 2 });
-        var emMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), emMat);
-        emMesh.rotation.x = -Math.PI / 2;
-        emMesh.position.y = 0.02;
-        scene.add(emMesh);
+// Baseline line
+var baselineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
+var baselineGeo = new THREE.BufferGeometry();
+baselineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+var baselineLine = new THREE.LineSegments(baselineGeo, baselineMat);
+scene.add(baselineLine);
 
-        // Elevation map border (thick line loop)
-        var emBorderGeo = new THREE.BufferGeometry();
-        emBorderGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(15), 3));
-        var emBorder = new THREE.Line(emBorderGeo, emLineMat);
-        scene.add(emBorder);
+// Connection line (origin to camera)
+var connMat = new THREE.LineDashedMaterial({ color: 0x666666, dashSize: 0.08, gapSize: 0.04 });
+var connGeo = new THREE.BufferGeometry();
+connGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+var connLine = new THREE.Line(connGeo, connMat);
+connLine.computeLineDistances();
+scene.add(connLine);
 
-        // === Input Binding ===
-        var allInputIds = [
-            'origin_z', 'cam_x', 'cam_y', 'cam_z', 'p', 'fov_h', 'fov_v',
-            'em_ox', 'em_oy', 'em_w', 'em_l', 'em_res'
-        ];
-        var inputs = {};
-        allInputIds.forEach(function(id) {
-            var el = document.getElementById('input_' + id);
-            if (el) {
-                inputs[id] = el;
-                el.addEventListener('input', updateCalculation);
-            }
-        });
+// Left IR frustum
+var lFrustMat = new THREE.MeshBasicMaterial({ color: 0x44bb44, side: THREE.DoubleSide, transparent: true, opacity: 0.08 });
+var lFrustLineMat = new THREE.LineBasicMaterial({ color: 0x44bb44, transparent: true, opacity: 0.5 });
+var lFrustMesh = new THREE.Mesh(new THREE.BufferGeometry(), lFrustMat);
+var lFrustLines = new THREE.LineSegments(new THREE.BufferGeometry(), lFrustLineMat);
+scene.add(lFrustMesh);
+scene.add(lFrustLines);
 
-        // Range sliders sync
-        ['origin_z', 'p', 'fov_h', 'fov_v'].forEach(function(id) {
-            var range = document.getElementById('range_' + id);
-            if (range) {
-                range.addEventListener('input', function() { inputs[id].value = range.value; updateCalculation(); });
-                inputs[id].addEventListener('input', function() { range.value = inputs[id].value; });
-            }
-        });
+// Right IR frustum
+var rFrustMat = new THREE.MeshBasicMaterial({ color: 0xee8844, side: THREE.DoubleSide, transparent: true, opacity: 0.08 });
+var rFrustLineMat = new THREE.LineBasicMaterial({ color: 0xee8844, transparent: true, opacity: 0.5 });
+var rFrustMesh = new THREE.Mesh(new THREE.BufferGeometry(), rFrustMat);
+var rFrustLines = new THREE.LineSegments(new THREE.BufferGeometry(), rFrustLineMat);
+scene.add(rFrustMesh);
+scene.add(rFrustLines);
 
-        // === Coordinate helpers ===
-        // Robot frame: X=right, Y=forward, Z=up
-        // Three.js:   X=right, Y=up,      Z=backward
-        function robotToThree(rx, ry, rz) {
-            return new THREE.Vector3(rx, rz, -ry);
-        }
+// Overlap region on ground
+var overlapMat = new THREE.MeshBasicMaterial({ color: 0x4488ff, side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
+var overlapMesh = new THREE.Mesh(new THREE.BufferGeometry(), overlapMat);
+scene.add(overlapMesh);
+var overlapLineMat = new THREE.LineBasicMaterial({ color: 0x4488ff });
+var overlapLines = new THREE.Line(new THREE.BufferGeometry(), overlapLineMat);
+scene.add(overlapLines);
 
-        // === Core Calculation ===
-        function updateCalculation() {
-            // Robot origin height above ground
-            var originZ = parseFloat(inputs.origin_z.value) || 0.4;
+// Elevation map
+var emMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, side: THREE.DoubleSide, transparent: true, opacity: 0.2 });
+var emMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), emMat);
+emMesh.rotation.x = -Math.PI / 2;
+scene.add(emMesh);
+var emLineMat = new THREE.LineBasicMaterial({ color: 0xffaa44 });
+var emBorder = new THREE.Line(new THREE.BufferGeometry(), emLineMat);
+scene.add(emBorder);
 
-            // Camera position in robot frame (relative to robot origin)
-            var camX = parseFloat(inputs.cam_x.value) || 0;
-            var camY = parseFloat(inputs.cam_y.value) || 0;
-            var camZ = parseFloat(inputs.cam_z.value) || 0.9;
+// === Input Binding ===
+var allIds = [
+    'origin_z', 'cam_x', 'cam_y', 'cam_z', 'pitch',
+    'l_x', 'l_y', 'l_z', 'l_hfov', 'l_vfov',
+    'r_x', 'r_y', 'r_z', 'r_hfov', 'r_vfov',
+    'em_ox', 'em_oy', 'em_w', 'em_l', 'em_res'
+];
+var inp = {};
+allIds.forEach(function(id) {
+    var el = document.getElementById('input_' + id);
+    if (el) { inp[id] = el; el.addEventListener('input', update); }
+});
+var rangeIds = ['origin_z', 'pitch', 'l_hfov', 'l_vfov', 'r_hfov', 'r_vfov'];
+rangeIds.forEach(function(id) {
+    var r = document.getElementById('range_' + id);
+    if (r && inp[id]) {
+        r.addEventListener('input', function() { inp[id].value = r.value; update(); });
+        inp[id].addEventListener('input', function() { r.value = inp[id].value; });
+    }
+});
 
-            // Camera absolute height above ground
-            var camAbsZ = originZ + camZ;
+// Robot frame: X=right, Y=forward, Z=up -> Three.js: X=right, Y=up, Z=-forward
+function r2t(rx, ry, rz) { return new THREE.Vector3(rx, rz, -ry); }
+function deg(v) { return v * Math.PI / 180; }
+function val(id, def) { var v = parseFloat(inp[id].value); return isNaN(v) ? def : v; }
 
-            var pitchDeg = parseFloat(inputs.p.value) || 15;
-            var fovHDeg = parseFloat(inputs.fov_h.value) || 90;
-            var fovVDeg = parseFloat(inputs.fov_v.value) || 65;
+// Compute ground trapezoid for one lens
+// lensRX, lensRY: lens position in robot XY (ground plane offsets from robot origin)
+// lensAbsZ: lens absolute height above ground
+// pitch, hfov, vfov in radians
+// Returns { near, far, corners: [{x,y}x4], isInfinite } in robot frame ground coords
+function computeFOVGround(lensRX, lensRY, lensAbsZ, pitch, hHfov, hHfovV) {
+    var angleBot = pitch + hHfovV;
+    var angleTop = pitch - hHfovV;
+    var dNear, dFar, inf = false;
+    dNear = (angleBot <= 0.001) ? 50 : lensAbsZ / Math.tan(angleBot);
+    if (angleTop <= 0.02) { dFar = 25; inf = true; }
+    else { dFar = lensAbsZ / Math.tan(angleTop); if (dFar > 25) { dFar = 25; inf = true; } }
+    var wN = 2 * dNear * Math.tan(hHfov);
+    var wF = 2 * dFar * Math.tan(hHfov);
+    return {
+        near: dNear, far: dFar, isInfinite: inf,
+        wNear: wN, wFar: wF,
+        corners: [
+            { x: lensRX - wN / 2, y: lensRY + dNear }, // near-left
+            { x: lensRX + wN / 2, y: lensRY + dNear }, // near-right
+            { x: lensRX + wF / 2, y: lensRY + dFar },  // far-right
+            { x: lensRX - wF / 2, y: lensRY + dFar }   // far-left
+        ]
+    };
+}
 
-            // Elevation map params
-            var emOX = parseFloat(inputs.em_ox.value) || 0;
-            var emOY = parseFloat(inputs.em_oy.value) || 3.0;
-            var emW = parseFloat(inputs.em_w.value) || 4.0;
-            var emL = parseFloat(inputs.em_l.value) || 4.0;
-            var emRes = parseFloat(inputs.em_res.value) || 0.1;
-
-            var pitch = pitchDeg * (Math.PI / 180);
-            var halfFovV = (fovVDeg / 2) * (Math.PI / 180);
-            var halfFovH = (fovHDeg / 2) * (Math.PI / 180);
-
-            // Depression angles from camera
-            var angleBottom = pitch + halfFovV;
-            var angleTop = pitch - halfFovV;
-
-            var isInfinite = false;
-
-            // Ground intersection distances (forward from camera, in robot Y direction)
-            // Uses absolute height (originZ + camZ) for ground intersection
-            var distNear, distFar;
-            distNear = (angleBottom <= 0) ? 50.0 : camAbsZ / Math.tan(angleBottom);
-            if (angleTop <= 0.02) {
-                distFar = 20.0;
-                isInfinite = true;
-            } else {
-                distFar = camAbsZ / Math.tan(angleTop);
-                if (distFar > 20) { distFar = 20; isInfinite = true; }
-            }
-
-            // Widths at near/far in robot frame
-            var widthNear = 2 * distNear * Math.tan(halfFovH);
-            var widthFar = 2 * distFar * Math.tan(halfFovH);
-
-            // Ground projection corners in robot frame (X, Y)
-            // Near and far are forward distances from camera position
-            var fovNearY = camY + distNear;
-            var fovFarY = camY + distFar;
-
-            // FOV trapezoid corners (robot X, robot Y)
-            var fov_NL = { x: camX - widthNear / 2, y: fovNearY };
-            var fov_NR = { x: camX + widthNear / 2, y: fovNearY };
-            var fov_FL = { x: camX - widthFar / 2,  y: fovFarY };
-            var fov_FR = { x: camX + widthFar / 2,  y: fovFarY };
-
-            // Elevation map corners (robot X, robot Y)
-            var em_NL = { x: emOX - emW / 2, y: emOY - emL / 2 };
-            var em_NR = { x: emOX + emW / 2, y: emOY - emL / 2 };
-            var em_FL = { x: emOX - emW / 2, y: emOY + emL / 2 };
-            var em_FR = { x: emOX + emW / 2, y: emOY + emL / 2 };
-
-            // Coverage check: test all 4 corners of elevation map against FOV trapezoid
-            var emCorners = [em_NL, em_NR, em_FL, em_FR];
-            var insideCount = 0;
-            emCorners.forEach(function(corner) {
-                if (isPointInFOVTrapezoid(corner, fov_NL, fov_NR, fov_FL, fov_FR)) {
-                    insideCount++;
-                }
-            });
-
-            var coverageEl = document.getElementById('coverage_status');
-            if (insideCount === 4) {
-                coverageEl.className = 'coverage-status coverage-full';
-                coverageEl.innerText = '\u2705 高程图完全在视场角内';
-            } else if (insideCount > 0) {
-                coverageEl.className = 'coverage-status coverage-partial';
-                coverageEl.innerText = '\u26a0\ufe0f 高程图部分在视场角内 (' + insideCount + '/4 角)';
-            } else {
-                coverageEl.className = 'coverage-status coverage-none';
-                coverageEl.innerText = '\u274c 高程图完全在视场角外';
-            }
-
-            // Grid points
-            var gridW = Math.ceil(emW / emRes) + 1;
-            var gridL = Math.ceil(emL / emRes) + 1;
-
-            // Update result text
-            document.getElementById('res_blind').innerText = distNear.toFixed(2) + ' m (from cam)';
-            document.getElementById('res_far').innerText = (isInfinite ? '>20' : distFar.toFixed(2)) + ' m (from cam)';
-            document.getElementById('res_width').innerText = widthFar.toFixed(2) + ' m';
-            document.getElementById('res_pos').innerText = '(' + emOX.toFixed(2) + ', ' + emOY.toFixed(2) + ', 0.0)';
-            document.getElementById('res_size').innerText = '(' + emW.toFixed(2) + ', ' + emL.toFixed(2) + ')';
-            document.getElementById('res_grid').innerText = gridW + ' x ' + gridL + ' = ' + (gridW * gridL);
-
-            // Update code block
-            document.getElementById('codeBlock').innerText =
-                '# RayCaster Configuration (Elevation Map)\n' +
-                'Elevation_map = RayCasterCfg(\n' +
-                '    prim_path="{ENV_REGEX_NS}/Robot/base_link",\n' +
-                '    # Offset: center of scan area relative to robot origin\n' +
-                '    offset=RayCasterCfg.OffsetCfg(\n' +
-                '        pos=(' + emOX.toFixed(2) + ', ' + emOY.toFixed(2) + ', 0.0)\n' +
-                '    ),\n' +
-                '    ray_alignment="yaw",\n' +
-                '    # Size: (Width, Length), Resolution\n' +
-                '    pattern_cfg=patterns.GridPatternCfg(\n' +
-                '        resolution=' + emRes + ',\n' +
-                '        size=(' + emW.toFixed(2) + ', ' + emL.toFixed(2) + ')\n' +
-                '    ),\n' +
-                '    debug_vis=True,\n' +
-                '    mesh_prim_paths=["/World/ground"],\n' +
-                ')\n' +
-                '\n' +
-                '# Robot origin height: ' + originZ.toFixed(2) + 'm above ground\n' +
-                '# Camera mount (relative to origin): (' + camX.toFixed(2) + ', ' + camY.toFixed(2) + ', ' + camZ.toFixed(2) + ')\n' +
-                '# Camera absolute height: ' + camAbsZ.toFixed(2) + 'm\n' +
-                '# Camera pitch: ' + pitchDeg + '\u00b0, FOV: ' + fovHDeg + '\u00b0 x ' + fovVDeg + '\u00b0\n' +
-                '# FOV ground coverage: ' + distNear.toFixed(2) + 'm ~ ' + (isInfinite ? '>20' : distFar.toFixed(2)) + 'm forward from camera';
-
-            // === Update 3D Scene ===
-            // Robot origin in Three.js (at originZ height above ground)
-            var originPos3 = robotToThree(0, 0, originZ);
-            robotAxes.position.copy(originPos3);
-            arrowHelper.position.copy(originPos3);
-            originMarker.position.copy(originPos3);
-
-            // Camera position: robot origin + camera offset (in robot frame)
-            var camPos3 = robotToThree(camX, camY, originZ + camZ);
-
-            // Camera body
-            camBody.position.copy(camPos3);
-            camBody.rotation.set(0, 0, 0);
-            camBody.rotation.x = -pitch;
-
-            // Connection line from robot origin to camera
-            var connPos = connLine.geometry.attributes.position;
-            connPos.setXYZ(0, originPos3.x, originPos3.y, originPos3.z);
-            connPos.setXYZ(1, camPos3.x, camPos3.y, camPos3.z);
-            connPos.needsUpdate = true;
-            connLine.computeLineDistances();
-
-            // FOV frustum - ground projection
-            var p_NL = robotToThree(fov_NL.x, fov_NL.y, 0);
-            var p_NR = robotToThree(fov_NR.x, fov_NR.y, 0);
-            var p_FL = robotToThree(fov_FL.x, fov_FL.y, 0);
-            var p_FR = robotToThree(fov_FR.x, fov_FR.y, 0);
-            p_NL.y = 0.01; p_NR.y = 0.01; p_FL.y = 0.01; p_FR.y = 0.01;
-
-            frustumMesh.geometry.dispose();
-            frustumLines.geometry.dispose();
-
-            var fverts = new Float32Array([
-                p_NL.x, p_NL.y, p_NL.z, p_FL.x, p_FL.y, p_FL.z, p_FR.x, p_FR.y, p_FR.z,
-                p_FR.x, p_FR.y, p_FR.z, p_NR.x, p_NR.y, p_NR.z, p_NL.x, p_NL.y, p_NL.z
-            ]);
-            var fGeo = new THREE.BufferGeometry();
-            fGeo.setAttribute('position', new THREE.BufferAttribute(fverts, 3));
-            fGeo.computeVertexNormals();
-            frustumMesh.geometry = fGeo;
-
-            var lineVerts = new Float32Array([
-                camPos3.x, camPos3.y, camPos3.z, p_NL.x, p_NL.y, p_NL.z,
-                camPos3.x, camPos3.y, camPos3.z, p_NR.x, p_NR.y, p_NR.z,
-                camPos3.x, camPos3.y, camPos3.z, p_FL.x, p_FL.y, p_FL.z,
-                camPos3.x, camPos3.y, camPos3.z, p_FR.x, p_FR.y, p_FR.z,
-                p_NL.x, p_NL.y, p_NL.z, p_FL.x, p_FL.y, p_FL.z,
-                p_FL.x, p_FL.y, p_FL.z, p_FR.x, p_FR.y, p_FR.z,
-                p_FR.x, p_FR.y, p_FR.z, p_NR.x, p_NR.y, p_NR.z,
-                p_NR.x, p_NR.y, p_NR.z, p_NL.x, p_NL.y, p_NL.z
-            ]);
-            var lGeo = new THREE.BufferGeometry();
-            lGeo.setAttribute('position', new THREE.BufferAttribute(lineVerts, 3));
-            frustumLines.geometry = lGeo;
-
-            // Elevation map rectangle
-            var emCenter3 = robotToThree(emOX, emOY, 0);
-            emMesh.position.set(emCenter3.x, 0.02, emCenter3.z);
-            emMesh.scale.set(emW, emL, 1);
-
-            // Elevation map border
-            var e_NL = robotToThree(em_NL.x, em_NL.y, 0);
-            var e_NR = robotToThree(em_NR.x, em_NR.y, 0);
-            var e_FL = robotToThree(em_FL.x, em_FL.y, 0);
-            var e_FR = robotToThree(em_FR.x, em_FR.y, 0);
-            var bh = 0.03;
-            var borderVerts = new Float32Array([
-                e_NL.x, bh, e_NL.z,
-                e_NR.x, bh, e_NR.z,
-                e_FR.x, bh, e_FR.z,
-                e_FL.x, bh, e_FL.z,
-                e_NL.x, bh, e_NL.z
-            ]);
-            emBorder.geometry.dispose();
-            var bGeo = new THREE.BufferGeometry();
-            bGeo.setAttribute('position', new THREE.BufferAttribute(borderVerts, 3));
-            emBorder.geometry = bGeo;
-
-            // Color the elevation map based on coverage
-            if (insideCount === 4) {
-                emMat.color.setHex(0x44ff44);
-                emLineMat.color.setHex(0x44ff44);
-            } else if (insideCount > 0) {
-                emMat.color.setHex(0xffc800);
-                emLineMat.color.setHex(0xffc800);
-            } else {
-                emMat.color.setHex(0xff5050);
-                emLineMat.color.setHex(0xff5050);
+// Sutherland-Hodgman polygon clipping
+function clipPolygon(subject, clip) {
+    var output = subject.slice();
+    for (var i = 0; i < clip.length && output.length > 0; i++) {
+        var input = output;
+        output = [];
+        var a = clip[i], b = clip[(i + 1) % clip.length];
+        for (var j = 0; j < input.length; j++) {
+            var c = input[j], d = input[(j + 1) % input.length];
+            var cInside = cross2(a, b, c) >= 0;
+            var dInside = cross2(a, b, d) >= 0;
+            if (cInside) {
+                output.push(c);
+                if (!dInside) output.push(intersect2(a, b, c, d));
+            } else if (dInside) {
+                output.push(intersect2(a, b, c, d));
             }
         }
+    }
+    return output;
+}
+function cross2(a, b, p) { return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x); }
+function intersect2(a, b, c, d) {
+    var a1 = b.y - a.y, b1 = a.x - b.x, c1 = a1 * a.x + b1 * a.y;
+    var a2 = d.y - c.y, b2 = c.x - d.x, c2 = a2 * c.x + b2 * c.y;
+    var det = a1 * b2 - a2 * b1;
+    if (Math.abs(det) < 1e-10) return { x: (c.x + d.x) / 2, y: (c.y + d.y) / 2 };
+    return { x: (c1 * b2 - c2 * b1) / det, y: (a1 * c2 - a2 * c1) / det };
+}
 
-        // Point-in-trapezoid test using cross products
-        function isPointInFOVTrapezoid(p, tNL, tNR, tFR, tFL) {
-            // Trapezoid vertices in order: NL -> NR -> FR -> FL (clockwise when Y+ is forward)
-            var verts = [tNL, tNR, tFR, tFL];
-            var sign = null;
-            for (var i = 0; i < 4; i++) {
-                var a = verts[i];
-                var b = verts[(i + 1) % 4];
-                var cross = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
-                if (cross === 0) continue;
-                var s = cross > 0;
-                if (sign === null) sign = s;
-                else if (sign !== s) return false;
-            }
-            return true;
-        }
+// Polygon bounding box
+function polyBounds(poly) {
+    var xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    poly.forEach(function(p) {
+        if (p.x < xmin) xmin = p.x; if (p.x > xmax) xmax = p.x;
+        if (p.y < ymin) ymin = p.y; if (p.y > ymax) ymax = p.y;
+    });
+    return { xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax };
+}
 
-        // === Copy ===
-        function copyCode() {
-            var code = document.getElementById('codeBlock').innerText;
-            navigator.clipboard.writeText(code).then(function() {
-                var toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(function() { toast.classList.remove('show'); }, 2000);
-            });
-        }
+// Check if point is inside convex polygon (cross product winding)
+function pointInPoly(p, poly) {
+    var sign = null;
+    for (var i = 0; i < poly.length; i++) {
+        var a = poly[i], b = poly[(i + 1) % poly.length];
+        var c = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+        if (Math.abs(c) < 1e-10) continue;
+        var s = c > 0;
+        if (sign === null) sign = s;
+        else if (sign !== s) return false;
+    }
+    return true;
+}
 
-        // === Camera Modes ===
-        function setCameraMode(mode) {
-            document.getElementById('btn-3d').classList.remove('active');
-            document.getElementById('btn-top').classList.remove('active');
-            document.getElementById('btn-side').classList.remove('active');
+// Build Three.js ground mesh + border from polygon [{x,y}] in robot frame
+function buildGroundMesh(poly, height) {
+    if (poly.length < 3) return { verts: new Float32Array(0), border: new Float32Array(0) };
+    // Triangulate (fan from first vertex)
+    var tris = [];
+    for (var i = 1; i < poly.length - 1; i++) {
+        var a = r2t(poly[0].x, poly[0].y, 0);
+        var b = r2t(poly[i].x, poly[i].y, 0);
+        var c = r2t(poly[i + 1].x, poly[i + 1].y, 0);
+        tris.push(a.x, height, a.z, b.x, height, b.z, c.x, height, c.z);
+    }
+    var border = [];
+    for (var i = 0; i < poly.length; i++) {
+        var p = r2t(poly[i].x, poly[i].y, 0);
+        border.push(p.x, height + 0.005, p.z);
+    }
+    var p0 = r2t(poly[0].x, poly[0].y, 0);
+    border.push(p0.x, height + 0.005, p0.z);
+    return { verts: new Float32Array(tris), border: new Float32Array(border) };
+}
 
-            if (mode === 'top') {
-                camera.position.set(0, 15, -5);
-                camera.lookAt(0, 0, -5);
-                controls.target.set(0, 0, -5);
-                controls.enableRotate = false;
-                document.getElementById('btn-top').classList.add('active');
-            } else if (mode === 'side') {
-                camera.position.set(12, 3, -3);
-                camera.lookAt(0, 0, -3);
-                controls.target.set(0, 0, -3);
-                controls.enableRotate = false;
-                document.getElementById('btn-side').classList.add('active');
-            } else {
-                camera.position.set(8, 5, 2);
-                controls.target.set(0, 0, -3);
-                controls.enableRotate = true;
-                document.getElementById('btn-3d').classList.add('active');
-            }
-            controls.update();
-        }
+// Build frustum lines from apex to ground corners
+function buildFrustumLines(apex3, corners, height) {
+    var lines = [];
+    corners.forEach(function(c) {
+        var p = r2t(c.x, c.y, 0);
+        lines.push(apex3.x, apex3.y, apex3.z, p.x, height, p.z);
+    });
+    for (var i = 0; i < corners.length; i++) {
+        var a = r2t(corners[i].x, corners[i].y, 0);
+        var b = r2t(corners[(i + 1) % corners.length].x, corners[(i + 1) % corners.length].y, 0);
+        lines.push(a.x, height, a.z, b.x, height, b.z);
+    }
+    return new Float32Array(lines);
+}
 
-        // === Resize ===
-        window.addEventListener('resize', function() {
-            var w = container.clientWidth;
-            var h = container.clientHeight;
-            renderer.setSize(w, h);
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        });
+function replaceGeo(mesh, verts, isLine) {
+    mesh.geometry.dispose();
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+    if (!isLine) g.computeVertexNormals();
+    mesh.geometry = g;
+}
 
-        // === Animate ===
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
+// === Main Update ===
+function update() {
+    var originZ = val('origin_z', 0.4);
+    var camRX = val('cam_x', 0), camRY = val('cam_y', 0), camRZ = val('cam_z', 0.5);
+    var pitchRad = deg(val('pitch', 15));
 
-        updateCalculation();
-        animate();
-    </script>
+    // Left IR in robot frame
+    var lx = camRX + val('l_x', -0.045), ly = camRY + val('l_y', 0), lz = camRZ + val('l_z', 0);
+    var lAbsZ = originZ + lz;
+    var lHH = deg(val('l_hfov', 87) / 2), lHV = deg(val('l_vfov', 58) / 2);
+
+    // Right IR in robot frame
+    var rx = camRX + val('r_x', 0.045), ry = camRY + val('r_y', 0), rz = camRZ + val('r_z', 0);
+    var rAbsZ = originZ + rz;
+    var rHH = deg(val('r_hfov', 87) / 2), rHV = deg(val('r_vfov', 58) / 2);
+
+    // Ground FOVs
+    var lFov = computeFOVGround(lx, ly, lAbsZ, pitchRad, lHH, lHV);
+    var rFov = computeFOVGround(rx, ry, rAbsZ, pitchRad, rHH, rHV);
+
+    // Overlap polygon
+    var overlapPoly = clipPolygon(lFov.corners, rFov.corners);
+
+    // Elevation map
+    var emOX = val('em_ox', 0), emOY = val('em_oy', 3);
+    var emW = val('em_w', 4), emL = val('em_l', 4), emRes = val('em_res', 0.1);
+    var emCorners = [
+        { x: emOX - emW / 2, y: emOY - emL / 2 },
+        { x: emOX + emW / 2, y: emOY - emL / 2 },
+        { x: emOX + emW / 2, y: emOY + emL / 2 },
+        { x: emOX - emW / 2, y: emOY + emL / 2 }
+    ];
+
+    // Coverage: check EM corners against overlap polygon
+    var insideCount = 0;
+    if (overlapPoly.length >= 3) {
+        emCorners.forEach(function(c) { if (pointInPoly(c, overlapPoly)) insideCount++; });
+    }
+
+    var covEl = document.getElementById('coverage_status');
+    if (insideCount === 4) {
+        covEl.className = 'coverage-status coverage-full';
+        covEl.innerText = '\u2705 高程图完全在双目重叠区内';
+    } else if (insideCount > 0) {
+        covEl.className = 'coverage-status coverage-partial';
+        covEl.innerText = '\u26a0\ufe0f 高程图部分在重叠区内 (' + insideCount + '/4 角)';
+    } else {
+        covEl.className = 'coverage-status coverage-none';
+        covEl.innerText = '\u274c 高程图在双目重叠区外';
+    }
+
+    // Overlap bounds for display
+    var baseline = Math.sqrt(Math.pow(val('r_x', 0.045) - val('l_x', -0.045), 2) +
+                             Math.pow(val('r_y', 0) - val('l_y', 0), 2) +
+                             Math.pow(val('r_z', 0) - val('l_z', 0), 2));
+    var ovlpBounds = overlapPoly.length >= 3 ? polyBounds(overlapPoly) : null;
+
+    document.getElementById('res_baseline').innerText = (baseline * 1000).toFixed(1) + ' mm';
+    if (ovlpBounds) {
+        document.getElementById('res_ovlp_near').innerText = ovlpBounds.ymin.toFixed(2) + ' m';
+        document.getElementById('res_ovlp_far').innerText = ovlpBounds.ymax.toFixed(2) + ' m';
+        document.getElementById('res_ovlp_w').innerText = (ovlpBounds.xmax - ovlpBounds.xmin).toFixed(2) + ' m';
+    } else {
+        document.getElementById('res_ovlp_near').innerText = '--';
+        document.getElementById('res_ovlp_far').innerText = '--';
+        document.getElementById('res_ovlp_w').innerText = '--';
+    }
+    document.getElementById('res_pos').innerText = '(' + emOX.toFixed(2) + ', ' + emOY.toFixed(2) + ', 0.0)';
+    document.getElementById('res_size').innerText = '(' + emW.toFixed(2) + ', ' + emL.toFixed(2) + ')';
+    var gW = Math.ceil(emW / emRes) + 1, gL = Math.ceil(emL / emRes) + 1;
+    document.getElementById('res_grid').innerText = gW + ' x ' + gL + ' = ' + (gW * gL);
+
+    // Code
+    document.getElementById('codeBlock').innerText =
+        '# RayCaster Configuration (Elevation Map)\n' +
+        'Elevation_map = RayCasterCfg(\n' +
+        '    prim_path="{ENV_REGEX_NS}/Robot/base_link",\n' +
+        '    offset=RayCasterCfg.OffsetCfg(\n' +
+        '        pos=(' + emOX.toFixed(2) + ', ' + emOY.toFixed(2) + ', 0.0)\n' +
+        '    ),\n' +
+        '    ray_alignment="yaw",\n' +
+        '    pattern_cfg=patterns.GridPatternCfg(\n' +
+        '        resolution=' + emRes + ',\n' +
+        '        size=(' + emW.toFixed(2) + ', ' + emL.toFixed(2) + ')\n' +
+        '    ),\n' +
+        '    debug_vis=True,\n' +
+        '    mesh_prim_paths=["/World/ground"],\n' +
+        ')\n\n' +
+        '# Stereo Camera Config\n' +
+        '# Mount (relative to robot origin): (' + camRX.toFixed(3) + ', ' + camRY.toFixed(3) + ', ' + camRZ.toFixed(3) + ')\n' +
+        '# Robot origin height: ' + originZ.toFixed(2) + 'm\n' +
+        '# Pitch: ' + val('pitch', 15) + '\u00b0\n' +
+        '# Baseline: ' + (baseline * 1000).toFixed(1) + 'mm\n' +
+        '# Left IR  offset: (' + val('l_x', -0.045).toFixed(3) + ', ' + val('l_y', 0).toFixed(3) + ', ' + val('l_z', 0).toFixed(3) + ')  FOV: ' + val('l_hfov', 87) + '\u00b0x' + val('l_vfov', 58) + '\u00b0\n' +
+        '# Right IR offset: (' + val('r_x', 0.045).toFixed(3) + ', ' + val('r_y', 0).toFixed(3) + ', ' + val('r_z', 0).toFixed(3) + ')  FOV: ' + val('r_hfov', 87) + '\u00b0x' + val('r_vfov', 58) + '\u00b0';
+
+    // === 3D Scene ===
+    var originP = r2t(0, 0, originZ);
+    robotAxes.position.copy(originP);
+    originMarker.position.copy(originP);
+    fwdArrow.position.copy(originP);
+
+    var camP = r2t(camRX, camRY, originZ + camRZ);
+    camBody.position.copy(camP);
+    camBody.rotation.set(-pitchRad, 0, 0);
+
+    // Lens markers
+    var lP = r2t(lx, ly, originZ + lz);
+    var rP = r2t(rx, ry, originZ + rz);
+    leftMarker.position.copy(lP);
+    rightMarker.position.copy(rP);
+
+    // Baseline line
+    var blp = baselineLine.geometry.attributes.position;
+    blp.setXYZ(0, lP.x, lP.y, lP.z);
+    blp.setXYZ(1, rP.x, rP.y, rP.z);
+    blp.needsUpdate = true;
+
+    // Connection line
+    var cp = connLine.geometry.attributes.position;
+    cp.setXYZ(0, originP.x, originP.y, originP.z);
+    cp.setXYZ(1, camP.x, camP.y, camP.z);
+    cp.needsUpdate = true;
+    connLine.computeLineDistances();
+
+    // Left frustum
+    var lGround = buildGroundMesh(lFov.corners, 0.01);
+    replaceGeo(lFrustMesh, lGround.verts, false);
+    replaceGeo(lFrustLines, buildFrustumLines(lP, lFov.corners, 0.01), true);
+
+    // Right frustum
+    var rGround = buildGroundMesh(rFov.corners, 0.015);
+    replaceGeo(rFrustMesh, rGround.verts, false);
+    replaceGeo(rFrustLines, buildFrustumLines(rP, rFov.corners, 0.015), true);
+
+    // Overlap
+    if (overlapPoly.length >= 3) {
+        var ovlpG = buildGroundMesh(overlapPoly, 0.02);
+        replaceGeo(overlapMesh, ovlpG.verts, false);
+        replaceGeo(overlapLines, ovlpG.border, true);
+    } else {
+        replaceGeo(overlapMesh, new Float32Array(0), false);
+        replaceGeo(overlapLines, new Float32Array(0), true);
+    }
+
+    // Elevation map
+    var emC = r2t(emOX, emOY, 0);
+    emMesh.position.set(emC.x, 0.025, emC.z);
+    emMesh.scale.set(emW, emL, 1);
+
+    emBorder.geometry.dispose();
+    var eb = [];
+    emCorners.forEach(function(c) { var p = r2t(c.x, c.y, 0); eb.push(p.x, 0.03, p.z); });
+    var p0 = r2t(emCorners[0].x, emCorners[0].y, 0);
+    eb.push(p0.x, 0.03, p0.z);
+    var ebGeo = new THREE.BufferGeometry();
+    ebGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(eb), 3));
+    emBorder.geometry = ebGeo;
+
+    // EM color by coverage
+    var emColor = insideCount === 4 ? 0x44ff44 : (insideCount > 0 ? 0xffc800 : 0xff5050);
+    emMat.color.setHex(emColor);
+    emLineMat.color.setHex(emColor);
+}
+
+function copyCode() {
+    navigator.clipboard.writeText(document.getElementById('codeBlock').innerText).then(function() {
+        var t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(function() { t.classList.remove('show'); }, 2000);
+    });
+}
+
+function setCameraMode(mode) {
+    ['3d', 'top', 'side', 'front'].forEach(function(m) {
+        document.getElementById('btn-' + m).classList.remove('active');
+    });
+    document.getElementById('btn-' + mode).classList.add('active');
+    orbit.enableRotate = (mode === '3d');
+    if (mode === 'top') {
+        viewCamera.position.set(0, 18, -4); viewCamera.lookAt(0, 0, -4);
+        orbit.target.set(0, 0, -4);
+    } else if (mode === 'side') {
+        viewCamera.position.set(14, 2, -3); viewCamera.lookAt(0, 0, -3);
+        orbit.target.set(0, 0, -3);
+    } else if (mode === 'front') {
+        viewCamera.position.set(0, 2, 5); viewCamera.lookAt(0, 0, 0);
+        orbit.target.set(0, 0, 0);
+    } else {
+        viewCamera.position.set(6, 4, 3); orbit.target.set(0, 0, -3);
+    }
+    orbit.update();
+}
+
+window.addEventListener('resize', function() {
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    viewCamera.aspect = container.clientWidth / container.clientHeight;
+    viewCamera.updateProjectionMatrix();
+});
+
+(function animate() {
+    requestAnimationFrame(animate);
+    orbit.update();
+    renderer.render(scene, viewCamera);
+})();
+
+update();
+</script>
 </body>
 </html>
