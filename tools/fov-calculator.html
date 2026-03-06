@@ -186,17 +186,17 @@
     <div class="control-group">
         <div class="input-row">
             <label>原点离地高度 (m)</label>
-            <input type="number" id="input_origin_z" value="0.4" step="0.05" min="0">
+            <input type="number" id="input_origin_z" value="0.376" step="0.005" min="0">
         </div>
-        <input type="range" id="range_origin_z" min="0" max="2.0" step="0.05" value="0.4">
+        <input type="range" id="range_origin_z" min="0" max="2.0" step="0.005" value="0.376">
     </div>
 
     <div class="section-title"><span class="icon">&#x1f4f7;</span> 相机安装 (相对机器人原点)</div>
     <div class="control-group">
         <div class="xyz-row">
-            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_cam_x" value="0" step="0.05"></div>
-            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_cam_y" value="0" step="0.05"></div>
-            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_cam_z" value="0.5" step="0.05"></div>
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_cam_x" value="0.014" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_cam_y" value="0.455" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_cam_z" value="-0.106" step="0.001"></div>
         </div>
         <small>X+右 | Y+前 | Z+上 (相对机器人原点)</small>
     </div>
@@ -204,18 +204,18 @@
     <div class="control-group">
         <div class="input-row">
             <label>俯仰角 Pitch (°)</label>
-            <input type="number" id="input_pitch" value="15" step="1" min="0" max="89">
+            <input type="number" id="input_pitch" value="0" step="1" min="0" max="89">
         </div>
-        <input type="range" id="range_pitch" min="0" max="89" step="1" value="15">
+        <input type="range" id="range_pitch" min="0" max="89" step="1" value="0">
         <small>0°=平视, 90°=垂直向下</small>
     </div>
 
     <div class="section-title left"><span class="icon">&#x1f7e2;</span> Left IR (相对相机中心)</div>
     <div class="control-group">
         <div class="xyz-row">
-            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_l_x" value="-0.045" step="0.005"></div>
-            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_l_y" value="0" step="0.005"></div>
-            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_l_z" value="0" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_l_x" value="-0.057" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_l_y" value="0" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_l_z" value="0" step="0.001"></div>
         </div>
     </div>
     <div class="dual-row">
@@ -232,9 +232,9 @@
     <div class="section-title right"><span class="icon">&#x1f7e0;</span> Right IR (相对相机中心)</div>
     <div class="control-group">
         <div class="xyz-row">
-            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_r_x" value="0.045" step="0.005"></div>
-            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_r_y" value="0" step="0.005"></div>
-            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_r_z" value="0" step="0.005"></div>
+            <div class="xyz-item"><span class="xyz-label x">X</span><input type="number" id="input_r_x" value="0.038" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label y">Y</span><input type="number" id="input_r_y" value="0" step="0.001"></div>
+            <div class="xyz-item"><span class="xyz-label z">Z</span><input type="number" id="input_r_z" value="0" step="0.001"></div>
         </div>
     </div>
     <div class="dual-row">
@@ -259,8 +259,8 @@
     <div class="control-group">
         <label>区域尺寸 (m)</label>
         <div class="xyz-row">
-            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">宽 W</span><input type="number" id="input_em_w" value="4.0" step="0.1" min="0.1"></div>
-            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">长 L</span><input type="number" id="input_em_l" value="4.0" step="0.1" min="0.1"></div>
+            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">宽 W</span><input type="number" id="input_em_w" value="1.6" step="0.1" min="0.1"></div>
+            <div class="xyz-item"><span class="xyz-label" style="color:#ffaa44;">长 L</span><input type="number" id="input_em_l" value="1.2" step="0.1" min="0.1"></div>
             <div class="xyz-item"><span class="xyz-label" style="color:#aaa;">分辨率</span><input type="number" id="input_em_res" value="0.1" step="0.01" min="0.01" max="1.0"></div>
         </div>
     </div>
@@ -315,8 +315,19 @@ var scene = new THREE.Scene();
 scene.background = new THREE.Color(0x111111);
 scene.fog = new THREE.Fog(0x111111, 30, 65);
 
-var viewCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-viewCamera.position.set(6, 4, 3);
+// Perspective camera for 3D mode
+var perspCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+perspCamera.position.set(6, 4, 3);
+
+// Orthographic camera for top/side/front views
+var orthoSize = 6;
+var aspect = container.clientWidth / container.clientHeight;
+var orthoCamera = new THREE.OrthographicCamera(
+    -orthoSize * aspect, orthoSize * aspect, orthoSize, -orthoSize, 0.1, 100
+);
+
+var activeCamera = perspCamera;
+var currentMode = '3d';
 
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(container.clientWidth, container.clientHeight);
@@ -328,12 +339,35 @@ var dLight = new THREE.DirectionalLight(0xffffff, 0.8);
 dLight.position.set(5, 10, 5);
 scene.add(dLight);
 
-var orbit = new THREE.OrbitControls(viewCamera, renderer.domElement);
+var orbit = new THREE.OrbitControls(perspCamera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.dampingFactor = 0.05;
 orbit.target.set(0, 0, -3);
 
+var orthoOrbit = new THREE.OrbitControls(orthoCamera, renderer.domElement);
+orthoOrbit.enableDamping = true;
+orthoOrbit.dampingFactor = 0.05;
+orthoOrbit.enableRotate = false;
+orthoOrbit.enabled = false;
+
 scene.add(new THREE.GridHelper(40, 40, 0x444444, 0x222222));
+
+// === Text Sprite Helper ===
+function makeTextSprite(text, color) {
+    var canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 64;
+    var ctx = canvas.getContext('2d');
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 64, 32);
+    var tex = new THREE.CanvasTexture(canvas);
+    var mat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+    var sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.5, 0.25, 1);
+    return sprite;
+}
 
 // === Scene Objects ===
 // Robot origin
@@ -344,6 +378,22 @@ var originMarker = new THREE.Mesh(
     new THREE.MeshBasicMaterial({ color: 0x00ffff })
 );
 scene.add(originMarker);
+
+// Axis labels (in Three.js coords, attached to robotAxes group)
+var axisLabels = [];
+function createAxisLabels() {
+    // Robot X (right) = Three.js +X, color red
+    var lx = makeTextSprite('X (right)', '#ff6b6b');
+    scene.add(lx); axisLabels.push({ sprite: lx, offset: new THREE.Vector3(0.95, 0, 0) });
+    // Robot Y (forward) = Three.js -Z, color green
+    var ly = makeTextSprite('Y (front)', '#44ff44');
+    scene.add(ly); axisLabels.push({ sprite: ly, offset: new THREE.Vector3(0, 0, -0.95) });
+    // Robot Z (up) = Three.js +Y, color blue
+    var lz = makeTextSprite('Z (up)', '#6bb5ff');
+    scene.add(lz); axisLabels.push({ sprite: lz, offset: new THREE.Vector3(0, 0.95, 0) });
+}
+createAxisLabels();
+
 // Forward arrow
 var fwdArrow = new THREE.ArrowHelper(
     new THREE.Vector3(0, 0, -1), new THREE.Vector3(), 0.5, 0x00ffff, 0.1, 0.06
@@ -670,6 +720,11 @@ function update() {
     originMarker.position.copy(originP);
     fwdArrow.position.copy(originP);
 
+    // Update axis labels position
+    axisLabels.forEach(function(al) {
+        al.sprite.position.copy(originP).add(al.offset);
+    });
+
     var camP = r2t(camRX, camRY, originZ + camRZ);
     camBody.position.copy(camP);
     camBody.rotation.set(-pitchRad, 0, 0);
@@ -741,37 +796,75 @@ function copyCode() {
     });
 }
 
+function updateOrthoSize() {
+    var a = container.clientWidth / container.clientHeight;
+    orthoCamera.left = -orthoSize * a;
+    orthoCamera.right = orthoSize * a;
+    orthoCamera.top = orthoSize;
+    orthoCamera.bottom = -orthoSize;
+    orthoCamera.updateProjectionMatrix();
+}
+
 function setCameraMode(mode) {
     ['3d', 'top', 'side', 'front'].forEach(function(m) {
         document.getElementById('btn-' + m).classList.remove('active');
     });
     document.getElementById('btn-' + mode).classList.add('active');
-    orbit.enableRotate = (mode === '3d');
-    if (mode === 'top') {
-        viewCamera.position.set(0, 18, -4); viewCamera.lookAt(0, 0, -4);
-        orbit.target.set(0, 0, -4);
-    } else if (mode === 'side') {
-        viewCamera.position.set(14, 2, -3); viewCamera.lookAt(0, 0, -3);
+    currentMode = mode;
+
+    if (mode === '3d') {
+        // Perspective
+        activeCamera = perspCamera;
+        orbit.enabled = true;
+        orthoOrbit.enabled = false;
+        perspCamera.position.set(6, 4, 3);
         orbit.target.set(0, 0, -3);
-    } else if (mode === 'front') {
-        viewCamera.position.set(0, 2, 5); viewCamera.lookAt(0, 0, 0);
-        orbit.target.set(0, 0, 0);
+        orbit.enableRotate = true;
+        orbit.update();
     } else {
-        viewCamera.position.set(6, 4, 3); orbit.target.set(0, 0, -3);
+        // Orthographic
+        activeCamera = orthoCamera;
+        orbit.enabled = false;
+        orthoOrbit.enabled = true;
+        orthoOrbit.enableRotate = false;
+        updateOrthoSize();
+
+        if (mode === 'top') {
+            // Top-down: looking along -Y (Three.js), camera up = -Z (Three.js) = +Y (robot forward)
+            orthoCamera.position.set(0, 20, -3);
+            orthoCamera.up.set(0, 0, -1);
+            orthoOrbit.target.set(0, 0, -3);
+        } else if (mode === 'side') {
+            // Side view: looking along -X (Three.js), shows Y(up) vs Z(forward)
+            orthoCamera.position.set(20, 1, -3);
+            orthoCamera.up.set(0, 1, 0);
+            orthoOrbit.target.set(0, 1, -3);
+        } else if (mode === 'front') {
+            // Front view: looking along +Z (Three.js) = from robot front, shows X(right) vs Z(up)
+            orthoCamera.position.set(0, 1, 8);
+            orthoCamera.up.set(0, 1, 0);
+            orthoOrbit.target.set(0, 1, 0);
+        }
+        orthoCamera.lookAt(orthoOrbit.target);
+        orthoOrbit.update();
     }
-    orbit.update();
+    // Disable fog for ortho views (cleaner)
+    scene.fog = (mode === '3d') ? new THREE.Fog(0x111111, 30, 65) : null;
 }
 
 window.addEventListener('resize', function() {
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    viewCamera.aspect = container.clientWidth / container.clientHeight;
-    viewCamera.updateProjectionMatrix();
+    var w = container.clientWidth, h = container.clientHeight;
+    renderer.setSize(w, h);
+    perspCamera.aspect = w / h;
+    perspCamera.updateProjectionMatrix();
+    updateOrthoSize();
 });
 
 (function animate() {
     requestAnimationFrame(animate);
-    orbit.update();
-    renderer.render(scene, viewCamera);
+    if (currentMode === '3d') orbit.update();
+    else orthoOrbit.update();
+    renderer.render(scene, activeCamera);
 })();
 
 update();
