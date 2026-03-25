@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>词汇闪卡 — 中英混合记忆</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --card-bg: #fffdf9;
+    --card-back-bg: #f5efe6;
+    --border: #e8dfd2;
+    --brown-dark: #3d2b1f;
+    --brown: #6b4c35;
+    --brown-mid: #8c6d52;
+    --brown-light: #b09678;
+    --accent: #c0522e;
+    --green: #4a7c59;
+    --green-bg: rgba(74,124,89,0.07);
+    --accent-bg: rgba(192,82,46,0.07);
+    --text: #3d2b1f;
+    --text-dim: #9c8b7a;
+    --shadow: rgba(61,43,31,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', 'Noto Serif SC', sans-serif; min-height: 100vh; }
+  .header { text-align: center; padding: 36px 20px 8px; }
+  .header h1 { font-family: 'Playfair Display', 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.2rem); color: var(--brown-dark); font-weight: 700; }
+  .header p { color: var(--text-dim); font-size: 0.72rem; margin-top: 5px; letter-spacing: 3px; text-transform: uppercase; font-weight: 500; }
+  .stats-bar { display: flex; justify-content: center; gap: 32px; padding: 16px 20px; }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--brown); }
+  .stat-num.green { color: var(--green); }
+  .stat-label { font-size: 0.58rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; font-weight: 600; }
+  .progress-container { max-width: 600px; margin: 0 auto 16px; padding: 0 28px; }
+  .progress-track { height: 2px; background: var(--border); border-radius: 1px; }
+  .progress-fill { height: 100%; background: var(--brown-light); border-radius: 1px; transition: width 0.4s ease; }
+  .progress-text { font-size: 0.62rem; color: var(--text-dim); margin-top: 4px; text-align: right; font-weight: 500; }
+  .search-row { max-width: 600px; margin: 0 auto 12px; padding: 0 28px; }
+  .search-input { width: 100%; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card-bg); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: var(--brown-light); }
+  .search-input::placeholder { color: var(--text-dim); }
+  .filter-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-tab { font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; padding: 4px 12px; border-radius: 14px; border: 1.5px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+  .filter-tab:hover { border-color: var(--brown-light); color: var(--brown); }
+  .filter-tab.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+  .card-container { max-width: 600px; margin: 0 auto; padding: 0 20px 12px; perspective: 1000px; }
+  .card-flip { width: 100%; min-height: 260px; cursor: pointer; position: relative; transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+  .card-flip.flipped { transform: rotateY(180deg); }
+  .card-face { position: absolute; top: 0; left: 0; right: 0; bottom: 0; backface-visibility: hidden; border-radius: 14px; padding: 30px 26px; display: flex; flex-direction: column; justify-content: center; }
+  .card-front { background: var(--card-bg); border: 1.5px solid var(--border); box-shadow: 0 1px 12px var(--shadow); }
+  .card-back { background: var(--card-back-bg); border: 1.5px solid var(--border); transform: rotateY(180deg); box-shadow: 0 1px 12px var(--shadow); }
+  .side-label { position: absolute; top: 12px; right: 14px; font-size: 0.58rem; font-weight: 700; letter-spacing: 2px; padding: 2px 8px; border-radius: 8px; }
+  .card-front .side-label { color: var(--accent); background: var(--accent-bg); }
+  .card-back .side-label { color: var(--green); background: var(--green-bg); }
+  .word-row { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+  .word-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--brown-dark); line-height: 1.1; }
+  .speak-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .speak-btn:hover { background: var(--brown); border-color: var(--brown); }
+  .speak-btn:hover svg { stroke: #fff; }
+  .speak-btn svg { width: 13px; height: 13px; stroke: var(--brown-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .word-phonetic { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 2px; }
+  .word-meaning { font-size: 0.75rem; color: var(--brown-mid); margin-bottom: 18px; font-family: 'Noto Serif SC', serif; }
+  .sentence { font-size: 0.98rem; line-height: 2.1; font-family: 'Noto Serif SC', 'DM Sans', serif; }
+  .sentence .en { font-family: 'DM Sans', sans-serif; font-weight: 700; color: var(--accent); background: var(--accent-bg); padding: 1px 4px; border-radius: 3px; }
+  .sentence .cn { font-family: 'Noto Serif SC', serif; font-weight: 700; color: var(--green); background: var(--green-bg); padding: 1px 4px; border-radius: 3px; }
+  .tap-hint { text-align: center; margin-top: 8px; font-size: 0.6rem; color: var(--text-dim); opacity: 0.4; font-weight: 500; }
+  .toggle-full { display: block; margin: 10px auto 0; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 600; color: var(--brown-light); background: none; border: none; cursor: pointer; transition: color 0.2s; }
+  .toggle-full:hover { color: var(--brown); }
+  .full-sentences { max-width: 600px; margin: 0 auto; padding: 0 20px; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; max-height: 0; opacity: 0; }
+  .full-sentences.show { max-height: 300px; opacity: 1; }
+  .full-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-top: 10px; }
+  .full-box-label { font-size: 0.58rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .full-box p { font-size: 0.88rem; line-height: 1.7; color: var(--brown); }
+  .full-box p.zh { font-family: 'Noto Serif SC', serif; }
+  .full-box p.en-full { font-family: 'DM Sans', sans-serif; }
+  .nav-row { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 18px 20px 10px; }
+  .nav-btn { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem; padding: 9px 20px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+  .nav-btn.prev { background: transparent; color: var(--brown-mid); border: 1.5px solid var(--border); }
+  .nav-btn.prev:hover { border-color: var(--brown-light); color: var(--brown); }
+  .nav-btn.next { background: var(--brown); color: #fff; }
+  .nav-btn.next:hover { background: var(--brown-dark); transform: translateY(-1px); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+  .master-btn { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.72rem; padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--green); background: transparent; color: var(--green); cursor: pointer; transition: all 0.2s; }
+  .master-btn:hover { background: var(--green); color: #fff; }
+  .master-btn.mastered { background: var(--green); color: #fff; }
+  .shortcuts { text-align: center; padding: 4px 0 28px; font-size: 0.58rem; color: var(--text-dim); opacity: 0.4; }
+  .shortcuts kbd { background: rgba(61,43,31,0.05); padding: 2px 5px; border-radius: 3px; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 0.58rem; }
+  @media (max-width: 600px) {
+    .card-face { padding: 22px 18px; }
+    .word-title { font-size: 1.5rem; }
+    .sentence { font-size: 0.9rem; }
+    .nav-btn { padding: 8px 16px; font-size: 0.76rem; }
+  }
+
+  /* ===== DAILY GOAL ===== */
+  .daily-section { max-width: 600px; margin: 0 auto 8px; padding: 0 28px; display: flex; align-items: center; gap: 16px; }
+  .daily-goal { position: relative; display: flex; align-items: center; gap: 14px; flex: 1; }
+  .goal-ring-wrap { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+  .goal-ring { width: 64px; height: 64px; transform: rotate(-90deg); }
+  .goal-ring-bg { fill: none; stroke: var(--border); stroke-width: 4; }
+  .goal-ring-fill { fill: none; stroke: var(--green); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 213.6; stroke-dashoffset: 213.6; transition: stroke-dashoffset 0.6s ease; }
+  .goal-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .goal-num { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--green); font-weight: 700; line-height: 1; }
+  .goal-den { font-size: 0.55rem; color: var(--text-dim); font-weight: 600; }
+  .goal-info { flex: 1; }
+  .goal-title { font-size: 0.72rem; font-weight: 700; color: var(--brown); margin-bottom: 2px; }
+  .goal-sub { font-size: 0.6rem; color: var(--text-dim); }
+  .goal-setting-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .goal-setting-btn:hover { background: var(--brown); border-color: var(--brown); }
+  .goal-setting-btn:hover svg { stroke: #fff; }
+  .goal-setting-btn svg { width: 14px; height: 14px; stroke: var(--brown-mid); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .goal-picker { position: absolute; top: 100%; right: 0; margin-top: 6px; background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 8px; display: none; gap: 4px; z-index: 100; box-shadow: 0 4px 20px var(--shadow); }
+  .goal-picker.show { display: flex; }
+  .goal-picker button { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600; padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: transparent; color: var(--brown-mid); cursor: pointer; transition: all 0.2s; }
+  .goal-picker button:hover, .goal-picker button.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+  .streak-badge { font-size: 0.65rem; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 4px 10px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; display: none; }
+
+  /* ===== QUOTE ===== */
+  .quote-section { max-width: 600px; margin: 0 auto 16px; padding: 14px 28px; text-align: center; background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; max-width: 556px; }
+  .quote-label { font-size: 0.55rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; }
+  .quote-words { font-family: 'Playfair Display', serif; font-size: 1rem; line-height: 1.9; color: var(--brown-dark); margin-bottom: 6px; min-height: 1.8em; }
+  .qw { display: inline-block; transition: all 0.4s ease; margin: 0 1px; padding: 0 2px; }
+  .qw.hidden { color: transparent; background: var(--border); border-radius: 3px; min-width: 1.2em; }
+  .qw.revealing { animation: wordReveal 0.5s ease forwards; }
+  @keyframes wordReveal {
+    0% { color: transparent; background: var(--border); transform: scale(0.8); }
+    50% { color: var(--green); background: var(--green-bg); transform: scale(1.1); }
+    100% { color: var(--brown-dark); background: transparent; transform: scale(1); }
+  }
+  .quote-zh { font-family: 'Noto Serif SC', serif; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px; transition: opacity 0.5s, max-height 0.5s; }
+  .quote-zh.hidden { opacity: 0; max-height: 0; overflow: hidden; margin: 0; }
+  .quote-author { font-size: 0.62rem; color: var(--brown-light); font-style: italic; transition: opacity 0.5s; }
+  .quote-progress { font-size: 0.55rem; color: var(--text-dim); margin-top: 6px; }
+
+  /* ===== TOAST ===== */
+  .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast { background: var(--card-bg); border: 1.5px solid var(--green); border-radius: 12px; padding: 10px 16px; box-shadow: 0 4px 20px rgba(61,43,31,0.12); animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards; font-size: 0.78rem; font-weight: 600; color: var(--green); }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+  /* ===== CELEBRATION ===== */
+  .celebration { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; background: rgba(250,246,240,0.92); backdrop-filter: blur(6px); }
+  .celebration.show { display: flex; animation: celeFadeIn 0.4s ease; }
+  @keyframes celeFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .cele-content { text-align: center; animation: celeBounce 0.5s ease; }
+  @keyframes celeBounce { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+  .cele-icon { font-size: 3.5rem; margin-bottom: 12px; }
+  .cele-title { font-family: 'Playfair Display', 'Noto Serif SC', serif; font-size: 1.6rem; color: var(--brown-dark); font-weight: 700; margin-bottom: 8px; }
+  .cele-sub { font-size: 0.82rem; color: var(--brown-mid); margin-bottom: 4px; font-family: 'Noto Serif SC', serif; }
+  .cele-quote { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--green); margin: 14px 28px; font-style: italic; line-height: 1.6; }
+  .cele-btn { margin-top: 18px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.82rem; padding: 10px 28px; border: none; border-radius: 12px; background: var(--brown); color: #fff; cursor: pointer; transition: all 0.2s; }
+  .cele-btn:hover { background: var(--brown-dark); transform: translateY(-1px); }
+  #confettiCanvas { position: fixed; inset: 0; z-index: 2001; pointer-events: none; }
+
+  /* Card mastered glow */
+  .card-flip.mastered-anim { animation: cardGlow 0.6s ease; }
+  @keyframes cardGlow {
+    0% { filter: drop-shadow(0 0 0 rgba(74,124,89,0)); }
+    50% { filter: drop-shadow(0 0 16px rgba(74,124,89,0.25)); }
+    100% { filter: drop-shadow(0 0 0 rgba(74,124,89,0)); }
+  }
+
+  @media (max-width: 600px) {
+    .daily-section { padding: 0 20px; gap: 12px; }
+    .goal-ring-wrap, .goal-ring { width: 54px; height: 54px; }
+    .goal-num { font-size: 0.95rem; }
+    .quote-section { margin-left: 20px; margin-right: 20px; }
+    .quote-words { font-size: 0.9rem; }
+    .cele-title { font-size: 1.3rem; }
+    .toast { font-size: 0.72rem; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>词汇闪卡</h1>
+  <p>中英混合 · 双向记忆 · 交叉引用</p>
+</div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="currentNum">1</div><div class="stat-label">当前</div></div>
+  <div class="stat"><div class="stat-num" id="totalNum">0</div><div class="stat-label">总数</div></div>
+  <div class="stat"><div class="stat-num green" id="masteredNum">0</div><div class="stat-label">已掌握</div></div>
+  <div class="stat"><div class="stat-num" id="todayStat" style="color:var(--accent)">0</div><div class="stat-label">今日</div></div>
+</div>
+<div class="progress-container">
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">1 / 0</div>
+</div>
+<div class="daily-section">
+  <div class="daily-goal">
+    <div class="goal-ring-wrap">
+      <svg class="goal-ring" viewBox="0 0 80 80">
+        <circle class="goal-ring-bg" cx="40" cy="40" r="34"/>
+        <circle class="goal-ring-fill" id="goalRing" cx="40" cy="40" r="34"/>
+      </svg>
+      <div class="goal-center">
+        <div class="goal-num" id="todayNum">0</div>
+        <div class="goal-den">/ <span id="goalTarget">10</span></div>
+      </div>
+    </div>
+    <div class="goal-info">
+      <div class="goal-title">今日目标</div>
+      <div class="goal-sub" id="goalSub">加油，开始第一个吧!</div>
+    </div>
+    <button class="goal-setting-btn" onclick="toggleGoalPicker(event)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <div class="goal-picker" id="goalPicker">
+      <button onclick="setDailyGoal(5)">5</button>
+      <button onclick="setDailyGoal(10)">10</button>
+      <button onclick="setDailyGoal(15)">15</button>
+      <button onclick="setDailyGoal(20)">20</button>
+      <button onclick="setDailyGoal(30)">30</button>
+    </div>
+  </div>
+  <div class="streak-badge" id="streakBadge"></div>
+</div>
+
+<div class="quote-section">
+  <div class="quote-label">今日名言</div>
+  <div class="quote-words" id="quoteWords"></div>
+  <div class="quote-zh hidden" id="quoteZh"></div>
+  <div class="quote-author" id="quoteAuthor"></div>
+  <div class="quote-progress" id="quoteProgress"></div>
+</div>
+
+<div class="search-row">
+  <input class="search-input" id="searchInput" type="text" placeholder="搜索单词..." oninput="onSearch()">
+</div>
+<div class="filter-tabs">
+  <button class="filter-tab active" onclick="setFilter('all',this)">全部</button>
+  <button class="filter-tab" onclick="setFilter('unmastered',this)">未掌握</button>
+  <button class="filter-tab" onclick="setFilter('mastered',this)">已掌握</button>
+  <button class="filter-tab" id="shuffleBtn" onclick="toggleShuffle()">🔀 乱序</button>
+</div>
+<div id="mainArea">
+  <div class="card-container">
+    <div class="card-flip" id="cardFlip" onclick="flipCard(event)">
+      <div class="card-face card-front">
+        <span class="side-label">正面</span>
+        <div class="word-row">
+          <div class="word-title" id="frontWord"></div>
+          <button class="speak-btn" onclick="speak(event)"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+        </div>
+        <div class="word-phonetic" id="frontPhonetic"></div>
+        <div class="word-meaning" id="frontMeaning"></div>
+        <div class="sentence" id="frontSentence"></div>
+      </div>
+      <div class="card-face card-back">
+        <span class="side-label">反面</span>
+        <div class="word-row">
+          <div class="word-title" id="backWord"></div>
+          <button class="speak-btn" onclick="speak(event)"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></button>
+        </div>
+        <div class="word-phonetic" id="backPhonetic"></div>
+        <div class="word-meaning" id="backMeaning"></div>
+        <div class="sentence" id="backSentence"></div>
+      </div>
+    </div>
+    <div class="tap-hint">点击卡片翻转</div>
+  </div>
+  <button class="toggle-full" id="toggleBtn" onclick="toggleFull()">▼ 查看完整中英文</button>
+  <div class="full-sentences" id="fullArea">
+    <div class="full-box"><div class="full-box-label">完整中文</div><p class="zh" id="fullZh"></p></div>
+    <div class="full-box" style="margin-top:6px"><div class="full-box-label">完整英文</div><p class="en-full" id="fullEn"></p></div>
+  </div>
+</div>
+<div class="nav-row">
+  <button class="nav-btn prev" id="prevBtn" onclick="prevCard()">← 上一个</button>
+  <button class="master-btn" id="masterBtn" onclick="toggleMaster()">○ 标记掌握</button>
+  <button class="nav-btn next" id="nextBtn" onclick="nextCard()">下一个 →</button>
+</div>
+<div class="shortcuts">
+  <kbd>←</kbd> 上一个 <kbd>→</kbd> 下一个 <kbd>Space</kbd> 翻转 <kbd>M</kbd> 掌握 <kbd>S</kbd> 发音
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<canvas id="confettiCanvas"></canvas>
+<div class="celebration" id="celebration">
+  <div class="cele-content">
+    <div class="cele-icon">🎊</div>
+    <div class="cele-title" id="celeTitle">今日目标达成!</div>
+    <div class="cele-sub" id="celeSub"></div>
+    <div class="cele-quote" id="celeQuote"></div>
+    <button class="cele-btn" onclick="closeCelebration()">继续学习</button>
+  </div>
+</div>
+
+<script>
+const allCards = [
+// ===== A =====
+{word:'abandon',phonetic:'/əˈbændən/',meaning:'vt. 放弃；遗弃',
+front:'他 <span class="en">decided</span> 要 <span class="en">abandon</span> 刷抖音的 <span class="en">habit</span>，把所有 <span class="en">energy</span> 都 <span class="en">invest</span> 到备考中。',
+back:'He <span class="cn">决定</span> to <span class="cn">放弃</span> the <span class="cn">习惯</span> of scrolling Douyin, <span class="cn">投入</span> all <span class="cn">精力</span> into exam prep.',
+fullZh:'他决定要放弃刷抖音的习惯，把所有精力都投入到备考中。',fullEn:'He decided to abandon the habit of scrolling Douyin, invest all energy into exam prep.'},
+{word:'absorb',phonetic:'/əbˈzɔːrb/',meaning:'vt. 吸收；使全神贯注',
+front:'她 <span class="en">completely</span> 被那本 <span class="en">textbook</span> 给 <span class="en">absorb</span> 了，连 <span class="en">roommate</span> 叫她吃饭都没 <span class="en">hear</span> 到。',
+back:'She was <span class="cn">完全</span> <span class="cn">吸引</span> by that <span class="cn">课本</span>, didn\'t even <span class="cn">听到</span> her <span class="cn">室友</span> calling her for dinner.',
+fullZh:'她完全被那本课本给吸引了，连室友叫她吃饭都没听到。',fullEn:'She was completely absorbed by that textbook, didn\'t even hear her roommate calling her for dinner.'},
+{word:'achieve',phonetic:'/əˈtʃiːv/',meaning:'vt. 达到；实现',
+front:'只有 <span class="en">persistent</span> 的 <span class="en">effort</span> 才能 <span class="en">achieve</span> 备考的 <span class="en">ultimate</span> 目标。',
+back:'Only <span class="cn">坚持不懈</span> <span class="cn">努力</span> can <span class="cn">实现</span> the <span class="cn">最终</span> goal of the exam.',
+fullZh:'只有坚持不懈的努力才能实现备考的最终目标。',fullEn:'Only persistent effort can achieve the ultimate goal of the exam.'},
+{word:'adapt',phonetic:'/əˈdæpt/',meaning:'v. 适应；改编',
+front:'刚开始很难 <span class="en">adapt</span> 高强度的 <span class="en">schedule</span>，但坚持一个月后就 <span class="en">gradually</span> 习惯了这种 <span class="en">lifestyle</span>。',
+back:'It\'s hard to <span class="cn">适应</span> the intense <span class="cn">日程</span> at first, but after a month you <span class="cn">逐渐</span> get used to this <span class="cn">生活方式</span>.',
+fullZh:'刚开始很难适应高强度的日程，但坚持一个月后就逐渐习惯了这种生活方式。',fullEn:'It\'s hard to adapt to the intense schedule at first, but after a month you gradually get used to this lifestyle.'},
+{word:'afford',phonetic:'/əˈfɔːrd/',meaning:'vt. 负担得起；提供',
+front:'备考人 <span class="en">afford</span> 不起任何 <span class="en">distraction</span>，每一分钟都很 <span class="en">precious</span>，必须 <span class="en">utilize</span> 好。',
+back:'Exam takers can\'t <span class="cn">负担</span> any <span class="cn">干扰</span>, every minute is <span class="cn">珍贵</span>, must be <span class="cn">利用</span> well.',
+fullZh:'备考人负担不起任何干扰，每一分钟都很珍贵，必须利用好。',fullEn:'Exam takers can\'t afford any distraction, every minute is precious, must be utilized well.'},
+{word:'anxiety',phonetic:'/æŋˈzaɪəti/',meaning:'n. 焦虑；忧虑',
+front:'考前 <span class="en">anxiety</span> 是 <span class="en">common</span> 的，适当的 <span class="en">pressure</span> 反而能 <span class="en">motivate</span> 你更好地 <span class="en">perform</span>。',
+back:'Pre-exam <span class="cn">焦虑</span> is <span class="cn">常见</span>, moderate <span class="cn">压力</span> can actually <span class="cn">激励</span> you to <span class="cn">表现</span> better.',
+fullZh:'考前焦虑是常见的，适当的压力反而能激励你更好地表现。',fullEn:'Pre-exam anxiety is common, moderate pressure can actually motivate you to perform better.'},
+{word:'approach',phonetic:'/əˈproʊtʃ/',meaning:'v. 接近 n. 方法',
+front:'每个人的学习 <span class="en">approach</span> 不同，<span class="en">key</span> 是找到 <span class="en">suitable</span> 自己的 <span class="en">rhythm</span>。',
+back:'Everyone\'s learning <span class="cn">方法</span> is different, the <span class="cn">关键</span> is finding a <span class="cn">适合</span> your own <span class="cn">节奏</span>.',
+fullZh:'每个人的学习方法不同，关键是找到适合自己的节奏。',fullEn:'Everyone\'s learning approach is different, the key is finding a suitable rhythm for yourself.'},
+{word:'assume',phonetic:'/əˈsuːm/',meaning:'vt. 假设；承担',
+front:'不要 <span class="en">assume</span> 考试会很 <span class="en">easy</span>，提前做好 <span class="en">sufficient</span> 的 <span class="en">preparation</span> 才是 <span class="en">wise</span> 的选择。',
+back:'Don\'t <span class="cn">假设</span> the exam will be <span class="cn">容易</span>, making <span class="cn">充分</span> <span class="cn">准备</span> in advance is the <span class="cn">明智</span> choice.',
+fullZh:'不要假设考试会很容易，提前做好充分的准备才是明智的选择。',fullEn:'Don\'t assume the exam will be easy, making sufficient preparation in advance is the wise choice.'},
+// ===== B =====
+{word:'balance',phonetic:'/ˈbæləns/',meaning:'n./v. 平衡；使平衡',
+front:'备考期间要 <span class="en">balance</span> 好学习和 <span class="en">rest</span> 的关系，<span class="en">maintain</span> 身体 <span class="en">health</span> 才能 <span class="en">sustain</span> 长期复习。',
+back:'During exam prep you must <span class="cn">平衡</span> study and <span class="cn">休息</span>, <span class="cn">保持</span> body <span class="cn">健康</span> to <span class="cn">维持</span> long-term review.',
+fullZh:'备考期间要平衡好学习和休息的关系，保持身体健康才能维持长期复习。',fullEn:'During exam prep you must balance study and rest, maintain body health to sustain long-term review.'},
+{word:'barrier',phonetic:'/ˈbæriər/',meaning:'n. 障碍；屏障',
+front:'英语 <span class="en">vocabulary</span> 不足是他最大的 <span class="en">barrier</span>，每天 <span class="en">memorize</span> 50个词来 <span class="en">overcome</span> 这个难题。',
+back:'English <span class="cn">词汇</span> insufficiency is his biggest <span class="cn">障碍</span>, daily <span class="cn">背诵</span> 50 words to <span class="cn">克服</span> this difficulty.',
+fullZh:'英语词汇不足是他最大的障碍，每天背诵50个词来克服这个难题。',fullEn:'English vocabulary insufficiency is his biggest barrier, daily memorizing 50 words to overcome this difficulty.'},
+{word:'benefit',phonetic:'/ˈbenɪfɪt/',meaning:'n./v. 利益；有益于',
+front:'规律的 <span class="en">exercise</span> 不仅 <span class="en">benefit</span> 身体，还能 <span class="en">enhance</span> 大脑的 <span class="en">concentration</span> 和 <span class="en">memory</span>。',
+back:'Regular <span class="cn">锻炼</span> not only <span class="cn">有益于</span> the body, but also <span class="cn">增强</span> the brain\'s <span class="cn">专注力</span> and <span class="cn">记忆力</span>.',
+fullZh:'规律的锻炼不仅有益于身体，还能增强大脑的专注力和记忆力。',fullEn:'Regular exercise not only benefits the body, but also enhances the brain\'s concentration and memory.'},
+{word:'boost',phonetic:'/buːst/',meaning:'vt./n. 提高；推动',
+front:'一次好的模考 <span class="en">result</span> 可以极大地 <span class="en">boost</span> 你的 <span class="en">confidence</span>，让后面的复习更有 <span class="en">motivation</span>。',
+back:'A good mock exam <span class="cn">成绩</span> can greatly <span class="cn">提升</span> your <span class="cn">信心</span>, making later review more <span class="cn">有动力</span>.',
+fullZh:'一次好的模考成绩可以极大地提升你的信心，让后面的复习更有动力。',fullEn:'A good mock exam result can greatly boost your confidence, making later review more motivated.'},
+{word:'burden',phonetic:'/ˈbɜːrdn/',meaning:'n./v. 负担；使负担',
+front:'备考的 <span class="en">financial</span> <span class="en">burden</span> 对家庭来说不小，但 <span class="en">parents</span> 都 <span class="en">willing</span> 为孩子的 <span class="en">future</span> 付出。',
+back:'The exam\'s <span class="cn">经济</span> <span class="cn">负担</span> is not small for families, but <span class="cn">父母</span> are <span class="cn">愿意</span> to pay for their child\'s <span class="cn">未来</span>.',
+fullZh:'备考的经济负担对家庭来说不小，但父母都愿意为孩子的未来付出。',fullEn:'The exam\'s financial burden is not small for families, but parents are willing to pay for their child\'s future.'},
+// ===== C =====
+{word:'capable',phonetic:'/ˈkeɪpəbl/',meaning:'a. 有能力的',
+front:'她 <span class="en">prove</span> 了自己 <span class="en">capable</span> 应对任何 <span class="en">difficult</span> 考题，即使最 <span class="en">complex</span> 的长难句也能 <span class="en">analyze</span>。',
+back:'She <span class="cn">证明</span> herself <span class="cn">有能力</span> handle any <span class="cn">困难</span> exam questions, even the most <span class="cn">复杂</span> long sentences can be <span class="cn">分析</span>.',
+fullZh:'她证明了自己有能力应对任何困难考题，即使最复杂的长难句也能分析。',fullEn:'She proved herself capable of handling any difficult exam questions, even the most complex long sentences can be analyzed.'},
+{word:'challenge',phonetic:'/ˈtʃælɪndʒ/',meaning:'n./v. 挑战',
+front:'考试本身就是一个巨大的 <span class="en">challenge</span>，但真正 <span class="en">brave</span> 的人会把 <span class="en">obstacle</span> 当成 <span class="en">growth</span> 的机会。',
+back:'The exam itself is a huge <span class="cn">挑战</span>, but truly <span class="cn">勇敢</span> people treat <span class="cn">障碍</span> as opportunities for <span class="cn">成长</span>.',
+fullZh:'考试本身就是一个巨大的挑战，但真正勇敢的人会把障碍当成成长的机会。',fullEn:'The exam itself is a huge challenge, but truly brave people treat obstacles as opportunities for growth.'},
+{word:'concentrate',phonetic:'/ˈkɑːnsntreɪt/',meaning:'v. 集中；专注',
+front:'在图书馆她能 <span class="en">fully</span> <span class="en">concentrate</span> 学习四个 <span class="en">hour</span>，但在寝室 <span class="en">constantly</span> 被 <span class="en">disturb</span>。',
+back:'In the library she could <span class="cn">完全</span> <span class="cn">专注</span> for four <span class="cn">小时</span>, but in the dorm was <span class="cn">不断</span> <span class="cn">打扰</span>.',
+fullZh:'在图书馆她能完全专注学习四个小时，但在寝室不断被打扰。',fullEn:'In the library she could fully concentrate for four hours, but in the dorm was constantly disturbed.'},
+{word:'conflict',phonetic:'/ˈkɑːnflɪkt/',meaning:'n./v. 冲突；矛盾',
+front:'期末考试和备考 <span class="en">preparation</span> 时间上 <span class="en">conflict</span> 了，她不得不 <span class="en">sacrifice</span> 一些课程 <span class="en">assignment</span>。',
+back:'Finals and exam <span class="cn">备考</span> <span class="cn">冲突</span> in time, she had to <span class="cn">牺牲</span> some course <span class="cn">作业</span>.',
+fullZh:'期末考试和备考备考时间上冲突了，她不得不牺牲一些课程作业。',fullEn:'Finals and exam preparation conflicted in time, she had to sacrifice some course assignments.'},
+{word:'contribute',phonetic:'/kənˈtrɪbjuːt/',meaning:'v. 贡献；有助于',
+front:'每天坚持的小 <span class="en">effort</span> 都会 <span class="en">contribute</span> 到最终的 <span class="en">result</span>，不要 <span class="en">underestimate</span> 日积月累的 <span class="en">power</span>。',
+back:'Every daily small <span class="cn">努力</span> will <span class="cn">贡献</span> to the final <span class="cn">结果</span>, don\'t <span class="cn">低估</span> the <span class="cn">力量</span> of accumulation.',
+fullZh:'每天坚持的小努力都会贡献到最终的结果，不要低估日积月累的力量。',fullEn:'Every daily small effort will contribute to the final result, don\'t underestimate the power of accumulation.'},
+{word:'crucial',phonetic:'/ˈkruːʃl/',meaning:'a. 至关重要的',
+front:'复习的最后一个月 <span class="en">absolutely</span> <span class="en">crucial</span>，这段时间的 <span class="en">efficiency</span> 直接 <span class="en">determine</span> 最终 <span class="en">outcome</span>。',
+back:'The final month of review is <span class="cn">绝对</span> <span class="cn">至关重要</span>, this period\'s <span class="cn">效率</span> directly <span class="cn">决定</span> the final <span class="cn">结果</span>.',
+fullZh:'复习的最后一个月绝对至关重要，这段时间的效率直接决定最终结果。',fullEn:'The final month of review is absolutely crucial, this period\'s efficiency directly determines the final outcome.'},
+{word:'cultivate',phonetic:'/ˈkʌltɪveɪt/',meaning:'vt. 培养；耕作',
+front:'从一开始就要 <span class="en">cultivate</span> 好的学习 <span class="en">habit</span>，<span class="en">consistent</span> 的作息是 <span class="en">success</span> 的 <span class="en">foundation</span>。',
+back:'From the start you must <span class="cn">培养</span> good study <span class="cn">习惯</span>, <span class="cn">一致</span> routines are the <span class="cn">成功</span> <span class="cn">基础</span>.',
+fullZh:'从一开始就要培养好的学习习惯，一致的作息是成功的基础。',fullEn:'From the start you must cultivate good study habits, consistent routines are the foundation of success.'},
+// ===== D =====
+{word:'deadline',phonetic:'/ˈdedlaɪn/',meaning:'n. 截止日期',
+front:'报名 <span class="en">deadline</span> 快到了，她还在 <span class="en">hesitate</span> 要不要 <span class="en">switch</span> 目标 <span class="en">university</span>。',
+back:'The registration <span class="cn">截止日期</span> is approaching, she\'s still <span class="cn">犹豫</span> whether to <span class="cn">换</span> her target <span class="cn">大学</span>.',
+fullZh:'报名截止日期快到了，她还在犹豫要不要换目标大学。',fullEn:'The registration deadline is approaching, she\'s still hesitating whether to switch her target university.'},
+{word:'decline',phonetic:'/dɪˈklaɪn/',meaning:'v. 下降；拒绝 n. 下降',
+front:'他的模考 <span class="en">score</span> 连续两次 <span class="en">decline</span>，让他非常 <span class="en">frustrated</span>，但导师 <span class="en">encourage</span> 他不要 <span class="en">give up</span>。',
+back:'His mock exam <span class="cn">分数</span> <span class="cn">下降</span> two times in a row, making him very <span class="cn">沮丧</span>, but the advisor <span class="cn">鼓励</span> him not to <span class="cn">放弃</span>.',
+fullZh:'他的模考分数连续两次下降，让他非常沮丧，但导师鼓励他不要放弃。',fullEn:'His mock exam score declined two times in a row, making him very frustrated, but the advisor encouraged him not to give up.'},
+{word:'demonstrate',phonetic:'/ˈdemənstreɪt/',meaning:'vt. 证明；示范',
+front:'她的最终成绩 <span class="en">demonstrate</span> 了一个 <span class="en">truth</span>：<span class="en">consistent</span> 的 <span class="en">effort</span> 能 <span class="en">overcome</span> 天赋的差距。',
+back:'Her final score <span class="cn">证明</span> a <span class="cn">真理</span>: <span class="cn">持续</span> <span class="cn">努力</span> can <span class="cn">克服</span> the gap in talent.',
+fullZh:'她的最终成绩证明了一个真理：持续的努力能克服天赋的差距。',fullEn:'Her final score demonstrated a truth: consistent effort can overcome the gap in talent.'},
+{word:'determine',phonetic:'/dɪˈtɜːrmɪn/',meaning:'vt. 决定；决心',
+front:'她 <span class="en">determine</span> 要考上北大，这个 <span class="en">goal</span> 让她每天 <span class="en">wake up</span> 都充满 <span class="en">motivation</span>。',
+back:'She <span class="cn">决心</span> to get into Peking University, this <span class="cn">目标</span> made her <span class="cn">醒来</span> every day full of <span class="cn">动力</span>.',
+fullZh:'她决心要考上北大，这个目标让她每天醒来都充满动力。',fullEn:'She determined to get into Peking University, this goal made her wake up every day full of motivation.'},
+{word:'distinguish',phonetic:'/dɪˈstɪŋɡwɪʃ/',meaning:'vt. 区分；辨别',
+front:'阅读理解中要 <span class="en">distinguish</span> 作者的 <span class="en">opinion</span> 和文章 <span class="en">fact</span> 之间的 <span class="en">difference</span>，很多人在这里 <span class="en">lose</span> 分。',
+back:'In reading comprehension you must <span class="cn">区分</span> the author\'s <span class="cn">观点</span> and article <span class="cn">事实</span> <span class="cn">差异</span>, many people <span class="cn">丢</span> points here.',
+fullZh:'阅读理解中要区分作者的观点和文章事实之间的差异，很多人在这里丢分。',fullEn:'In reading comprehension you must distinguish the difference between the author\'s opinion and article facts, many people lose points here.'},
+{word:'domestic',phonetic:'/dəˈmestɪk/',meaning:'a. 国内的；家庭的',
+front:'政治科目经常考 <span class="en">domestic</span> 和 <span class="en">international</span> 形势的 <span class="en">comparison</span>，必须 <span class="en">pay attention</span> 时事。',
+back:'Politics exams often test <span class="cn">国内</span> and <span class="cn">国际</span> situation <span class="cn">比较</span>, must <span class="cn">关注</span> current affairs.',
+fullZh:'政治科目经常考国内和国际形势的比较，必须关注时事。',fullEn:'Politics exams often test comparisons of domestic and international situations, must pay attention to current affairs.'},
+// ===== E =====
+{word:'efficient',phonetic:'/ɪˈfɪʃnt/',meaning:'a. 高效的',
+front:'与其 <span class="en">blindly</span> 刷题，不如找到更 <span class="en">efficient</span> 的 <span class="en">method</span>，<span class="en">quality</span> 永远比 <span class="en">quantity</span> 重要。',
+back:'Rather than <span class="cn">盲目</span> doing problems, find a more <span class="cn">高效</span> <span class="cn">方法</span> — <span class="cn">质量</span> always matters more than <span class="cn">数量</span>.',
+fullZh:'与其盲目刷题，不如找到更高效的方法，质量永远比数量重要。',fullEn:'Rather than blindly doing problems, find a more efficient method — quality always matters more than quantity.'},
+{word:'eliminate',phonetic:'/ɪˈlɪmɪneɪt/',meaning:'vt. 消除；淘汰',
+front:'做选择题时先 <span class="en">eliminate</span> 明显 <span class="en">wrong</span> 的 <span class="en">option</span>，可以大大 <span class="en">improve</span> 正确率。',
+back:'When doing multiple choice, first <span class="cn">排除</span> obviously <span class="cn">错误</span> <span class="cn">选项</span>, which can greatly <span class="cn">提高</span> accuracy.',
+fullZh:'做选择题时先排除明显错误的选项，可以大大提高正确率。',fullEn:'When doing multiple choice, first eliminate obviously wrong options, which can greatly improve accuracy.'},
+{word:'embrace',phonetic:'/ɪmˈbreɪs/',meaning:'vt. 拥抱；欣然接受',
+front:'要 <span class="en">embrace</span> 复习中的 <span class="en">failure</span>，每次做错都是 <span class="en">discover</span> 薄弱环节的 <span class="en">opportunity</span>。',
+back:'You should <span class="cn">欣然接受</span> review <span class="cn">失败</span>, every mistake is an <span class="cn">发现</span> weak points <span class="cn">机会</span>.',
+fullZh:'要欣然接受复习中的失败，每次做错都是发现薄弱环节的机会。',fullEn:'You should embrace failure in review, every mistake is an opportunity to discover weak points.'},
+{word:'enormous',phonetic:'/ɪˈnɔːrməs/',meaning:'a. 巨大的',
+front:'备考需要 <span class="en">enormous</span> 的 <span class="en">patience</span> 和 <span class="en">willpower</span>，不是一两天能 <span class="en">complete</span> 的事。',
+back:'The exam requires <span class="cn">巨大</span> <span class="cn">耐心</span> and <span class="cn">毅力</span>, not something that can be <span class="cn">完成</span> in a day or two.',
+fullZh:'备考需要巨大的耐心和毅力，不是一两天能完成的事。',fullEn:'The exam requires enormous patience and willpower, not something that can be completed in a day or two.'},
+{word:'establish',phonetic:'/ɪˈstæblɪʃ/',meaning:'vt. 建立；确立',
+front:'一开始就要 <span class="en">establish</span> 清晰的复习 <span class="en">framework</span>，按 <span class="en">priority</span> 分配 <span class="en">time</span> 到各个科目。',
+back:'From the start you must <span class="cn">建立</span> a clear review <span class="cn">框架</span>, allocating <span class="cn">时间</span> to each subject by <span class="cn">优先级</span>.',
+fullZh:'一开始就要建立清晰的复习框架，按优先级分配时间到各个科目。',fullEn:'From the start you must establish a clear review framework, allocating time to each subject by priority.'},
+{word:'evolve',phonetic:'/ɪˈvɑːlv/',meaning:'v. 演变；进化',
+front:'她的学习 <span class="en">strategy</span> 在备考中不断 <span class="en">evolve</span>，从最初的 <span class="en">random</span> 到后来非常 <span class="en">systematic</span>。',
+back:'Her study <span class="cn">策略</span> continually <span class="cn">演变</span> during prep, from initially <span class="cn">随意</span> to later very <span class="cn">系统</span>.',
+fullZh:'她的学习策略在备考中不断演变，从最初的随意到后来非常系统。',fullEn:'Her study strategy continually evolved during prep, from initially random to later very systematic.'},
+// ===== F =====
+{word:'facilitate',phonetic:'/fəˈsɪlɪteɪt/',meaning:'vt. 促进；使便利',
+front:'好的笔记 <span class="en">method</span> 能 <span class="en">facilitate</span> 后期 <span class="en">review</span>，让你 <span class="en">quickly</span> 找到 <span class="en">key</span> 知识点。',
+back:'Good note-taking <span class="cn">方法</span> can <span class="cn">促进</span> later <span class="cn">复习</span>, letting you <span class="cn">快速</span> find <span class="cn">关键</span> knowledge points.',
+fullZh:'好的笔记方法能促进后期复习，让你快速找到关键知识点。',fullEn:'Good note-taking methods can facilitate later review, letting you quickly find key knowledge points.'},
+{word:'flexible',phonetic:'/ˈfleksəbl/',meaning:'a. 灵活的；可变通的',
+front:'复习 <span class="en">plan</span> 要 <span class="en">flexible</span>，遇到 <span class="en">unexpected</span> 情况时能 <span class="en">quickly</span> <span class="en">adjust</span>，不要太死板。',
+back:'Review <span class="cn">计划</span> should be <span class="cn">灵活</span>, when encountering <span class="cn">意外</span> situations you can <span class="cn">快速</span> <span class="cn">调整</span>, don\'t be rigid.',
+fullZh:'复习计划要灵活，遇到意外情况时能快速调整，不要太死板。',fullEn:'Review plans should be flexible, when encountering unexpected situations you can quickly adjust, don\'t be rigid.'},
+{word:'frustrate',phonetic:'/ˈfrʌstreɪt/',meaning:'vt. 使沮丧；挫败',
+front:'一道 <span class="en">difficult</span> 的数学大题 <span class="en">frustrate</span> 了他一整天，但他 <span class="en">refuse</span> 放弃，最终 <span class="en">solve</span> 了它。',
+back:'A <span class="cn">困难</span> math problem <span class="cn">让他沮丧</span> for a whole day, but he <span class="cn">拒绝</span> giving up, and finally <span class="cn">解出</span> it.',
+fullZh:'一道困难的数学大题让他沮丧了一整天，但他拒绝放弃，最终解出了它。',fullEn:'A difficult math problem frustrated him for a whole day, but he refused to give up, and finally solved it.'},
+{word:'fundamental',phonetic:'/ˌfʌndəˈmentl/',meaning:'a. 基本的；根本的',
+front:'扎实的 <span class="en">fundamental</span> 功底是拿 <span class="en">high</span> 分的 <span class="en">prerequisite</span>，不能只追求 <span class="en">speed</span> 而忽视 <span class="en">accuracy</span>。',
+back:'Solid <span class="cn">基本</span> skills are the <span class="cn">前提</span> for getting <span class="cn">高</span> scores, can\'t only chase <span class="cn">速度</span> while ignoring <span class="cn">准确性</span>.',
+fullZh:'扎实的基本功底是拿高分的前提，不能只追求速度而忽视准确性。',fullEn:'Solid fundamental skills are the prerequisite for getting high scores, can\'t only chase speed while ignoring accuracy.'},
+// ===== G =====
+{word:'genuine',phonetic:'/ˈdʒenjuɪn/',meaning:'a. 真正的；真诚的',
+front:'她对备考的 <span class="en">passion</span> 是 <span class="en">genuine</span> 的，不是为了 <span class="en">escape</span> 找工作，而是真正 <span class="en">desire</span> 做学术 <span class="en">research</span>。',
+back:'Her <span class="cn">热情</span> for the exam is <span class="cn">真正</span>, not to <span class="cn">逃避</span> job hunting, but genuinely <span class="cn">渴望</span> doing academic <span class="cn">研究</span>.',
+fullZh:'她对备考的热情是真正的，不是为了逃避找工作，而是真正渴望做学术研究。',fullEn:'Her passion for the exam is genuine, not to escape job hunting, but genuinely desiring to do academic research.'},
+{word:'global',phonetic:'/ˈɡloʊbl/',meaning:'a. 全球的；总体的',
+front:'从 <span class="en">global</span> 的角度来 <span class="en">review</span> 知识体系，比零散地 <span class="en">memorize</span> 单个 <span class="en">concept</span> 更 <span class="en">effective</span>。',
+back:'From a <span class="cn">全局</span> perspective to <span class="cn">复习</span> the knowledge system is more <span class="cn">有效</span> than scattered <span class="cn">记忆</span> of individual <span class="cn">概念</span>.',
+fullZh:'从全局的角度来复习知识体系，比零散地记忆单个概念更有效。',fullEn:'From a global perspective to review the knowledge system is more effective than scattered memorizing of individual concepts.'},
+{word:'grant',phonetic:'/ɡrænt/',meaning:'vt. 授予；同意 n. 拨款',
+front:'学校 <span class="en">grant</span> 了她一笔 <span class="en">scholarship</span>，<span class="en">relieve</span> 了不少 <span class="en">economic</span> 上的 <span class="en">pressure</span>。',
+back:'The school <span class="cn">授予</span> her a <span class="cn">奖学金</span>, <span class="cn">缓解</span> a lot of <span class="cn">经济</span> <span class="cn">压力</span>.',
+fullZh:'学校授予了她一笔奖学金，缓解了不少经济上的压力。',fullEn:'The school granted her a scholarship, relieving a lot of economic pressure.'},
+// ===== H =====
+{word:'hesitate',phonetic:'/ˈhezɪteɪt/',meaning:'vi. 犹豫；迟疑',
+front:'遇到不确定的题不要 <span class="en">hesitate</span> 太久，<span class="en">trust</span> 自己的第一 <span class="en">instinct</span>，然后 <span class="en">move on</span> 到下一题。',
+back:'When unsure about a question don\'t <span class="cn">犹豫</span> too long, <span class="cn">相信</span> your first <span class="cn">直觉</span>, then <span class="cn">继续</span> to the next one.',
+fullZh:'遇到不确定的题不要犹豫太久，相信自己的第一直觉，然后继续做下一题。',fullEn:'When unsure about a question don\'t hesitate too long, trust your first instinct, then move on to the next one.'},
+{word:'highlight',phonetic:'/ˈhaɪlaɪt/',meaning:'vt. 强调；突出 n. 亮点',
+front:'用不同 <span class="en">color</span> 来 <span class="en">highlight</span> 课本里的 <span class="en">key</span> 知识点，复习时一眼就能 <span class="en">identify</span> 重点。',
+back:'Use different <span class="cn">颜色</span> to <span class="cn">标记</span> <span class="cn">关键</span> knowledge points in the textbook, during review you can <span class="cn">识别</span> highlights at a glance.',
+fullZh:'用不同颜色来标记课本里的关键知识点，复习时一眼就能识别重点。',fullEn:'Use different colors to highlight key knowledge points in the textbook, during review you can identify highlights at a glance.'},
+{word:'hypothesis',phonetic:'/haɪˈpɑːθəsɪs/',meaning:'n. 假设；假说',
+front:'做阅读时先根据标题建立一个 <span class="en">hypothesis</span>，然后在 <span class="en">reading</span> 中 <span class="en">verify</span> 或 <span class="en">reject</span> 它。',
+back:'When doing reading, first build a <span class="cn">假设</span> based on the title, then <span class="cn">验证</span> or <span class="cn">否定</span> it during <span class="cn">阅读</span>.',
+fullZh:'做阅读时先根据标题建立一个假设，然后在阅读中验证或否定它。',fullEn:'When doing reading, first build a hypothesis based on the title, then verify or reject it during reading.'},
+// ===== I =====
+{word:'illustrate',phonetic:'/ˈɪləstreɪt/',meaning:'vt. 说明；阐明',
+front:'用 <span class="en">concrete</span> 的 <span class="en">example</span> 来 <span class="en">illustrate</span> 抽象 <span class="en">theory</span>，是写政治大题最 <span class="en">effective</span> 的策略。',
+back:'Using <span class="cn">具体</span> <span class="cn">例子</span> to <span class="cn">说明</span> abstract <span class="cn">理论</span> is the most <span class="cn">有效</span> strategy for politics essays.',
+fullZh:'用具体的例子来说明抽象理论，是写政治大题最有效的策略。',fullEn:'Using concrete examples to illustrate abstract theory is the most effective strategy for politics essays.'},
+{word:'impact',phonetic:'/ˈɪmpækt/',meaning:'n./v. 影响；冲击',
+front:'手机对学习的 <span class="en">negative</span> <span class="en">impact</span> 是 <span class="en">enormous</span> 的，所以她复习时 <span class="en">completely</span> 关机。',
+back:'The phone\'s <span class="cn">负面</span> <span class="cn">影响</span> on study is <span class="cn">巨大</span>, so she <span class="cn">完全</span> turns it off during review.',
+fullZh:'手机对学习的负面影响是巨大的，所以她复习时完全关机。',fullEn:'The phone\'s negative impact on study is enormous, so she completely turns it off during review.'},
+{word:'implement',phonetic:'/ˈɪmplɪment/',meaning:'vt. 实施；执行',
+front:'制定 <span class="en">plan</span> 容易，真正 <span class="en">implement</span> 起来才 <span class="en">difficult</span>，需要极强的 <span class="en">discipline</span> 和 <span class="en">willpower</span>。',
+back:'Making a <span class="cn">计划</span> is easy, actually <span class="cn">执行</span> it is <span class="cn">困难</span>, requiring extremely strong <span class="cn">自律</span> and <span class="cn">毅力</span>.',
+fullZh:'制定计划容易，真正执行起来才困难，需要极强的自律和毅力。',fullEn:'Making a plan is easy, actually implementing it is difficult, requiring extremely strong discipline and willpower.'},
+{word:'inevitable',phonetic:'/ɪnˈevɪtəbl/',meaning:'a. 不可避免的',
+front:'复习中遇到 <span class="en">setback</span> 是 <span class="en">inevitable</span> 的，<span class="en">important</span> 的是如何 <span class="en">quickly</span> 从中 <span class="en">recover</span>。',
+back:'Encountering <span class="cn">挫折</span> in review is <span class="cn">不可避免</span>, what\'s <span class="cn">重要</span> is how to <span class="cn">快速</span> <span class="cn">恢复</span> from it.',
+fullZh:'复习中遇到挫折是不可避免的，重要的是如何快速从中恢复。',fullEn:'Encountering setbacks in review is inevitable, what\'s important is how to quickly recover from them.'},
+{word:'inspire',phonetic:'/ɪnˈspaɪər/',meaning:'vt. 激励；启发',
+front:'学长的逆袭故事 <span class="en">inspire</span> 了无数 <span class="en">candidate</span>，让大家 <span class="en">believe</span> <span class="en">miracle</span> 是可以 <span class="en">create</span> 的。',
+back:'The senior\'s comeback story <span class="cn">激励</span> countless <span class="cn">考生</span>, making everyone <span class="cn">相信</span> <span class="cn">奇迹</span> can be <span class="cn">创造</span>.',
+fullZh:'学长的逆袭故事激励了无数考生，让大家相信奇迹是可以创造的。',fullEn:'The senior\'s comeback story inspired countless candidates, making everyone believe miracles can be created.'},
+// ===== J / K =====
+{word:'justify',phonetic:'/ˈdʒʌstɪfaɪ/',meaning:'vt. 证明…正当；辩护',
+front:'她用自己的 <span class="en">result</span> <span class="en">justify</span> 了那些 <span class="en">sacrifice</span>：放弃 <span class="en">social</span> 生活是 <span class="en">worth</span> 的。',
+back:'She used her <span class="cn">成绩</span> to <span class="cn">证明</span> those <span class="cn">牺牲</span> were justified: giving up <span class="cn">社交</span> life was <span class="cn">值得</span>.',
+fullZh:'她用自己的成绩证明了那些牺牲：放弃社交生活是值得的。',fullEn:'She used her results to justify those sacrifices: giving up social life was worth it.'},
+{word:'keen',phonetic:'/kiːn/',meaning:'a. 热切的；敏锐的',
+front:'她对 <span class="en">knowledge</span> 有一种 <span class="en">keen</span> 的 <span class="en">curiosity</span>，每个 <span class="en">concept</span> 都要弄 <span class="en">thoroughly</span> 明白才行。',
+back:'She has a <span class="cn">热切</span> <span class="cn">好奇心</span> for <span class="cn">知识</span>, every <span class="cn">概念</span> must be understood <span class="cn">彻底</span>.',
+fullZh:'她对知识有一种热切的好奇心，每个概念都要弄彻底明白才行。',fullEn:'She has a keen curiosity for knowledge, every concept must be understood thoroughly.'},
+// ===== L =====
+{word:'launch',phonetic:'/lɔːntʃ/',meaning:'vt. 发起；发射',
+front:'三月份她正式 <span class="en">launch</span> 了自己的备考 <span class="en">campaign</span>，制定了 <span class="en">detailed</span> 的九个月 <span class="en">plan</span>。',
+back:'In March she officially <span class="cn">发起</span> her exam <span class="cn">战役</span>, making a <span class="cn">详细</span> nine-month <span class="cn">计划</span>.',
+fullZh:'三月份她正式发起了自己的备考战役，制定了详细的九个月计划。',fullEn:'In March she officially launched her exam campaign, making a detailed nine-month plan.'},
+{word:'legitimate',phonetic:'/lɪˈdʒɪtɪmət/',meaning:'a. 合法的；正当的',
+front:'适当 <span class="en">relax</span> 是完全 <span class="en">legitimate</span> 的 <span class="en">need</span>，不要因为休息而感到 <span class="en">guilty</span>。',
+back:'Moderate <span class="cn">放松</span> is a completely <span class="cn">正当</span> <span class="cn">需求</span>, don\'t feel <span class="cn">愧疚</span> for resting.',
+fullZh:'适当放松是完全正当的需求，不要因为休息而感到愧疚。',fullEn:'Moderate relaxation is a completely legitimate need, don\'t feel guilty for resting.'},
+{word:'luxury',phonetic:'/ˈlʌkʃəri/',meaning:'n. 奢侈；奢侈品',
+front:'对备考人来说，睡个懒觉都是一种 <span class="en">luxury</span>，每天 <span class="en">alarm</span> 六点准时 <span class="en">ring</span>，<span class="en">regardless</span> 是否愿意。',
+back:'For exam takers, sleeping in is a <span class="cn">奢侈</span>, the <span class="cn">闹钟</span> <span class="cn">响</span> at 6am daily, <span class="cn">无论</span> you like it or not.',
+fullZh:'对备考人来说，睡个懒觉都是一种奢侈，每天闹钟六点准时响，无论是否愿意。',fullEn:'For exam takers, sleeping in is a luxury, the alarm rings at 6am daily, regardless of whether you want to.'},
+// ===== M =====
+{word:'maintain',phonetic:'/meɪnˈteɪn/',meaning:'vt. 维持；保养',
+front:'<span class="en">Maintain</span> 规律的作息 <span class="en">schedule</span> 是长期复习的 <span class="en">foundation</span>，不能为了赶 <span class="en">progress</span> 而 <span class="en">sacrifice</span> 睡眠。',
+back:'<span class="cn">维持</span> a regular <span class="cn">日程</span> is the <span class="cn">基础</span> of long-term review, can\'t <span class="cn">牺牲</span> sleep to chase <span class="cn">进度</span>.',
+fullZh:'维持规律的作息日程是长期复习的基础，不能为了赶进度而牺牲睡眠。',fullEn:'Maintaining a regular schedule is the foundation of long-term review, can\'t sacrifice sleep to chase progress.'},
+{word:'modify',phonetic:'/ˈmɑːdɪfaɪ/',meaning:'vt. 修改；调整',
+front:'每次模考后都应该 <span class="en">modify</span> 自己的复习 <span class="en">strategy</span>，根据 <span class="en">weakness</span> 来 <span class="en">optimize</span> 时间分配。',
+back:'After every mock exam you should <span class="cn">修改</span> your review <span class="cn">策略</span>, <span class="cn">优化</span> time allocation based on <span class="cn">弱点</span>.',
+fullZh:'每次模考后都应该修改自己的复习策略，根据弱点来优化时间分配。',fullEn:'After every mock exam you should modify your review strategy, optimize time allocation based on weaknesses.'},
+{word:'motivation',phonetic:'/ˌmoʊtɪˈveɪʃn/',meaning:'n. 动力；动机',
+front:'失去 <span class="en">motivation</span> 的时候，就去看看 <span class="en">target</span> 学校的 <span class="en">campus</span>，<span class="en">remind</span> 自己为什么 <span class="en">start</span>。',
+back:'When losing <span class="cn">动力</span>, go see the <span class="cn">目标</span> school\'s <span class="cn">校园</span>, <span class="cn">提醒</span> yourself why you <span class="cn">开始</span>.',
+fullZh:'失去动力的时候，就去看看目标学校的校园，提醒自己为什么开始。',fullEn:'When losing motivation, go see the target school\'s campus, remind yourself why you started.'},
+{word:'mutual',phonetic:'/ˈmjuːtʃuəl/',meaning:'a. 相互的；共同的',
+front:'研友之间的 <span class="en">mutual</span> <span class="en">encouragement</span> 非常 <span class="en">valuable</span>，一个人 <span class="en">struggle</span> 不如 <span class="en">together</span> 前行。',
+back:'<span class="cn">互相</span> <span class="cn">鼓励</span> between study partners is very <span class="cn">珍贵</span>, <span class="cn">挣扎</span> alone is not as good as moving forward <span class="cn">一起</span>.',
+fullZh:'研友之间的互相鼓励非常珍贵，一个人挣扎不如一起前行。',fullEn:'Mutual encouragement between study partners is very valuable, struggling alone is not as good as moving forward together.'},
+// ===== N =====
+{word:'neglect',phonetic:'/nɪˈɡlekt/',meaning:'vt./n. 忽视；疏忽',
+front:'很多人 <span class="en">neglect</span> 了政治的 <span class="en">importance</span>，到最后才 <span class="en">discover</span> 这科是最容易 <span class="en">boost</span> 分数的。',
+back:'Many people <span class="cn">忽视</span> politics\' <span class="cn">重要性</span>, only in the end <span class="cn">发现</span> this subject is the easiest to <span class="cn">提升</span> scores.',
+fullZh:'很多人忽视了政治的重要性，到最后才发现这科是最容易提升分数的。',fullEn:'Many people neglected politics\' importance, only in the end discovering this subject is the easiest to boost scores.'},
+{word:'negotiate',phonetic:'/nɪˈɡoʊʃieɪt/',meaning:'v. 谈判；协商',
+front:'她和室友 <span class="en">negotiate</span> 好了 <span class="en">quiet</span> 时间的 <span class="en">arrangement</span>，晚上十点后不 <span class="en">make</span> 噪音。',
+back:'She <span class="cn">协商</span> with her roommate about <span class="cn">安静</span> time <span class="cn">安排</span>, no <span class="cn">制造</span> noise after 10pm.',
+fullZh:'她和室友协商好了安静时间的安排，晚上十点后不制造噪音。',fullEn:'She negotiated with her roommate about quiet time arrangements, no making noise after 10pm.'},
+{word:'notion',phonetic:'/ˈnoʊʃn/',meaning:'n. 概念；想法',
+front:'他脑海里有一个 <span class="en">notion</span>：只要 <span class="en">method</span> 正确，<span class="en">ordinary</span> 人也能 <span class="en">accomplish</span> <span class="en">extraordinary</span> 的事。',
+back:'He had a <span class="cn">想法</span> in mind: as long as the <span class="cn">方法</span> is right, <span class="cn">普通</span> people can also <span class="cn">完成</span> <span class="cn">非凡</span> things.',
+fullZh:'他脑海里有一个想法：只要方法正确，普通人也能完成非凡的事。',fullEn:'He had a notion in mind: as long as the method is right, ordinary people can also accomplish extraordinary things.'},
+// ===== O =====
+{word:'obtain',phonetic:'/əbˈteɪn/',meaning:'vt. 获得；得到',
+front:'要 <span class="en">obtain</span> 好 <span class="en">score</span>，不仅要 <span class="en">study</span> 用功，还要掌握考场 <span class="en">technique</span> 和时间 <span class="en">management</span>。',
+back:'To <span class="cn">获得</span> a good <span class="cn">分数</span>, you need not only hard <span class="cn">学习</span>, but also exam <span class="cn">技巧</span> and time <span class="cn">管理</span>.',
+fullZh:'要获得好分数，不仅要学习用功，还要掌握考场技巧和时间管理。',fullEn:'To obtain a good score, you need not only hard study, but also exam technique and time management.'},
+{word:'obvious',phonetic:'/ˈɑːbviəs/',meaning:'a. 明显的',
+front:'三个月后他的 <span class="en">progress</span> 非常 <span class="en">obvious</span>，从阅读 <span class="en">barely</span> 能读懂到现在 <span class="en">fluently</span> 做完四篇。',
+back:'Three months later his <span class="cn">进步</span> was very <span class="cn">明显</span>, from <span class="cn">勉强</span> understanding reading to now <span class="cn">流利</span> finishing four passages.',
+fullZh:'三个月后他的进步非常明显，从阅读勉强能读懂到现在流利做完四篇。',fullEn:'Three months later his progress was very obvious, from barely understanding reading to now fluently finishing four passages.'},
+{word:'overcome',phonetic:'/ˌoʊvərˈkʌm/',meaning:'vt. 克服；战胜',
+front:'她 <span class="en">overcome</span> 了严重的 <span class="en">procrastination</span> 问题，靠的是 <span class="en">strict</span> 的日程和研友的 <span class="en">supervision</span>。',
+back:'She <span class="cn">克服</span> her serious <span class="cn">拖延症</span> problem, relying on <span class="cn">严格</span> schedules and study partners\' <span class="cn">监督</span>.',
+fullZh:'她克服了严重的拖延症问题，靠的是严格的日程和研友的监督。',fullEn:'She overcame her serious procrastination problem, relying on strict schedules and study partners\' supervision.'},
+{word:'overwhelm',phonetic:'/ˌoʊvərˈwelm/',meaning:'vt. 压倒；使不知所措',
+front:'刚开始复习时，海量的 <span class="en">content</span> 让他感到 <span class="en">overwhelm</span>，但 <span class="en">gradually</span> 他学会了 <span class="en">prioritize</span>。',
+back:'When first starting review, the massive <span class="cn">内容</span> made him feel <span class="cn">不知所措</span>, but <span class="cn">逐渐</span> he learned to <span class="cn">排优先级</span>.',
+fullZh:'刚开始复习时，海量的内容让他感到不知所措，但逐渐他学会了排优先级。',fullEn:'When first starting review, the massive content made him feel overwhelmed, but gradually he learned to prioritize.'},
+// ===== P =====
+{word:'perceive',phonetic:'/pərˈsiːv/',meaning:'vt. 感知；察觉',
+front:'她 <span class="en">perceive</span> 到自己的 <span class="en">weakness</span> 在于作文 <span class="en">structure</span>，立刻 <span class="en">adjust</span> 了复习 <span class="en">focus</span>。',
+back:'She <span class="cn">察觉</span> her <span class="cn">弱点</span> was in essay <span class="cn">结构</span>, immediately <span class="cn">调整</span> her review <span class="cn">重点</span>.',
+fullZh:'她察觉到自己的弱点在于作文结构，立刻调整了复习重点。',fullEn:'She perceived her weakness was in essay structure, immediately adjusting her review focus.'},
+{word:'persist',phonetic:'/pərˈsɪst/',meaning:'vi. 坚持；持续',
+front:'即使所有人都 <span class="en">doubt</span> 她，她也 <span class="en">persist</span> 自己的 <span class="en">choice</span>，最终 <span class="en">prove</span> 了每个人都 <span class="en">wrong</span>。',
+back:'Even when everyone <span class="cn">怀疑</span> her, she <span class="cn">坚持</span> her <span class="cn">选择</span>, finally <span class="cn">证明</span> everyone was <span class="cn">错</span>.',
+fullZh:'即使所有人都怀疑她，她也坚持自己的选择，最终证明了每个人都错了。',fullEn:'Even when everyone doubted her, she persisted in her choice, finally proving everyone wrong.'},
+{word:'phenomenon',phonetic:'/fɪˈnɑːmɪnən/',meaning:'n. 现象',
+front:'考试 <span class="en">phenomenon</span> 越来越 <span class="en">widespread</span>，每年 <span class="en">candidate</span> 人数都在 <span class="en">rapidly</span> <span class="en">increase</span>。',
+back:'The exam <span class="cn">现象</span> is becoming increasingly <span class="cn">普遍</span>, <span class="cn">考生</span> numbers <span class="cn">快速</span> <span class="cn">增长</span> every year.',
+fullZh:'考试现象越来越普遍，每年考生人数都在快速增长。',fullEn:'The exam phenomenon is becoming increasingly widespread, candidate numbers rapidly increase every year.'},
+{word:'potential',phonetic:'/pəˈtenʃl/',meaning:'n./a. 潜力；潜在的',
+front:'导师说她有巨大的 <span class="en">potential</span>，只要 <span class="en">willing</span> 付出 <span class="en">effort</span>，一定能在 <span class="en">academic</span> 领域 <span class="en">shine</span>。',
+back:'The advisor said she has enormous <span class="cn">潜力</span>, as long as she\'s <span class="cn">愿意</span> put in <span class="cn">努力</span>, she can definitely <span class="cn">发光</span> in the <span class="cn">学术</span> field.',
+fullZh:'导师说她有巨大的潜力，只要愿意付出努力，一定能在学术领域发光。',fullEn:'The advisor said she has enormous potential, as long as she\'s willing to put in effort, she can definitely shine in the academic field.'},
+{word:'priority',phonetic:'/praɪˈɔːrəti/',meaning:'n. 优先事项',
+front:'备考期间学习是第一 <span class="en">priority</span>，其他 <span class="en">activity</span> 都要 <span class="en">temporarily</span> 为它 <span class="en">make way</span>。',
+back:'During exam prep, study is the top <span class="cn">优先事项</span>, all other <span class="cn">活动</span> must <span class="cn">暂时</span> <span class="cn">让路</span> for it.',
+fullZh:'备考期间学习是第一优先事项，其他活动都要暂时为它让路。',fullEn:'During exam prep, study is the top priority, all other activities must temporarily make way for it.'},
+// ===== R =====
+{word:'reluctant',phonetic:'/rɪˈlʌktənt/',meaning:'a. 不情愿的',
+front:'她虽然 <span class="en">reluctant</span> 放弃 <span class="en">weekend</span> 的休息，但 <span class="en">realize</span> 这段 <span class="en">sacrifice</span> 只是 <span class="en">temporary</span> 的。',
+back:'Though <span class="cn">不情愿</span> to give up <span class="cn">周末</span> rest, she <span class="cn">意识到</span> this <span class="cn">牺牲</span> is only <span class="cn">暂时</span>.',
+fullZh:'她虽然不情愿放弃周末的休息，但意识到这段牺牲只是暂时的。',fullEn:'Though reluctant to give up weekend rest, she realized this sacrifice is only temporary.'},
+{word:'relevant',phonetic:'/ˈreləvənt/',meaning:'a. 相关的；切题的',
+front:'答题时只写 <span class="en">relevant</span> 的 <span class="en">content</span>，不要 <span class="en">waste</span> 时间在和 <span class="en">question</span> 无关的 <span class="en">information</span> 上。',
+back:'When answering, only write <span class="cn">相关</span> <span class="cn">内容</span>, don\'t <span class="cn">浪费</span> time on <span class="cn">信息</span> unrelated to the <span class="cn">问题</span>.',
+fullZh:'答题时只写相关的内容，不要浪费时间在和问题无关的信息上。',fullEn:'When answering, only write relevant content, don\'t waste time on information unrelated to the question.'},
+{word:'reveal',phonetic:'/rɪˈviːl/',meaning:'vt. 揭示；透露',
+front:'每次模考都能 <span class="en">reveal</span> 你 <span class="en">hidden</span> 的知识 <span class="en">gap</span>，这比盲目复习 <span class="en">valuable</span> 得多。',
+back:'Every mock exam can <span class="cn">揭示</span> your <span class="cn">隐藏</span> knowledge <span class="cn">缺口</span>, this is much more <span class="cn">有价值</span> than blind review.',
+fullZh:'每次模考都能揭示你隐藏的知识缺口，这比盲目复习有价值得多。',fullEn:'Every mock exam can reveal your hidden knowledge gaps, this is much more valuable than blind review.'},
+{word:'reward',phonetic:'/rɪˈwɔːrd/',meaning:'n./vt. 奖赏；报酬',
+front:'每完成一个阶段的 <span class="en">task</span>，她就给自己一个小 <span class="en">reward</span>，比如一杯 <span class="en">favorite</span> 的奶茶。',
+back:'After completing each phase <span class="cn">任务</span>, she gives herself a small <span class="cn">奖赏</span>, like a cup of her <span class="cn">最爱</span> milk tea.',
+fullZh:'每完成一个阶段的任务，她就给自己一个小奖赏，比如一杯最爱的奶茶。',fullEn:'After completing each phase\'s task, she gives herself a small reward, like a cup of her favorite milk tea.'},
+// ===== S =====
+{word:'sacrifice',phonetic:'/ˈsækrɪfaɪs/',meaning:'n./vt. 牺牲；献出',
+front:'备考意味着 <span class="en">sacrifice</span> 掉大部分 <span class="en">entertainment</span>，但录取通知书会 <span class="en">prove</span> 一切 <span class="en">worthwhile</span>。',
+back:'The exam means <span class="cn">牺牲</span> most <span class="cn">娱乐</span>, but the admission letter will <span class="cn">证明</span> everything <span class="cn">值得</span>.',
+fullZh:'备考意味着牺牲掉大部分娱乐，但录取通知书会证明一切值得。',fullEn:'The exam means sacrificing most entertainment, but the admission letter will prove everything worthwhile.'},
+{word:'significant',phonetic:'/sɪɡˈnɪfɪkənt/',meaning:'a. 重要的；显著的',
+front:'真题训练对 <span class="en">score</span> 的 <span class="en">significant</span> 提升是任何 <span class="en">textbook</span> 都 <span class="en">replace</span> 不了的 <span class="en">experience</span>。',
+back:'Past paper training\'s <span class="cn">显著</span> <span class="cn">分数</span> improvement is an <span class="cn">经验</span> no <span class="cn">教材</span> can <span class="cn">替代</span>.',
+fullZh:'真题训练对分数的显著提升是任何教材都替代不了的经验。',fullEn:'Past paper training\'s significant score improvement is an experience no textbook can replace.'},
+{word:'stimulate',phonetic:'/ˈstɪmjuleɪt/',meaning:'vt. 刺激；激发',
+front:'和同学 <span class="en">discuss</span> 难题可以 <span class="en">stimulate</span> 新的 <span class="en">thinking</span>，经常能 <span class="en">discover</span> 自己没想到的 <span class="en">angle</span>。',
+back:'<span class="cn">讨论</span> difficult questions with classmates can <span class="cn">激发</span> new <span class="cn">思路</span>, often <span class="cn">发现</span> <span class="cn">角度</span> you hadn\'t thought of.',
+fullZh:'和同学讨论难题可以激发新的思路，经常能发现自己没想到的角度。',fullEn:'Discussing difficult questions with classmates can stimulate new thinking, often discovering angles you hadn\'t thought of.'},
+{word:'strategy',phonetic:'/ˈstrætədʒi/',meaning:'n. 策略；战略',
+front:'考场上好的时间 <span class="en">strategy</span> 能让你 <span class="en">calmly</span> 完成所有 <span class="en">section</span>，不至于最后 <span class="en">rush</span> 着写作文。',
+back:'A good time <span class="cn">策略</span> in the exam lets you <span class="cn">从容</span> finish all <span class="cn">部分</span>, without <span class="cn">匆忙</span> writing the essay at the end.',
+fullZh:'考场上好的时间策略能让你从容完成所有部分，不至于最后匆忙着写作文。',fullEn:'A good time strategy in the exam lets you calmly finish all sections, without rushing to write the essay at the end.'},
+{word:'sufficient',phonetic:'/səˈfɪʃnt/',meaning:'a. 充分的；足够的',
+front:'只有 <span class="en">sufficient</span> 的真题 <span class="en">practice</span> 才能培养考场上的 <span class="en">intuition</span> 和 <span class="en">speed</span>。',
+back:'Only <span class="cn">充分</span> past paper <span class="cn">练习</span> can cultivate exam-day <span class="cn">直觉</span> and <span class="cn">速度</span>.',
+fullZh:'只有充分的真题练习才能培养考场上的直觉和速度。',fullEn:'Only sufficient past paper practice can cultivate exam-day intuition and speed.'},
+{word:'sustain',phonetic:'/səˈsteɪn/',meaning:'vt. 维持；支撑',
+front:'长达一年的备考需要 <span class="en">sustain</span> 高度的 <span class="en">discipline</span>，很多人中途就 <span class="en">collapse</span> 了。',
+back:'A year-long preparation needs to <span class="cn">维持</span> high <span class="cn">自律</span>, many people <span class="cn">崩溃</span> midway.',
+fullZh:'长达一年的备考需要维持高度的自律，很多人中途就崩溃了。',fullEn:'A year-long preparation needs to sustain high discipline, many people collapse midway.'},
+// ===== T =====
+{word:'tendency',phonetic:'/ˈtendənsi/',meaning:'n. 倾向；趋势',
+front:'近年考试有一个 <span class="en">tendency</span>：<span class="en">application</span> 型题目越来越多，纯 <span class="en">memory</span> 型题目在 <span class="en">decrease</span>。',
+back:'In recent years the exam has a <span class="cn">趋势</span>: <span class="cn">应用</span> type questions increase, while pure <span class="cn">记忆</span> type questions <span class="cn">减少</span>.',
+fullZh:'近年考试有一个趋势：应用型题目越来越多，纯记忆型题目在减少。',fullEn:'In recent years the exam has a tendency: application type questions increase, while pure memory type questions decrease.'},
+{word:'thorough',phonetic:'/ˈθɜːroʊ/',meaning:'a. 彻底的；全面的',
+front:'对基础 <span class="en">concept</span> 的 <span class="en">thorough</span> 理解比做大量 <span class="en">exercise</span> 更 <span class="en">important</span>，不要 <span class="en">skip</span> 基本功。',
+back:'A <span class="cn">彻底</span> understanding of basic <span class="cn">概念</span> is more <span class="cn">重要</span> than doing lots of <span class="cn">习题</span>, don\'t <span class="cn">跳过</span> fundamentals.',
+fullZh:'对基础概念的彻底理解比做大量习题更重要，不要跳过基本功。',fullEn:'A thorough understanding of basic concepts is more important than doing lots of exercises, don\'t skip fundamentals.'},
+{word:'transform',phonetic:'/trænsˈfɔːrm/',meaning:'v. 转变；变革',
+front:'备考 <span class="en">transform</span> 了她整个人：从一个 <span class="en">lazy</span> 的学生变成了一个 <span class="en">disciplined</span> 且 <span class="en">ambitious</span> 的研究者。',
+back:'The exam <span class="cn">转变</span> her entirely: from a <span class="cn">懒惰</span> student to a <span class="cn">自律</span> and <span class="cn">有抱负</span> researcher.',
+fullZh:'备考转变了她整个人：从一个懒惰的学生变成了一个自律且有抱负的研究者。',fullEn:'The exam transformed her entirely: from a lazy student to a disciplined and ambitious researcher.'},
+{word:'trigger',phonetic:'/ˈtrɪɡər/',meaning:'vt. 触发；引起 n. 扳机',
+front:'一首 <span class="en">familiar</span> 的歌有时会 <span class="en">trigger</span> 她对备考 <span class="en">memory</span> 的 <span class="en">emotion</span>，让她又 <span class="en">tear up</span>。',
+back:'A <span class="cn">熟悉</span> song sometimes <span class="cn">触发</span> her <span class="cn">记忆</span> of exam prep <span class="cn">情感</span>, making her <span class="cn">流泪</span> again.',
+fullZh:'一首熟悉的歌有时会触发她对备考记忆的情感，让她又流泪。',fullEn:'A familiar song sometimes triggers her memory of exam prep emotions, making her tear up again.'},
+{word:'triumph',phonetic:'/ˈtraɪʌmf/',meaning:'n./vi. 胜利；成功',
+front:'收到录取通知书那天是她人生最大的 <span class="en">triumph</span>，所有的 <span class="en">hardship</span> 在那一刻都 <span class="en">vanish</span> 了。',
+back:'The day she received the admission letter was her life\'s greatest <span class="cn">胜利</span>, all <span class="cn">艰辛</span> <span class="cn">消失</span> at that moment.',
+fullZh:'收到录取通知书那天是她人生最大的胜利，所有的艰辛在那一刻都消失了。',fullEn:'The day she received the admission letter was her life\'s greatest triumph, all hardship vanished at that moment.'},
+// ===== U / V =====
+{word:'undertake',phonetic:'/ˌʌndərˈteɪk/',meaning:'vt. 承担；从事',
+front:'她 <span class="en">undertake</span> 了最难的 <span class="en">research</span> 课题，虽然 <span class="en">risky</span>，但 <span class="en">potential</span> 的 <span class="en">reward</span> 也最大。',
+back:'She <span class="cn">承担</span> the most difficult <span class="cn">研究</span> topic, though <span class="cn">有风险</span>, the <span class="cn">潜在</span> <span class="cn">回报</span> is also the greatest.',
+fullZh:'她承担了最难的研究课题，虽然有风险，但潜在的回报也最大。',fullEn:'She undertook the most difficult research topic, though risky, the potential reward is also the greatest.'},
+{word:'utilize',phonetic:'/ˈjuːtəlaɪz/',meaning:'vt. 利用；使用',
+front:'学会 <span class="en">utilize</span> 碎片 <span class="en">time</span> 非常 <span class="en">important</span>，排队和坐车时都可以 <span class="en">review</span> 单词。',
+back:'Learning to <span class="cn">利用</span> fragmented <span class="cn">时间</span> is very <span class="cn">重要</span>, you can <span class="cn">复习</span> words while waiting in line or riding.',
+fullZh:'学会利用碎片时间非常重要，排队和坐车时都可以复习单词。',fullEn:'Learning to utilize fragmented time is very important, you can review words while waiting in line or riding.'},
+{word:'violate',phonetic:'/ˈvaɪəleɪt/',meaning:'vt. 违反；侵犯',
+front:'考场上任何 <span class="en">violate</span> 纪律的 <span class="en">behavior</span> 都会被 <span class="en">immediately</span> <span class="en">cancel</span> 考试 <span class="en">qualification</span>。',
+back:'Any <span class="cn">违反</span> discipline <span class="cn">行为</span> in the exam will <span class="cn">立即</span> <span class="cn">取消</span> exam <span class="cn">资格</span>.',
+fullZh:'考场上任何违反纪律的行为都会被立即取消考试资格。',fullEn:'Any behavior violating discipline in the exam will immediately cancel exam qualification.'},
+{word:'vivid',phonetic:'/ˈvɪvɪd/',meaning:'a. 生动的；鲜明的',
+front:'用 <span class="en">vivid</span> 的 <span class="en">image</span> 联想来 <span class="en">memorize</span> 单词，比死记硬背 <span class="en">effective</span> 得多。',
+back:'Using <span class="cn">生动</span> <span class="cn">画面</span> association to <span class="cn">记忆</span> words is much more <span class="cn">有效</span> than rote memorization.',
+fullZh:'用生动的画面联想来记忆单词，比死记硬背有效得多。',fullEn:'Using vivid image association to memorize words is much more effective than rote memorization.'},
+// ===== W / Y / Z =====
+{word:'withdraw',phonetic:'/wɪðˈdrɔː/',meaning:'v. 撤退；取回',
+front:'压力太大时不要硬撑，<span class="en">temporarily</span> <span class="en">withdraw</span> 一下去 <span class="en">relax</span>，反而能 <span class="en">recover</span> 更好的 <span class="en">state</span>。',
+back:'When pressure is too much don\'t push through, <span class="cn">暂时</span> <span class="cn">退一步</span> to <span class="cn">放松</span>, you can actually <span class="cn">恢复</span> to a better <span class="cn">状态</span>.',
+fullZh:'压力太大时不要硬撑，暂时退一步去放松，反而能恢复更好的状态。',fullEn:'When pressure is too much don\'t push through, temporarily withdraw to relax, you can actually recover to a better state.'},
+{word:'witness',phonetic:'/ˈwɪtnəs/',meaning:'v./n. 目睹；见证',
+front:'室友 <span class="en">witness</span> 了她一整年的 <span class="en">effort</span>：每天最早出门，最晚 <span class="en">return</span>，<span class="en">never</span> 有一天 <span class="en">slack off</span>。',
+back:'Her roommate <span class="cn">见证</span> a whole year of <span class="cn">努力</span>: first out every day, latest to <span class="cn">回来</span>, <span class="cn">从不</span> <span class="cn">松懈</span> a single day.',
+fullZh:'室友见证了她一整年的努力：每天最早出门，最晚回来，从不有一天松懈。',fullEn:'Her roommate witnessed a whole year of effort: first out every day, latest to return, never slacking off a single day.'},
+{word:'yield',phonetic:'/jiːld/',meaning:'v. 产生；屈服 n. 产量',
+front:'坚持不懈终于 <span class="en">yield</span> 了 <span class="en">result</span>：她的名字 <span class="en">appear</span> 在了 <span class="en">admission</span> 名单上。',
+back:'Perseverance finally <span class="cn">产出</span> <span class="cn">结果</span>: her name <span class="cn">出现</span> on the <span class="cn">录取</span> list.',
+fullZh:'坚持不懈终于产出了结果：她的名字出现在了录取名单上。',fullEn:'Perseverance finally yielded results: her name appeared on the admission list.'},
+{word:'zealous',phonetic:'/ˈzeləs/',meaning:'a. 热心的；热情的',
+front:'他对每一个 <span class="en">subject</span> 都保持 <span class="en">zealous</span> 的 <span class="en">attitude</span>，就算是最 <span class="en">boring</span> 的政治也 <span class="en">study</span> 得很认真。',
+back:'He maintained a <span class="cn">热情</span> <span class="cn">态度</span> toward every <span class="cn">科目</span>, even the most <span class="cn">无聊</span> politics he <span class="cn">学习</span> very seriously.',
+fullZh:'他对每一个科目都保持热情的态度，就算是最无聊的政治也学习得很认真。',fullEn:'He maintained a zealous attitude toward every subject, even the most boring politics he studied very seriously.'}
+];
+
+// ==================== QUOTES ====================
+const quotes = [
+  {en:"The secret of getting ahead is getting started.",zh:"领先的秘诀在于开始行动。",author:"Mark Twain"},
+  {en:"It does not matter how slowly you go as long as you do not stop.",zh:"不怕慢，就怕站。",author:"Confucius"},
+  {en:"The only way to do great work is to love what you do.",zh:"做伟大工作的唯一方法是热爱你所做的事。",author:"Steve Jobs"},
+  {en:"Believe you can and you are halfway there.",zh:"相信你能，你就已经成功了一半。",author:"Theodore Roosevelt"},
+  {en:"Education is the most powerful weapon which you can use to change the world.",zh:"教育是你可以用来改变世界的最强大武器。",author:"Nelson Mandela"},
+  {en:"The future belongs to those who believe in the beauty of their dreams.",zh:"未来属于那些相信梦想之美的人。",author:"Eleanor Roosevelt"},
+  {en:"A journey of a thousand miles begins with a single step.",zh:"千里之行，始于足下。",author:"Lao Tzu"},
+  {en:"The man who moves a mountain begins by carrying away small stones.",zh:"移山之人，始于搬运小石头。",author:"Confucius"},
+  {en:"Perseverance is not a long race it is many short races one after the other.",zh:"坚持不是一场长跑，而是一个接一个的短跑。",author:"Walter Elliot"},
+  {en:"The beautiful thing about learning is that nobody can take it away from you.",zh:"学习最美好的地方在于没有人能夺走它。",author:"B.B. King"},
+  {en:"Small daily improvements over time lead to stunning results.",zh:"日积月累的小进步终将带来惊人的成果。",author:"Robin Sharma"},
+  {en:"It always seems impossible until it is done.",zh:"在完成之前，一切看起来都不可能。",author:"Nelson Mandela"},
+  {en:"You do not have to be great to start but you have to start to be great.",zh:"你不必很出色才能开始，但你必须开始才能变得出色。",author:"Zig Ziglar"},
+  {en:"The expert in anything was once a beginner.",zh:"任何领域的专家都曾是初学者。",author:"Helen Hayes"},
+  {en:"Success usually comes to those who are too busy to be looking for it.",zh:"成功往往降临在那些忙得没空去寻找它的人身上。",author:"Henry David Thoreau"},
+  {en:"The harder you work for something the greater you will feel when you achieve it.",zh:"你为某事付出越多，实现时的感觉就越美好。",author:"Anonymous"},
+  {en:"Dreams do not work unless you do.",zh:"梦想不会自己实现，除非你付诸行动。",author:"John C. Maxwell"},
+  {en:"Push yourself because no one else is going to do it for you.",zh:"推动自己前进，因为没有人会替你做到。",author:"Anonymous"},
+  {en:"Great things never come from comfort zones.",zh:"伟大的事物从不诞生于舒适区。",author:"Anonymous"},
+  {en:"Wake up with determination and go to bed with satisfaction.",zh:"带着决心醒来，带着满足入眠。",author:"Anonymous"},
+  {en:"Hard work beats talent when talent does not work hard.",zh:"当天赋不努力时，努力可以击败天赋。",author:"Tim Notke"},
+  {en:"Do something today that your future self will thank you for.",zh:"今天做一些未来的你会感谢的事。",author:"Anonymous"},
+  {en:"Every accomplishment starts with the decision to try.",zh:"每一个成就都始于尝试的决定。",author:"John F. Kennedy"},
+  {en:"The pain you feel today will be the strength you feel tomorrow.",zh:"你今天感受到的痛苦将成为你明天的力量。",author:"Anonymous"},
+  {en:"What you get by achieving your goals is not as important as what you become.",zh:"达成目标所获得的不如你所成为的重要。",author:"Zig Ziglar"},
+  {en:"Success is not final failure is not fatal it is the courage to continue that counts.",zh:"成功不是终点，失败也不致命，重要的是继续前行的勇气。",author:"Winston Churchill"},
+  {en:"Do not wait to strike till the iron is hot but make it hot by striking.",zh:"不要等到铁热了才打，要通过打来使铁变热。",author:"W.B. Yeats"},
+  {en:"What we achieve inwardly will change outer reality.",zh:"我们内心的成就将改变外在的现实。",author:"Plutarch"},
+  {en:"Your limitation is only your imagination.",zh:"你的局限只是你的想象力。",author:"Anonymous"},
+  {en:"The only limit to our realization of tomorrow is our doubts of today.",zh:"实现明天的唯一限制是我们今天的疑虑。",author:"Franklin D. Roosevelt"},
+];
+
+// ==================== STATE ====================
+let cards = [...allCards];
+let idx = 0;
+let filter = 'all';
+let shuffled = false;
+let mastered = JSON.parse(localStorage.getItem('vocab-mastered') || '{}');
+let fullOpen = false;
+
+// Daily state
+const today = new Date().toISOString().slice(0,10);
+let dailyGoal = parseInt(localStorage.getItem('vocab-daily-goal') || '10');
+let todayData = JSON.parse(localStorage.getItem('vocab-today') || '{}');
+if (todayData.date !== today) { todayData = {date:today, words:[], celebrated:false}; saveTodayData(); }
+let streakData = JSON.parse(localStorage.getItem('vocab-streak') || '{"count":0,"lastDate":""}');
+
+function saveTodayData() { localStorage.setItem('vocab-today', JSON.stringify(todayData)); }
+
+// ==================== DAILY QUOTE ====================
+function getDailyQuote() {
+  const seed = parseInt(today.replace(/-/g,''));
+  return quotes[seed % quotes.length];
+}
+
+function renderQuote() {
+  const quote = getDailyQuote();
+  const words = quote.en.split(' ');
+  const todayCount = todayData.words.length;
+  let revealCount;
+  if (todayData.celebrated || todayCount >= dailyGoal) {
+    revealCount = words.length;
+  } else {
+    revealCount = Math.floor(todayCount / dailyGoal * words.length);
+  }
+  const container = document.getElementById('quoteWords');
+  container.innerHTML = words.map((w,i) =>
+    '<span class="qw'+(i >= revealCount ? ' hidden' : '')+'">'+w+'</span>'
+  ).join(' ');
+  const zhEl = document.getElementById('quoteZh');
+  zhEl.textContent = quote.zh;
+  zhEl.classList.toggle('hidden', todayCount < dailyGoal && !todayData.celebrated);
+  document.getElementById('quoteAuthor').textContent = (todayCount >= dailyGoal || todayData.celebrated) ? '— '+quote.author : '';
+  document.getElementById('quoteProgress').textContent = todayCount < dailyGoal
+    ? '掌握 '+todayCount+'/'+dailyGoal+' 个单词解锁完整名言'
+    : '名言已解锁!';
+}
+
+function revealNextQuoteWords() {
+  const quote = getDailyQuote();
+  const words = quote.en.split(' ');
+  const todayCount = todayData.words.length;
+  const revealCount = Math.min(Math.floor(todayCount / dailyGoal * words.length), words.length);
+  const prevCount = Math.min(Math.floor((todayCount-1) / dailyGoal * words.length), words.length);
+  const spans = document.querySelectorAll('#quoteWords .qw');
+  for (let i = prevCount; i < revealCount && i < spans.length; i++) {
+    ((idx) => {
+      setTimeout(() => { spans[idx].classList.remove('hidden'); spans[idx].classList.add('revealing'); }, (idx-prevCount)*150);
+    })(i);
+  }
+}
+
+// ==================== DAILY GOAL ====================
+function renderDailyGoal() {
+  const todayCount = todayData.words.length;
+  document.getElementById('todayNum').textContent = todayCount;
+  document.getElementById('goalTarget').textContent = dailyGoal;
+  document.getElementById('todayStat').textContent = todayCount;
+  const circ = 2 * Math.PI * 34;
+  const progress = Math.min(todayCount / dailyGoal, 1);
+  const ring = document.getElementById('goalRing');
+  ring.style.strokeDasharray = circ;
+  ring.style.strokeDashoffset = circ * (1-progress);
+  if (progress >= 1) ring.style.stroke = '#4a7c59';
+  const sub = document.getElementById('goalSub');
+  if (todayCount === 0) sub.textContent = '加油，开始第一个吧!';
+  else if (todayCount < dailyGoal) sub.textContent = '还差 '+(dailyGoal-todayCount)+' 个就达标啦';
+  else sub.textContent = '太棒了，目标已达成!';
+  document.querySelectorAll('.goal-picker button').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.textContent)===dailyGoal);
+  });
+  renderStreak();
+}
+
+function toggleGoalPicker(e) {
+  e.stopPropagation();
+  document.getElementById('goalPicker').classList.toggle('show');
+}
+
+function setDailyGoal(n) {
+  dailyGoal = n;
+  localStorage.setItem('vocab-daily-goal', n);
+  document.getElementById('goalPicker').classList.remove('show');
+  renderDailyGoal();
+  renderQuote();
+}
+
+document.addEventListener('click', () => { document.getElementById('goalPicker').classList.remove('show'); });
+
+// ==================== STREAK ====================
+function renderStreak() {
+  const badge = document.getElementById('streakBadge');
+  if (streakData.count > 0 && streakData.lastDate === today) {
+    badge.textContent = '\uD83D\uDD25 连续 '+streakData.count+' 天';
+    badge.style.display = '';
+  } else if (streakData.count > 0) {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    if (streakData.lastDate === yesterday.toISOString().slice(0,10)) {
+      badge.textContent = '\uD83D\uDD25 连续 '+streakData.count+' 天';
+      badge.style.display = '';
+    } else { badge.style.display = 'none'; }
+  } else { badge.style.display = 'none'; }
+}
+
+function updateStreak() {
+  if (todayData.words.length === 0) return;
+  if (streakData.lastDate === today) return;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yd = yesterday.toISOString().slice(0,10);
+  if (streakData.lastDate === yd) streakData.count++;
+  else streakData.count = 1;
+  streakData.lastDate = today;
+  localStorage.setItem('vocab-streak', JSON.stringify(streakData));
+}
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ==================== CELEBRATION ====================
+function triggerCelebration() {
+  if (todayData.celebrated) return;
+  todayData.celebrated = true;
+  saveTodayData();
+  const quote = getDailyQuote();
+  // Reveal all remaining quote words
+  document.querySelectorAll('#quoteWords .qw.hidden').forEach((span,i) => {
+    setTimeout(() => { span.classList.remove('hidden'); span.classList.add('revealing'); }, i*100);
+  });
+  setTimeout(() => {
+    document.getElementById('quoteZh').classList.remove('hidden');
+    document.getElementById('quoteAuthor').textContent = '— '+quote.author;
+    document.getElementById('quoteProgress').textContent = '名言已解锁!';
+  }, 500);
+  setTimeout(() => {
+    document.getElementById('celeSub').textContent = '你今天掌握了 '+todayData.words.length+' 个单词';
+    document.getElementById('celeQuote').textContent = '"'+quote.en+'" — '+quote.author;
+    document.getElementById('celebration').classList.add('show');
+    launchConfetti();
+  }, 800);
+}
+
+function closeCelebration() {
+  document.getElementById('celebration').classList.remove('show');
+}
+
+// ==================== CONFETTI ====================
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#c0522e','#4a7c59','#6b4c35','#b09678','#e8dfd2','#d4a574'];
+  const pieces = [];
+  for (let i = 0; i < 120; i++) {
+    pieces.push({
+      x: Math.random()*canvas.width, y: -20-Math.random()*200,
+      w: 6+Math.random()*6, h: 4+Math.random()*4,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      vy: 2+Math.random()*3, vx: (Math.random()-0.5)*3,
+      rot: Math.random()*360, rs: (Math.random()-0.5)*10, opacity: 1
+    });
+  }
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive = false;
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rs;
+      if (frame > 80) p.opacity -= 0.015;
+      if (p.opacity <= 0) return;
+      alive = true;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.globalAlpha = Math.max(0,p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (alive && frame < 200) requestAnimationFrame(animate);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  animate();
+}
+
+// ==================== FILTER / SEARCH ====================
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let base = allCards;
+  if (filter === 'mastered') base = allCards.filter(c => mastered[c.word]);
+  else if (filter === 'unmastered') base = allCards.filter(c => !mastered[c.word]);
+  if (q) base = base.filter(c => c.word.toLowerCase().includes(q) || c.meaning.includes(q));
+  cards = shuffled ? shuffle([...base]) : [...base];
+  idx = 0;
+  render();
+}
+
+function setFilter(f, btn) {
+  filter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function onSearch() { applyFilter(); }
+
+function toggleShuffle() {
+  shuffled = !shuffled;
+  document.getElementById('shuffleBtn').classList.toggle('active', shuffled);
+  applyFilter();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ==================== RENDER ====================
+function render() {
+  const total = cards.length;
+  const masteredCount = Object.keys(mastered).length;
+  document.getElementById('totalNum').textContent = total;
+  document.getElementById('masteredNum').textContent = masteredCount;
+  document.getElementById('currentNum').textContent = total ? idx+1 : 0;
+  document.getElementById('progressText').textContent = (total ? idx+1 : 0)+' / '+total;
+  document.getElementById('progressFill').style.width = total ? ((idx+1)/total*100)+'%' : '0%';
+  document.getElementById('prevBtn').disabled = idx <= 0;
+  document.getElementById('nextBtn').disabled = idx >= total-1;
+
+  document.getElementById('cardFlip').classList.remove('flipped');
+  fullOpen = false;
+  document.getElementById('fullArea').classList.remove('show');
+  document.getElementById('toggleBtn').textContent = '▼ 查看完整中英文';
+
+  if (!total) {
+    ['frontWord','frontPhonetic','frontMeaning','backWord','backPhonetic','backMeaning'].forEach(id => document.getElementById(id).textContent = '');
+    ['frontSentence','backSentence'].forEach(id => document.getElementById(id).innerHTML = '');
+    document.getElementById('fullZh').textContent = '';
+    document.getElementById('fullEn').textContent = '';
+    document.getElementById('masterBtn').textContent = '○ 标记掌握';
+    document.getElementById('masterBtn').classList.remove('mastered');
+    return;
+  }
+  const c = cards[idx];
+  document.getElementById('frontWord').textContent = c.word;
+  document.getElementById('frontPhonetic').textContent = c.phonetic;
+  document.getElementById('frontMeaning').textContent = c.meaning;
+  document.getElementById('frontSentence').innerHTML = c.front;
+  document.getElementById('backWord').textContent = c.word;
+  document.getElementById('backPhonetic').textContent = c.phonetic;
+  document.getElementById('backMeaning').textContent = c.meaning;
+  document.getElementById('backSentence').innerHTML = c.back;
+  document.getElementById('fullZh').textContent = c.fullZh;
+  document.getElementById('fullEn').textContent = c.fullEn;
+
+  if (mastered[c.word]) {
+    document.getElementById('masterBtn').textContent = '● 已掌握';
+    document.getElementById('masterBtn').classList.add('mastered');
+  } else {
+    document.getElementById('masterBtn').textContent = '○ 标记掌握';
+    document.getElementById('masterBtn').classList.remove('mastered');
+  }
+}
+
+// ==================== CARD ACTIONS ====================
+function flipCard(e) {
+  if (e.target.closest('.speak-btn')) return;
+  document.getElementById('cardFlip').classList.toggle('flipped');
+}
+
+function speak(e) {
+  e.stopPropagation();
+  if (!cards.length) return;
+  const u = new SpeechSynthesisUtterance(cards[idx].word);
+  u.lang = 'en-US';
+  speechSynthesis.speak(u);
+}
+
+function prevCard() { if (idx > 0) { idx--; render(); } }
+function nextCard() { if (idx < cards.length-1) { idx++; render(); } }
+
+function toggleMaster() {
+  if (!cards.length) return;
+  const w = cards[idx].word;
+
+  if (mastered[w]) {
+    // Unmaster
+    delete mastered[w];
+    todayData.words = todayData.words.filter(x => x !== w);
+    saveTodayData();
+  } else {
+    // Master with celebration
+    mastered[w] = true;
+    if (!todayData.words.includes(w)) {
+      todayData.words.push(w);
+      saveTodayData();
+      // Card glow
+      const card = document.getElementById('cardFlip');
+      card.classList.add('mastered-anim');
+      setTimeout(() => card.classList.remove('mastered-anim'), 600);
+      // Toast
+      showToast('✓ '+w+' 已掌握 ('+todayData.words.length+'/'+dailyGoal+')');
+      // Reveal quote words
+      revealNextQuoteWords();
+      // Update streak
+      updateStreak();
+      // Check daily goal
+      if (todayData.words.length === dailyGoal) {
+        setTimeout(() => triggerCelebration(), 700);
+      }
+    }
+  }
+  localStorage.setItem('vocab-mastered', JSON.stringify(mastered));
+  renderDailyGoal();
+  renderQuote();
+  render();
+}
+
+function toggleFull() {
+  fullOpen = !fullOpen;
+  document.getElementById('fullArea').classList.toggle('show', fullOpen);
+  document.getElementById('toggleBtn').textContent = fullOpen ? '▲ 收起完整中英文' : '▼ 查看完整中英文';
+}
+
+// ==================== KEYBOARD ====================
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (document.getElementById('celebration').classList.contains('show')) {
+    if (e.key === 'Escape' || e.key === 'Enter') closeCelebration();
+    return;
+  }
+  switch (e.key) {
+    case 'ArrowLeft': prevCard(); break;
+    case 'ArrowRight': nextCard(); break;
+    case ' ': e.preventDefault(); document.getElementById('cardFlip').classList.toggle('flipped'); break;
+    case 'm': case 'M': toggleMaster(); break;
+    case 's': case 'S': speak(new Event('click')); break;
+  }
+});
+
+// ==================== INIT ====================
+function init() {
+  applyFilter();
+  renderDailyGoal();
+  renderQuote();
+  render();
+}
+init();
+</script>
+</body>
+</html>
