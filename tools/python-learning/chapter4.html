@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python第四章 - 循环语句</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --sf: #fafbfc;
+  --sf2: #f3f5f7;
+  --bd: #e5e7eb;
+  --bd-s: #eef0f3;
+  --tx: #1f2328;
+  --txs: #4b5563;
+  --txd: #6b7280;
+  --ac: #e85d26;
+  --ac2: #c2410c;
+  --acg: #fff4ed;
+  --gn: #16a34a;
+  --gn-s: #ecfdf5;
+  --gn-b: #a7f3d0;
+  --rd: #dc2626;
+  --rd-s: #fef2f2;
+  --rd-b: #fecaca;
+  --yl: #b45309;
+  --yl-s: #fffbeb;
+  --bl: #0369a1;
+  --bl-s: #eff6ff;
+  --cb: #f6f8fa;
+  --ci: #eef1f4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--tx);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 'Noto Sans SC', sans-serif;
+  line-height: 1.85; overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Header */
+.hd {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255,255,255,0.88); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--bd);
+  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.hd-l { display: flex; align-items: center; gap: 14px; }
+.hd-t { font-size: 15px; font-weight: 700; color: var(--tx); letter-spacing: 1px; }
+.hd-c { font-size: 12px; color: var(--txd); }
+.hd-r { display: flex; align-items: center; gap: 12px; }
+.pb { width: 150px; height: 4px; background: var(--sf2); border-radius: 2px; overflow: hidden; }
+.pf { height: 100%; background: linear-gradient(90deg, var(--ac), var(--ac2)); border-radius: 2px; transition: width 0.6s; width: 0%; }
+.sd { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--gn); font-weight: 600; }
+
+/* Nav */
+.nv {
+  position: fixed; left: 0; top: 53px; bottom: 0; width: 240px;
+  background: var(--sf); border-right: 1px solid var(--bd);
+  overflow-y: auto; z-index: 90; padding: 14px 0;
+}
+.ni {
+  padding: 9px 18px; font-size: 12.5px; color: var(--txs);
+  cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent;
+  display: flex; align-items: center; gap: 8px;
+}
+.ni:hover { background: var(--sf2); color: var(--tx); }
+.ni.on { color: var(--ac); border-left-color: var(--ac); background: var(--acg); font-weight: 600; }
+.ni .dt { width: 7px; height: 7px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
+.ni .dt.dn { background: var(--gn); }
+
+/* Main */
+.mn { margin-left: 240px; margin-top: 53px; padding: 36px 52px 120px; max-width: 880px; }
+
+.sc { display: none; animation: fu 0.3s ease; }
+.sc.on { display: block; }
+@keyframes fu { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.sn { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ac); letter-spacing: 2px; margin-bottom: 6px; font-weight: 600; }
+.sc h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; color: var(--tx); letter-spacing: -0.5px; }
+.sc .su { color: var(--txd); font-size: 13.5px; margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--bd-s); }
+.sc h3 { font-size: 18px; font-weight: 700; margin: 26px 0 10px; color: var(--tx); }
+.sc p { margin-bottom: 13px; font-size: 14.5px; color: var(--txs); }
+.hl { color: var(--ac); font-weight: 600; }
+
+.sc p code, .sc li code, .ag code, .ex code, .wn code {
+  background: var(--ci); padding: 2px 6px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.88em; color: var(--ac2);
+}
+
+/* Callouts */
+.ag {
+  background: var(--yl-s); border-left: 3px solid #f59e0b;
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0;
+  font-size: 13.5px; color: var(--txs);
+}
+.ag::before { content: "🔧 机械类比"; display: block; font-size: 11px; font-weight: 700; color: #b45309; margin-bottom: 5px; letter-spacing: 1px; }
+
+.ex {
+  background: var(--bl-s); border-left: 3px solid #3b82f6;
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0;
+  font-size: 13.5px; color: var(--txs);
+}
+.ex::before { content: "🚀 拓展知识"; display: block; font-size: 11px; font-weight: 700; color: var(--bl); margin-bottom: 5px; letter-spacing: 1px; }
+
+.wn {
+  background: #fff7ed; border-left: 3px solid #f97316;
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0;
+  font-size: 13.5px; color: #9a3412;
+}
+.wn::before { content: "⚠️ 常见错误"; display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; letter-spacing: 1px; color: #c2410c; }
+
+/* Code */
+.cd {
+  background: var(--cb); border: 1px solid var(--bd); border-radius: 8px;
+  padding: 14px 18px; margin: 12px 0; font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; line-height: 1.75; overflow-x: auto; white-space: pre; color: #1f2328;
+}
+.cc { color: #6e7781; font-style: italic; }
+.ck { color: #cf222e; font-weight: 600; }
+.cs { color: #0a6638; }
+.cn { color: #0550ae; }
+.cf { color: #8250df; }
+.co { color: #cf222e; }
+.cv { color: #1f2328; }
+.cb { color: #0550ae; font-weight: 600; }
+
+/* Exercise */
+.eb {
+  background: var(--sf); border: 1px solid var(--bd); border-radius: 10px;
+  padding: 20px 22px; margin: 20px 0;
+}
+.el { font-size: 11px; font-weight: 700; color: var(--gn); letter-spacing: 2px; margin-bottom: 10px; }
+.eq { font-size: 14px; margin-bottom: 12px; color: var(--tx); }
+
+.ei {
+  width: 100%; background: #fff; border: 1.5px solid var(--bd); border-radius: 7px;
+  padding: 11px 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--tx); outline: none; transition: border-color 0.2s;
+}
+.ei:focus { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acg); }
+.ei::placeholder { color: #9ca3af; }
+
+.bs {
+  margin-top: 10px; padding: 9px 24px; background: var(--ac); color: #fff;
+  border: none; border-radius: 6px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.bs:hover { background: var(--ac2); }
+
+.fb { margin-top: 10px; padding: 11px 14px; border-radius: 7px; font-size: 13px; display: none; animation: fu 0.25s; }
+.fb.ok { display: block; background: var(--gn-s); border: 1px solid var(--gn-b); color: #065f46; }
+.fb.no { display: block; background: var(--rd-s); border: 1px solid var(--rd-b); color: #991b1b; }
+.fb .rv { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(0,0,0,0.08); font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txd); }
+
+/* MC */
+.mo { display: flex; flex-direction: column; gap: 7px; margin: 10px 0; }
+.mi {
+  padding: 11px 14px; background: #fff; border: 1.5px solid var(--bd);
+  border-radius: 7px; cursor: pointer; transition: all 0.2s; font-size: 13px;
+  color: var(--tx);
+}
+.mi:hover { border-color: var(--ac); background: var(--acg); }
+.mi.ok-a { border-color: var(--gn); background: var(--gn-s); color: #065f46; }
+.mi.no-a { border-color: var(--rd); background: var(--rd-s); color: #991b1b; }
+
+/* Nav buttons */
+.nb { display: flex; justify-content: space-between; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--bd-s); }
+.bn {
+  padding: 10px 26px; border: 1px solid var(--bd); background: #fff;
+  color: var(--tx); border-radius: 7px; font-size: 13px; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.bn:hover { border-color: var(--ac); color: var(--ac); }
+.bn.pr { background: var(--ac); border-color: var(--ac); color: #fff; }
+.bn.pr:hover { background: var(--ac2); border-color: var(--ac2); color: #fff; }
+
+/* Textarea for multi-line code answers */
+.eta {
+  width: 100%; background: var(--cb); border: 1.5px solid var(--bd); border-radius: 7px;
+  padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--tx); outline: none; transition: border-color 0.2s;
+  min-height: 96px; resize: vertical; line-height: 1.7;
+}
+.eta:focus { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acg); }
+.eta::placeholder { color: #9ca3af; }
+
+/* Summary */
+.sg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.sk { background: var(--sf); border: 1px solid var(--bd); border-radius: 8px; padding: 13px 16px; }
+.sk .st { font-size: 11px; color: var(--ac); font-weight: 700; letter-spacing: 1px; margin-bottom: 5px; }
+.sk .sv { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txs); line-height: 1.65; }
+
+@media (max-width: 768px) {
+  .nv { display: none; }
+  .mn { margin-left: 0; padding: 20px 16px 80px; }
+  .pb { width: 100px; }
+  .sg { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="hd"><div class="hd-l"><div class="hd-t">PYTHON 第四章</div><div class="hd-c">循环语句</div></div><div class="hd-r"><div class="pb"><div class="pf" id="pF"></div></div><div class="sd">得分: <span id="tS">0</span>/<span id="mS">0</span></div></div></div>
+<div class="nv" id="nv"></div>
+<div class="mn" id="mn"></div>
+
+<script>
+const D=[
+{id:"while-basic",title:"while循环基础",num:"4-01",sub:"当条件满足时，一直重复执行",
+content:`
+<p><span class="hl">while</span> 就是"当...的时候，一直做"。满足条件就重复执行，不满足就跳出。</p>
+<div class="cd"><span class="cv">i</span> <span class="co">=</span> <span class="cn">1</span>
+<span class="ck">while</span> <span class="cv">i</span> <span class="co"><=</span> <span class="cn">5</span>:
+    <span class="cf">print</span>(<span class="cv">i</span>)
+    <span class="cv">i</span> <span class="co">+=</span> <span class="cn">1</span></div>
+<p>输出1到5，每次打印后i加1，当i变成6时，6<=5不满足，跳出循环。</p>
+<div class="ag">就像YLYJ机器人走路：当没有摔倒时一直往前走。每走一步检查"摔了没"，没摔继续，摔了就停。</div>
+<h3>三个关键要素</h3>
+<p>1. <span class="hl">初始值</span>：<code>i = 1</code> 循环前设好起点</p>
+<p>2. <span class="hl">条件</span>：<code>i <= 5</code> 什么时候继续循环</p>
+<p>3. <span class="hl">变化</span>：<code>i += 1</code> 每次循环更新变量</p>
+<div class="wn">忘了写变化（i += 1）会导致死循环！i永远是1，条件永远满足，程序停不下来。遇到死循环按 Ctrl+C 强制终止。</div>
+<div class="ex"><b>while vs for</b>——Python有两种循环。while适合"不知道要循环几次"的场景（比如猜数字，不知道要猜几次）。for适合"知道要循环几次"的场景（比如遍历一个列表）。后面会学到for循环。</div>
+`,
+exercises:[
+{type:"input",question:"以下代码输出的最后一个数字是什么？<div class='cd'><span class='cv'>n</span> <span class='co'>=</span> <span class='cn'>10</span>\n<span class='ck'>while</span> <span class='cv'>n</span> <span class='co'>></span> <span class='cn'>0</span>:\n    <span class='cf'>print</span>(<span class='cv'>n</span>)\n    <span class='cv'>n</span> <span class='co'>-=</span> <span class='cn'>3</span></div>",answer:"1",explanation:"n从10开始，每次减3：10→7→4→1→-2。当n=-2时，-2>0不满足，跳出。最后打印的是1。"},
+{type:"input",question:"以下代码执行后，i的值是多少？<div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>1</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><</span> <span class='cn'>10</span>:\n    <span class='cv'>i</span> <span class='co'>*=</span> <span class='cn'>2</span></div>",answer:"16",explanation:"i的变化：1→2→4→8→16。当i=16时，16<10不满足，跳出。所以i最终是16。"},
+{type:"input",question:"以下代码总共打印几行？<div class='cd'><span class='cv'>x</span> <span class='co'>=</span> <span class='cn'>20</span>\n<span class='ck'>while</span> <span class='cv'>x</span> <span class='co'>>=</span> <span class='cn'>5</span>:\n    <span class='cf'>print</span>(<span class='cv'>x</span>)\n    <span class='cv'>x</span> <span class='co'>-=</span> <span class='cn'>3</span></div>",answer:"6",explanation:"x的变化：20→17→14→11→8→5→2。x=5时仍满足5>=5，打印第6次后减成2跳出。共打印6行。"},
+{type:"input",question:"以下代码执行后，count的值是多少？<div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>1</span>\n<span class='cv'>count</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><</span> <span class='cn'>100</span>:\n    <span class='cv'>i</span> <span class='co'>*=</span> <span class='cn'>3</span>\n    <span class='cv'>count</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"5",explanation:"i的变化：1→3→9→27→81→243。每次循环count+1。循环5次后i=243不再满足条件，count=5。"},
+{type:"mc",question:"以下哪段代码会死循环？",options:["i=0; while i<5: i+=1","i=10; while i>0: i-=1","i=1; while i>0: i+=1","i=5; while i!=0: i-=1"],correct:2,explanation:"第三个：i从1开始，每次加1，i永远大于0，条件永远满足，死循环。"}
+]},
+
+{id:"while-sum",title:"案例——求1-100的和",num:"4-02",sub:"用循环做累加计算",
+content:`
+<div class="cd"><span class="cv">i</span> <span class="co">=</span> <span class="cn">1</span>
+<span class="cv">total</span> <span class="co">=</span> <span class="cn">0</span>
+<span class="ck">while</span> <span class="cv">i</span> <span class="co"><=</span> <span class="cn">100</span>:
+    <span class="cv">total</span> <span class="co">+=</span> <span class="cv">i</span>
+    <span class="cv">i</span> <span class="co">+=</span> <span class="cn">1</span>
+<span class="cf">print</span>(<span class="cs">f"1到100的和是{total}"</span>)</div>
+<p>输出：<code>1到100的和是5050</code></p>
+<h3>逐步拆解</h3>
+<div class="cd"><span class="cc"># 第1次：i=1,  total=0+1=1,    i变成2</span>
+<span class="cc"># 第2次：i=2,  total=1+2=3,    i变成3</span>
+<span class="cc"># 第3次：i=3,  total=3+3=6,    i变成4</span>
+<span class="cc"># ...</span>
+<span class="cc"># 第100次：i=100, total=4950+100=5050, i变成101</span>
+<span class="cc"># 检查：101<=100？不满足，跳出</span></div>
+<div class="ag">这个累加过程和compute_gae的循环结构一样——每一步做计算、更新变量、直到遍历完所有步骤。区别只是compute_gae是倒着走的。</div>
+<div class="ex"><b>累加器模式</b>是编程中最常见的模式之一：先定义一个变量（total=0），然后在循环里不断往上加。你在RL里计算Return（折扣回报）也是同样的模式——把每一步的reward打折后加起来。</div>
+`,
+exercises:[
+{type:"input",question:"用类似的方法求1到10的和，结果是多少？",answer:"55",explanation:"1+2+3+...+10=55。可以用公式n*(n+1)/2=10*11/2=55验证。"},
+{type:"input",question:"以下代码执行后，total是多少？<div class='cd'><span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>1</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><=</span> <span class='cn'>5</span>:\n    <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>i</span> <span class='co'>*</span> <span class='cv'>i</span>\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"55",explanation:"1*1+2*2+3*3+4*4+5*5=1+4+9+16+25=55。这是平方和。"},
+{type:"input",question:"求1到20中所有<b>奇数</b>的和，结果是多少？<br>提示：while+if判断，或用步长-range。",answer:"100",explanation:"1+3+5+7+9+11+13+15+17+19=100。也可以用等差数列公式：10项×(1+19)/2=100。"},
+{type:"input",question:"以下代码模拟RL中的折扣累计回报，执行后result约为多少？保留一位小数。<div class='cd'><span class='cv'>rewards</span> <span class='co'>=</span> [<span class='cn'>1</span>, <span class='cn'>1</span>, <span class='cn'>1</span>, <span class='cn'>1</span>]\n<span class='cv'>gamma</span> <span class='co'>=</span> <span class='cn'>0.5</span>\n<span class='cv'>result</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><</span> <span class='cf'>len</span>(<span class='cv'>rewards</span>):\n    <span class='cv'>result</span> <span class='co'>+=</span> <span class='cv'>rewards</span>[<span class='cv'>i</span>] <span class='co'>*</span> (<span class='cv'>gamma</span> <span class='co'>**</span> <span class='cv'>i</span>)\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"1.875",altAnswers:["1.9"],explanation:"1*1 + 1*0.5 + 1*0.25 + 1*0.125 = 1.875。这就是RL里的discount return（γ=0.5），越往后的reward权重越小。"}
+]},
+
+{id:"while-guess",title:"while循环猜数字",num:"4-03",sub:"反复执行直到条件满足",
+content:`
+<div class="cd"><span class="cv">num</span> <span class="co">=</span> <span class="cn">7</span>
+<span class="cv">guess</span> <span class="co">=</span> <span class="co">-</span><span class="cn">1</span>
+<span class="ck">while</span> <span class="cv">guess</span> <span class="co">!=</span> <span class="cv">num</span>:
+    <span class="cv">guess</span> <span class="co">=</span> <span class="cf">int</span>(<span class="cf">input</span>(<span class="cs">"猜："</span>))
+    <span class="ck">if</span> <span class="cv">guess</span> <span class="co">></span> <span class="cv">num</span>:
+        <span class="cf">print</span>(<span class="cs">"大了"</span>)
+    <span class="ck">elif</span> <span class="cv">guess</span> <span class="co"><</span> <span class="cv">num</span>:
+        <span class="cf">print</span>(<span class="cs">"小了"</span>)
+    <span class="ck">else</span>:
+        <span class="cf">print</span>(<span class="cs">"对了！"</span>)</div>
+<p><code>while guess != num</code> → 只要没猜对就继续。猜对了条件不满足，跳出循环。</p>
+<div class="ag">这就是RL训练的雏形！反复尝试→看反馈→调整→再尝试→直到收敛。Isaac Lab训练YLYJ走路就是这个过程：一个episode结束，看reward，调整策略，再来一个，直到学会。</div>
+<div class="ex"><b>while True + break</b> 是另一种常见写法：<br><br><code>while True:</code><br><code>    guess = int(input("猜："))</code><br><code>    if guess == num:</code><br><code>        print("对了！")</code><br><code>        break</code><br><br>先无限循环，在里面用break跳出。有时候这种写法更直观。</div>
+`,
+exercises:[
+{type:"input",question:"猜数字程序中，while循环的退出条件用代码表达是什么？<br>填空：<code>while guess ___ num:</code>（填符号）",answer:"!=",explanation:"只要guess不等于num就继续循环，所以用 != （不等于）。猜对后 guess==num，!= 为False，循环结束。"},
+{type:"input",question:"以下代码运行时，while循环体会执行几次？<div class='cd'><span class='cv'>num</span> <span class='co'>=</span> <span class='cn'>7</span>\n<span class='cv'>guess</span> <span class='co'>=</span> <span class='cn'>7</span>\n<span class='ck'>while</span> <span class='cv'>guess</span> <span class='co'>!=</span> <span class='cv'>num</span>:\n    <span class='cv'>guess</span> <span class='co'>=</span> <span class='cf'>int</span>(<span class='cf'>input</span>())</div>",answer:"0",explanation:"一开始guess就等于num（都是7），while条件立刻为False，循环体一次都不执行。所以即使写了input也不会要你输入。"},
+{type:"input",question:"填空：用 <code>while True + break</code> 改写猜数字，让它在猜对时退出。填入 ___ 处的关键字（只填一个词）。<div class='cd'><span class='ck'>while</span> <span class='cb'>True</span>:\n    <span class='cv'>guess</span> <span class='co'>=</span> <span class='cf'>int</span>(<span class='cf'>input</span>(<span class='cs'>\"猜：\"</span>))\n    <span class='ck'>if</span> <span class='cv'>guess</span> <span class='co'>==</span> <span class='cv'>num</span>:\n        ___</div>",answer:"break",explanation:"while True 是无限循环，必须在内部用 break 主动跳出，否则会一直转。这是Python里非常常见的写法。"},
+{type:"input",question:"以下代码如果用户依次输入 9、3、7，最终会打印几行内容（包括提示和结果）？<div class='cd'><span class='cv'>num</span> <span class='co'>=</span> <span class='cn'>7</span>\n<span class='cv'>guess</span> <span class='co'>=</span> <span class='co'>-</span><span class='cn'>1</span>\n<span class='ck'>while</span> <span class='cv'>guess</span> <span class='co'>!=</span> <span class='cv'>num</span>:\n    <span class='cv'>guess</span> <span class='co'>=</span> <span class='cf'>int</span>(<span class='cf'>input</span>())\n    <span class='ck'>if</span> <span class='cv'>guess</span> <span class='co'>></span> <span class='cv'>num</span>: <span class='cf'>print</span>(<span class='cs'>\"大了\"</span>)\n    <span class='ck'>elif</span> <span class='cv'>guess</span> <span class='co'><</span> <span class='cv'>num</span>: <span class='cf'>print</span>(<span class='cs'>\"小了\"</span>)\n    <span class='ck'>else</span>: <span class='cf'>print</span>(<span class='cs'>\"对了\"</span>)</div>",answer:"3",explanation:"输入9→打印\"大了\"；输入3→打印\"小了\"；输入7→打印\"对了\"然后退出循环。共打印3行。"}
+]},
+
+{id:"while-nest",title:"while循环的嵌套",num:"4-04",sub:"循环里面套循环",
+content:`
+<p>外层每走一次，内层走完一整圈：</p>
+<div class="cd"><span class="cv">i</span> <span class="co">=</span> <span class="cn">1</span>
+<span class="ck">while</span> <span class="cv">i</span> <span class="co"><=</span> <span class="cn">3</span>:
+    <span class="cv">j</span> <span class="co">=</span> <span class="cn">1</span>       <span class="cc"># 注意：j在外层循环里面初始化</span>
+    <span class="ck">while</span> <span class="cv">j</span> <span class="co"><=</span> <span class="cn">3</span>:
+        <span class="cf">print</span>(<span class="cs">f"({i},{j})"</span>, <span class="cv">end</span><span class="co">=</span><span class="cs">" "</span>)
+        <span class="cv">j</span> <span class="co">+=</span> <span class="cn">1</span>
+    <span class="cf">print</span>()   <span class="cc"># 换行</span>
+    <span class="cv">i</span> <span class="co">+=</span> <span class="cn">1</span></div>
+<p>外层3次 × 内层3次 = 总共9次打印。</p>
+<div class="ag">就像YLYJ训练：外层是epoch（训练多少轮），内层是每一轮里的每一步。每轮训练里机器人走很多步，一轮结束后更新策略，再开始下一轮。</div>
+<div class="wn">内层循环的变量（j=1）必须写在外层循环里面！如果写在外面，j第一轮跑完变成4，第二轮开始时j还是4，内层循环直接不执行。</div>
+`,
+exercises:[
+{type:"input",question:"以下代码总共打印几次星号？<div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><</span> <span class='cn'>2</span>:\n    <span class='cv'>j</span> <span class='co'>=</span> <span class='cn'>0</span>\n    <span class='ck'>while</span> <span class='cv'>j</span> <span class='co'><</span> <span class='cn'>4</span>:\n        <span class='cf'>print</span>(<span class='cs'>\"*\"</span>)\n        <span class='cv'>j</span> <span class='co'>+=</span> <span class='cn'>1</span>\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"8",explanation:"外层2次（i=0,1），每次内层4次（j=0,1,2,3），总共2×4=8次。"},
+{type:"input",question:"下面代码的内层循环变量j写错位置了。这段代码内层循环语句总共执行几次？<div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='cv'>j</span> <span class='co'>=</span> <span class='cn'>0</span>   <span class='cc'># 错位：本应写在外层循环里</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><</span> <span class='cn'>3</span>:\n    <span class='ck'>while</span> <span class='cv'>j</span> <span class='co'><</span> <span class='cn'>3</span>:\n        <span class='cv'>j</span> <span class='co'>+=</span> <span class='cn'>1</span>\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"3",explanation:"j=0写在外面，第一轮内层把j变成3。第二三轮外层开始时j还是3，3<3不满足，内层直接不执行。内层总共只执行3次。这就是为什么内层变量必须写在外层里面！"},
+{type:"input",question:"九九乘法表下面这段代码总共会打印多少个算式？<div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>1</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><=</span> <span class='cn'>9</span>:\n    <span class='cv'>j</span> <span class='co'>=</span> <span class='cn'>1</span>\n    <span class='ck'>while</span> <span class='cv'>j</span> <span class='co'><=</span> <span class='cv'>i</span>:\n        <span class='cf'>print</span>(<span class='cs'>f\"{j}x{i}={i*j}\"</span>)\n        <span class='cv'>j</span> <span class='co'>+=</span> <span class='cn'>1</span>\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"45",explanation:"每行算式个数依次是1,2,3,...,9（第i行有i个）。总和 1+2+...+9=45。这就是为什么九九乘法表是三角形而不是方阵。"}
+]},
+
+{id:"for-basic",title:"for循环的基础语法",num:"4-05",sub:"自动遍历，不需要手动更新变量",
+content:`
+<p><span class="hl">for</span> 循环比while更简洁——直接告诉它"遍历什么"，自动一个一个取出来：</p>
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">5</span>):
+    <span class="cf">print</span>(<span class="cv">i</span>)</div>
+<p>输出：0 1 2 3 4（每个一行）。<code>range(5)</code>生成0到4，for自动取出给i。</p>
+<h3>for也可以遍历字符串</h3>
+<div class="cd"><span class="ck">for</span> <span class="cv">ch</span> <span class="ck">in</span> <span class="cs">"YLYJ"</span>:
+    <span class="cf">print</span>(<span class="cv">ch</span>)</div>
+<p>输出：Y L Y J（每个字母一行，因为print默认换行）。</p>
+<div class="ag">你的compute_gae用的就是for循环：<br><code>for t in range(len(rewards)-1, -1, -1):</code><br>range生成倒序数字，for自动把每个值给t。</div>
+<div class="ex"><b>for vs while对比：</b><br><br>while版本（4行）：<br><code>i = 0</code><br><code>while i < 5:</code><br><code>    print(i)</code><br><code>    i += 1</code><br><br>for版本（2行）：<br><code>for i in range(5):</code><br><code>    print(i)</code><br><br>for不需要手动初始化和更新变量，更简洁也更不容易出错（不会忘写i+=1导致死循环）。</div>
+`,
+exercises:[
+{type:"input",question:"以下代码输出的第一个值是什么？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>, <span class='cn'>8</span>):\n    <span class='cf'>print</span>(<span class='cv'>i</span>)</div>",answer:"3",explanation:"range(3,8)从3开始，第一个值就是3。"},
+{type:"input",question:"以下代码总共打印几行？<div class='cd'><span class='ck'>for</span> <span class='cv'>ch</span> <span class='ck'>in</span> <span class='cs'>\"hello\"</span>:\n    <span class='cf'>print</span>(<span class='cv'>ch</span>)</div>",answer:"5",explanation:"hello 有5个字母，for遍历每个字母打印一次，共5行。"},
+{type:"input",question:"以下代码执行后 total 的值是多少？<div class='cd'><span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>5</span>):\n    <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>i</span></div>",answer:"10",explanation:"range(5)生成0,1,2,3,4。0+1+2+3+4=10。注意是从0开始。"},
+{type:"input",question:"请把以下 while 改写成 for。填空：<br><code>for i in ___:</code><div class='cd'><span class='cv'>i</span> <span class='co'>=</span> <span class='cn'>2</span>\n<span class='ck'>while</span> <span class='cv'>i</span> <span class='co'><=</span> <span class='cn'>8</span>:\n    <span class='cf'>print</span>(<span class='cv'>i</span>)\n    <span class='cv'>i</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"range(2, 9)",altAnswers:["range(2,9)"],explanation:"while打印2到8，对应range(2,9)（不包含9）。for循环不需要手动初始化和+=1，更简洁。"},
+{type:"input",question:"以下代码遍历字符串并累加ASCII值。执行后result是多少？<div class='cd'><span class='cv'>result</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>ch</span> <span class='ck'>in</span> <span class='cs'>\"abc\"</span>:\n    <span class='cv'>result</span> <span class='co'>+=</span> <span class='cf'>ord</span>(<span class='cv'>ch</span>)</div>",answer:"294",explanation:"ord('a')=97, ord('b')=98, ord('c')=99。97+98+99=294。ord()返回字符的ASCII码。"}
+]},
+
+{id:"for-count",title:"案例——数字母a",num:"4-06",sub:"for循环 + if判断的组合",
+content:`
+<div class="cd"><span class="cv">text</span> <span class="co">=</span> <span class="cs">"banana"</span>
+<span class="cv">count</span> <span class="co">=</span> <span class="cn">0</span>
+<span class="ck">for</span> <span class="cv">ch</span> <span class="ck">in</span> <span class="cv">text</span>:
+    <span class="ck">if</span> <span class="cv">ch</span> <span class="co">==</span> <span class="cs">"a"</span>:
+        <span class="cv">count</span> <span class="co">+=</span> <span class="cn">1</span>
+<span class="cf">print</span>(<span class="cs">f"有{count}个a"</span>)</div>
+<p>输出：<code>有3个a</code>。遍历每个字母，是"a"就计数+1。</p>
+<p>"遍历+判断+计数"是编程中最常见的模式之一。在RL项目里也会用到：</p>
+<div class="cd"><span class="cc"># 数一数这个episode里摔倒了几次</span>
+<span class="cv">falls</span> <span class="co">=</span> <span class="cn">0</span>
+<span class="ck">for</span> <span class="cv">t</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cf">len</span>(<span class="cv">dones</span>)):
+    <span class="ck">if</span> <span class="cv">dones</span>[<span class="cv">t</span>] <span class="co">==</span> <span class="cn">1</span>:
+        <span class="cv">falls</span> <span class="co">+=</span> <span class="cn">1</span></div>
+`,
+exercises:[
+{type:"input",question:"以下代码执行后count是多少？<div class='cd'><span class='cv'>count</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>11</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>%</span> <span class='cn'>2</span> <span class='co'>==</span> <span class='cn'>0</span>:\n        <span class='cv'>count</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"5",explanation:"1到10中偶数有2,4,6,8,10，共5个。"},
+{type:"input",question:"把上面代码的条件改成 i%3==0，count是多少？",answer:"3",explanation:"1到10中能被3整除的有3,6,9，共3个。"},
+{type:"input",question:"以下代码数字符串中小写元音(aeiou)的个数。执行后vowel_count是多少？<div class='cd'><span class='cv'>text</span> <span class='co'>=</span> <span class='cs'>\"machine learning\"</span>\n<span class='cv'>vowel_count</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>ch</span> <span class='ck'>in</span> <span class='cv'>text</span>:\n    <span class='ck'>if</span> <span class='cv'>ch</span> <span class='ck'>in</span> <span class='cs'>\"aeiou\"</span>:\n        <span class='cv'>vowel_count</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"6",explanation:"machine learning 的元音：a,i,e,e,a,i = 6 个。注意空格不算字母，不会被统计。"},
+{type:"input",question:"以下代码模拟统计episode中的摔倒次数。执行后falls是多少？<div class='cd'><span class='cv'>dones</span> <span class='co'>=</span> [<span class='cn'>0</span>, <span class='cn'>0</span>, <span class='cn'>1</span>, <span class='cn'>0</span>, <span class='cn'>1</span>, <span class='cn'>0</span>, <span class='cn'>0</span>, <span class='cn'>1</span>]\n<span class='cv'>falls</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>t</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cf'>len</span>(<span class='cv'>dones</span>)):\n    <span class='ck'>if</span> <span class='cv'>dones</span>[<span class='cv'>t</span>] <span class='co'>==</span> <span class='cn'>1</span>:\n        <span class='cv'>falls</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"3",explanation:"dones里有3个1（第2、4、7步），所以falls=3。这就是RL代码里常见的统计模式。"}
+]},
+
+{id:"range-detail",title:"range语句详解",num:"4-07",sub:"for循环的最佳搭档",
+content:`
+<h3>一个参数：range(n)</h3>
+<p>从0到n-1：</p>
+<div class="cd"><span class="cf">range</span>(<span class="cn">5</span>)      <span class="cc"># 0, 1, 2, 3, 4</span></div>
+<h3>两个参数：range(a, b)</h3>
+<p>从a到b-1：</p>
+<div class="cd"><span class="cf">range</span>(<span class="cn">2</span>, <span class="cn">6</span>)   <span class="cc"># 2, 3, 4, 5</span></div>
+<h3>三个参数：range(a, b, c)</h3>
+<p>从a到b-1，每次跳c步：</p>
+<div class="cd"><span class="cf">range</span>(<span class="cn">0</span>, <span class="cn">10</span>, <span class="cn">2</span>)   <span class="cc"># 0, 2, 4, 6, 8（每次加2）</span>
+<span class="cf">range</span>(<span class="cn">5</span>, <span class="cn">0</span>, <span class="co">-</span><span class="cn">1</span>)    <span class="cc"># 5, 4, 3, 2, 1（倒着走）</span>
+<span class="cf">range</span>(<span class="cn">3</span>, <span class="co">-</span><span class="cn">1</span>, <span class="co">-</span><span class="cn">1</span>)  <span class="cc"># 3, 2, 1, 0（你的compute_gae用的）</span></div>
+<div class="wn"><b>range不包含终点！</b>range(5)不包含5，range(5,0,-1)不包含0。所以compute_gae要写-1而不是0作为终点，这样才能包含到第0步。</div>
+<div class="ex"><b>为什么从0开始？</b><br><br>Python和大多数编程语言的下标都从0开始。你的rewards[0]是第一个元素，rewards[3]是第四个。range(5)生成0到4正好对应5个元素的下标。<br><br>这和MATLAB不同——MATLAB下标从1开始。从MATLAB转Python的时候要注意这个区别。</div>
+`,
+exercises:[
+{type:"input",question:"range(2, 8, 3) 生成哪些数？用逗号隔开。",answer:"2,5",altAnswers:["2, 5"],explanation:"从2开始，每次加3：2→5→8。8不包含在内，所以是2和5。"},
+{type:"input",question:"range(10, 0, -2) 生成的第一个和最后一个数分别是什么？用逗号隔开。",answer:"10,2",altAnswers:["10, 2"],explanation:"从10开始倒着走，每次减2：10,8,6,4,2。0不包含在内。第一个10，最后一个2。"},
+{type:"input",question:"range(1, 20, 4) 总共生成几个数？",answer:"5",explanation:"从1开始每次加4：1,5,9,13,17。下一个21超出20，所以一共5个数。"},
+{type:"input",question:"compute_gae中要从后往前遍历 rewards（假设 len(rewards)=5），填入正确的range：<br><code>for t in range(___, ___, ___):</code><br>用逗号分隔三个参数。",answer:"4,-1,-1",altAnswers:["4, -1, -1"],explanation:"len(rewards)-1=4是起点（最后一个下标）。-1作为终点（因为不包含终点，所以要比0再小1，才能走到0）。步长-1表示倒着走。这就是你compute_gae里的核心写法。"},
+{type:"input",question:"以下代码总共执行多少次？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>100</span>, <span class='cn'>0</span>, <span class='co'>-</span><span class='cn'>7</span>):\n    <span class='cf'>print</span>(<span class='cv'>i</span>)</div>",answer:"15",explanation:"100,93,86,79,72,65,58,51,44,37,30,23,16,9,2。下一个是-5（<=0不生成），共15次。也可以用 (100-1)//7+1 = 99//7+1 = 14+1 = 15 估算。"},
+{type:"input",question:"range(5, 5) 会生成几个数？",answer:"0",explanation:"起点和终点相同，没有数可生成，结果是空的。for循环一次都不执行。所以答案是0个。"}
+]},
+
+{id:"for-scope",title:"for循环临时变量",num:"4-08",sub:"循环变量在循环外依然存在",
+content:`
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">3</span>):
+    <span class="cf">print</span>(<span class="cv">i</span>)
+<span class="cf">print</span>(<span class="cs">f"循环结束后i={i}"</span>)</div>
+<p>输出：0 1 2，然后 <code>循环结束后i=2</code></p>
+<p>循环结束后，i还在，值是最后一次循环的值。</p>
+<div class="wn">好习惯：不要在循环外依赖循环变量。如果循环一次都没执行（比如range(0)），i根本不存在，在外面用就报错。</div>
+<div class="ex">在其他语言（C/Java）里，for循环的变量在循环外不可用。Python比较特殊，循环变量会"泄露"到外面。知道就行，不要依赖这个特性。</div>
+`,
+exercises:[
+{type:"input",question:"以下代码最后一行输出什么？<div class='cd'><span class='ck'>for</span> <span class='cv'>x</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>5</span>, <span class='cn'>10</span>):\n    <span class='ck'>pass</span>\n<span class='cf'>print</span>(<span class='cv'>x</span>)</div>",answer:"9",explanation:"range(5,10)是5,6,7,8,9。循环结束后x保持最后的值9。pass是空语句，什么都不做。"},
+{type:"input",question:"以下代码输出什么？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>2</span>):\n        <span class='ck'>pass</span>\n<span class='cf'>print</span>(<span class='cv'>i</span>, <span class='cv'>j</span>)</div>",answer:"2 1",explanation:"外层循环结束后i=2（最后一次是2）。内层循环最后一次j=1。两个循环变量都泄露到外面，输出 2 1。"},
+{type:"input",question:"以下代码会输出什么？<div class='cd'><span class='ck'>for</span> <span class='cv'>k</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>0</span>):\n    <span class='ck'>pass</span>\n<span class='cf'>print</span>(<span class='cv'>k</span>)</div>",answer:"NameError",altAnswers:["报错","error","nameerror","name error"],explanation:"range(0)是空的，循环一次都不执行，k根本没被定义。访问未定义变量会抛出NameError。这就是为什么不能依赖循环变量的原因。"}
+]},
+
+{id:"for-nest",title:"for循环的嵌套",num:"4-09",sub:"比while嵌套更简洁",
+content:`
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">3</span>):
+    <span class="ck">for</span> <span class="cv">j</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">3</span>):
+        <span class="cf">print</span>(<span class="cs">f"({i},{j})"</span>, <span class="cv">end</span><span class="co">=</span><span class="cs">" "</span>)
+    <span class="cf">print</span>()</div>
+<p>和while嵌套效果一样，但不需要手动初始化和更新变量。</p>
+<h3>九九乘法表（for版本）</h3>
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cn">10</span>):
+    <span class="ck">for</span> <span class="cv">j</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">1</span>, <span class="cv">i</span><span class="co">+</span><span class="cn">1</span>):
+        <span class="cf">print</span>(<span class="cs">f"{j}×{i}={i*j}\\t"</span>, <span class="cv">end</span><span class="co">=</span><span class="cs">""</span>)
+    <span class="cf">print</span>()</div>
+<p>内层用 <code>range(1, i+1)</code> 让每行打印的个数递增，形成三角形。如果换成 <code>range(1, 10)</code> 就变成方阵了。</p>
+<div class="ag">Isaac Lab训练循环的嵌套结构：<br><br><code>for epoch in range(1000):</code> → 外层训练轮数<br><code>    for t in range(max_steps):</code> → 内层每轮的步数</div>
+`,
+exercises:[
+{type:"input",question:"以下代码打印多少个星号？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>4</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cv'>i</span><span class='co'>+</span><span class='cn'>1</span>):\n        <span class='cf'>print</span>(<span class='cs'>\"*\"</span>)</div>",answer:"10",explanation:"i=0:打印1个。i=1:打印2个。i=2:打印3个。i=3:打印4个。总共1+2+3+4=10个。"},
+{type:"input",question:"以下代码打印多少个星号？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>5</span>):\n        <span class='cf'>print</span>(<span class='cs'>\"*\"</span>)</div>",answer:"15",explanation:"外层3次×内层5次=15个。"},
+{type:"input",question:"以下代码统计二维矩阵中元素总和。执行后total是多少？<div class='cd'><span class='cv'>grid</span> <span class='co'>=</span> [[<span class='cn'>1</span>,<span class='cn'>2</span>,<span class='cn'>3</span>], [<span class='cn'>4</span>,<span class='cn'>5</span>,<span class='cn'>6</span>], [<span class='cn'>7</span>,<span class='cn'>8</span>,<span class='cn'>9</span>]]\n<span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>):\n        <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>grid</span>[<span class='cv'>i</span>][<span class='cv'>j</span>]</div>",answer:"45",explanation:"遍历3x3矩阵所有元素求和：1+2+...+9=45。这是处理二维数据的标准模式，图像、状态矩阵都这么遍历。"},
+{type:"input",question:"以下代码执行后 cnt 是多少？<div class='cd'><span class='cv'>cnt</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>5</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cv'>i</span>, <span class='cn'>5</span>):\n        <span class='cv'>cnt</span> <span class='co'>+=</span> <span class='cn'>1</span></div>",answer:"10",explanation:"i=1:j∈[1,2,3,4]=4次; i=2:j∈[2,3,4]=3次; i=3:j∈[3,4]=2次; i=4:j∈[4]=1次。4+3+2+1=10。这种内层依赖外层的结构在算法题里很常见。"}
+]},
+
+{id:"break-continue",title:"continue和break",num:"4-10",sub:"控制循环的特殊指令",
+content:`
+<h3>break：直接跳出整个循环</h3>
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">10</span>):
+    <span class="ck">if</span> <span class="cv">i</span> <span class="co">==</span> <span class="cn">5</span>:
+        <span class="ck">break</span>
+    <span class="cf">print</span>(<span class="cv">i</span>)</div>
+<p>输出：0 1 2 3 4。到i=5时break，整个循环结束。</p>
+<div class="ag">就像YLYJ走到悬崖边，传感器检测到危险，立刻停下不走了。</div>
+<h3>continue：跳过这一次，继续下一次</h3>
+<div class="cd"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">6</span>):
+    <span class="ck">if</span> <span class="cv">i</span> <span class="co">==</span> <span class="cn">3</span>:
+        <span class="ck">continue</span>
+    <span class="cf">print</span>(<span class="cv">i</span>)</div>
+<p>输出：0 1 2 4 5。跳过了3，但循环继续。</p>
+<div class="ag">就像训练时某一步数据异常，跳过这步不用，但训练继续。</div>
+<p><span class="hl">一句话区分：break是"不干了"，continue是"这次算了，下次继续"。</span></p>
+<div class="ex"><b>嵌套循环里的break</b>只跳出最内层的循环，不会跳出外层：<br><br><code>for i in range(3):</code><br><code>    for j in range(3):</code><br><code>        if j == 1:</code><br><code>            break</code> → 只跳出内层for j<br><code>    print(i)</code> → 外层继续执行<br><br>输出：0 1 2（外层正常走完3次）</div>
+`,
+exercises:[
+{type:"input",question:"以下代码输出什么？用空格隔开。<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>8</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>%</span> <span class='cn'>2</span> <span class='co'>==</span> <span class='cn'>0</span>:\n        <span class='ck'>continue</span>\n    <span class='cf'>print</span>(<span class='cv'>i</span>, <span class='cv'>end</span><span class='co'>=</span><span class='cs'>\" \"</span>)</div>",answer:"1 3 5 7",explanation:"偶数被continue跳过，只打印奇数：1 3 5 7。"},
+{type:"input",question:"以下代码输出什么？用空格隔开。<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>10</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>==</span> <span class='cn'>3</span>:\n        <span class='ck'>break</span>\n    <span class='cf'>print</span>(<span class='cv'>i</span>, <span class='cv'>end</span><span class='co'>=</span><span class='cs'>\" \"</span>)</div>",answer:"0 1 2",explanation:"i=0,1,2正常打印。i=3时break，整个循环结束，后面的都不执行了。"},
+{type:"input",question:"以下代码执行后 total 是多少？<div class='cd'><span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>11</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>></span> <span class='cn'>5</span>:\n        <span class='ck'>break</span>\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>%</span> <span class='cn'>2</span> <span class='co'>==</span> <span class='cn'>0</span>:\n        <span class='ck'>continue</span>\n    <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>i</span></div>",answer:"9",explanation:"i=1:奇数,total=1; i=2:continue; i=3:total=4; i=4:continue; i=5:total=9; i=6:>5执行break跳出。所以total=9。break和continue配合使用是实际代码里的常见模式。"},
+{type:"input",question:"以下代码是个RL中常见的早停（early stop）模式。如果 rewards=[1, 2, 3, -1, 5, 6]，执行后total是多少？<div class='cd'><span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>r</span> <span class='ck'>in</span> <span class='cv'>rewards</span>:\n    <span class='ck'>if</span> <span class='cv'>r</span> <span class='co'><</span> <span class='cn'>0</span>:\n        <span class='ck'>break</span>\n    <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>r</span></div>",answer:"6",explanation:"遍历rewards：r=1,total=1; r=2,total=3; r=3,total=6; r=-1<0，break跳出。后面的5和6都不再累加。total=6。这就是遇到负奖励立刻终止的早停逻辑。"},
+{type:"input",question:"下面代码中，内层break后外层会继续。总共打印几行？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>3</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>5</span>):\n        <span class='ck'>if</span> <span class='cv'>j</span> <span class='co'>==</span> <span class='cn'>2</span>:\n            <span class='ck'>break</span>\n        <span class='cf'>print</span>(<span class='cv'>i</span>, <span class='cv'>j</span>)</div>",answer:"6",explanation:"外层跑3次(i=0,1,2)，每次内层j=0,1时打印(共2行)，j=2时break。所以每个外层打印2行，3×2=6行。break只跳出内层，外层继续。"},
+{type:"mc",question:"在嵌套循环里，break跳出的是哪一层？",options:["最内层循环","最外层循环","所有循环","随机一层"],correct:0,explanation:"break只跳出它所在的那一层循环（最内层），外层循环继续执行。"}
+]},
+
+{id:"summary",title:"第四章总结与综合测试",num:"总结",sub:"回顾所有知识点，实战检验",
+content:`
+<h3>知识点回顾</h3>
+<div class="sg">
+<div class="sk"><div class="st">while循环</div><div class="sv">while 条件:<br>    反复执行<br>注意：初始值+条件+变化</div></div>
+<div class="sk"><div class="st">for循环</div><div class="sv">for i in range(n):<br>    自动遍历<br>比while更简洁安全</div></div>
+<div class="sk"><div class="st">range()</div><div class="sv">range(n) → 0到n-1<br>range(a,b) → a到b-1<br>range(a,b,c) → 步长c</div></div>
+<div class="sk"><div class="st">嵌套循环</div><div class="sv">外层每走一次<br>内层走完一整圈<br>总次数=外层×内层</div></div>
+<div class="sk"><div class="st">break</div><div class="sv">跳出整个循环<br>"不干了"</div></div>
+<div class="sk"><div class="st">continue</div><div class="sv">跳过这一次<br>"这次算了，下次继续"</div></div>
+</div>
+<h3>综合测试</h3>
+`,
+exercises:[
+{type:"input",question:"以下代码执行后total是多少？<div class='cd'><span class='cv'>total</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>6</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>%</span> <span class='cn'>2</span> <span class='co'>==</span> <span class='cn'>0</span>:\n        <span class='cv'>total</span> <span class='co'>+=</span> <span class='cv'>i</span></div>",answer:"6",explanation:"1到5中偶数是2和4，2+4=6。"},
+{type:"input",question:"以下代码输出什么？<div class='cd'><span class='cv'>s</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>10</span>, <span class='cn'>0</span>, <span class='co'>-</span><span class='cn'>2</span>):\n    <span class='cv'>s</span> <span class='co'>+=</span> <span class='cv'>i</span>\n<span class='cf'>print</span>(<span class='cv'>s</span>)</div>",answer:"30",explanation:"range(10,0,-2)生成10,8,6,4,2。10+8+6+4+2=30。"},
+{type:"input",question:"以下代码输出几个数字？<div class='cd'><span class='cv'>count</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>100</span>):\n    <span class='ck'>if</span> <span class='cv'>i</span> <span class='co'>%</span> <span class='cn'>10</span> <span class='co'>==</span> <span class='cn'>0</span>:\n        <span class='cv'>count</span> <span class='co'>+=</span> <span class='cn'>1</span>\n    <span class='ck'>if</span> <span class='cv'>count</span> <span class='co'>==</span> <span class='cn'>5</span>:\n        <span class='ck'>break</span>\n<span class='cf'>print</span>(<span class='cv'>count</span>)</div>",answer:"5",explanation:"能被10整除的：0,10,20,30,40。count到5时break，输出5。"},
+{type:"input",question:"填空：要生成 4,3,2,1,0 这个序列，<code>range(___, ___, ___)</code> 三个参数分别是多少？用逗号隔开。",answer:"4,-1,-1",altAnswers:["4, -1, -1"],explanation:"起点4，终点-1（因为不包含终点，所以要比0再小1才能取到0），步长-1（倒着走）。这种\"终点比目标多减1\"的写法也是compute_gae用的。"},
+{type:"input",question:"以下代码（结构和compute_gae非常像）输出什么？<div class='cd'><span class='cv'>data</span> <span class='co'>=</span> [<span class='cn'>10</span>, <span class='cn'>20</span>, <span class='cn'>30</span>, <span class='cn'>40</span>]\n<span class='cv'>result</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>t</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cf'>len</span>(<span class='cv'>data</span>)<span class='co'>-</span><span class='cn'>1</span>, <span class='co'>-</span><span class='cn'>1</span>, <span class='co'>-</span><span class='cn'>1</span>):\n    <span class='cv'>result</span> <span class='co'>+=</span> <span class='cv'>data</span>[<span class='cv'>t</span>]\n<span class='cf'>print</span>(<span class='cv'>result</span>)</div>",answer:"100",explanation:"data有4个元素，len(data)-1=3。range(3,-1,-1)生成3,2,1,0。从后往前遍历：data[3]+data[2]+data[1]+data[0]=40+30+20+10=100。"},
+{type:"input",question:"以下代码打印几个星号？<div class='cd'><span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cn'>1</span>, <span class='cn'>5</span>):\n    <span class='ck'>for</span> <span class='cv'>j</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cv'>i</span>):\n        <span class='cf'>print</span>(<span class='cs'>\"*\"</span>)</div>",answer:"10",explanation:"i=1:1个。i=2:2个。i=3:3个。i=4:4个。1+2+3+4=10。"},
+{type:"input",question:"实战题：以下代码计算折扣回报G（RL的核心概念之一）。rewards=[1,2,3]，gamma=0.9，执行后G约等于多少？保留两位小数。<div class='cd'><span class='cv'>rewards</span> <span class='co'>=</span> [<span class='cn'>1</span>, <span class='cn'>2</span>, <span class='cn'>3</span>]\n<span class='cv'>gamma</span> <span class='co'>=</span> <span class='cn'>0.9</span>\n<span class='cv'>G</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>t</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cf'>len</span>(<span class='cv'>rewards</span>)<span class='co'>-</span><span class='cn'>1</span>, <span class='co'>-</span><span class='cn'>1</span>, <span class='co'>-</span><span class='cn'>1</span>):\n    <span class='cv'>G</span> <span class='co'>=</span> <span class='cv'>rewards</span>[<span class='cv'>t</span>] <span class='co'>+</span> <span class='cv'>gamma</span> <span class='co'>*</span> <span class='cv'>G</span>\n<span class='cf'>print</span>(<span class='cv'>G</span>)</div>",answer:"5.23",altAnswers:["5.23", "5.230000000000001"],explanation:"倒序递推：t=2,G=3+0.9*0=3; t=1,G=2+0.9*3=4.7; t=0,G=1+0.9*4.7=5.23。这就是Bellman backup——从后往前一步步折扣累加，是compute_gae的核心数学。"},
+{type:"input",question:"以下代码实现了\"找第一个满足条件的数\"。data=[12,7,19,23,4,8]，执行后first是多少？<div class='cd'><span class='cv'>first</span> <span class='co'>=</span> <span class='co'>-</span><span class='cn'>1</span>\n<span class='ck'>for</span> <span class='cv'>x</span> <span class='ck'>in</span> <span class='cv'>data</span>:\n    <span class='ck'>if</span> <span class='cv'>x</span> <span class='co'>></span> <span class='cn'>15</span>:\n        <span class='cv'>first</span> <span class='co'>=</span> <span class='cv'>x</span>\n        <span class='ck'>break</span>\n<span class='cf'>print</span>(<span class='cv'>first</span>)</div>",answer:"19",explanation:"遍历data，12不满足，7不满足，19>15满足，first=19后break跳出。23也满足但已经跳出不会执行。这是\"遍历+条件+break\"的标准搜索模式。"},
+{type:"input",question:"以下代码模拟滑动窗口求最大和。data=[3,1,4,1,5,9,2,6]，窗口大小3。执行后max_sum是多少？<div class='cd'><span class='cv'>data</span> <span class='co'>=</span> [<span class='cn'>3</span>,<span class='cn'>1</span>,<span class='cn'>4</span>,<span class='cn'>1</span>,<span class='cn'>5</span>,<span class='cn'>9</span>,<span class='cn'>2</span>,<span class='cn'>6</span>]\n<span class='cv'>max_sum</span> <span class='co'>=</span> <span class='cn'>0</span>\n<span class='ck'>for</span> <span class='cv'>i</span> <span class='ck'>in</span> <span class='cf'>range</span>(<span class='cf'>len</span>(<span class='cv'>data</span>) <span class='co'>-</span> <span class='cn'>2</span>):\n    <span class='cv'>s</span> <span class='co'>=</span> <span class='cv'>data</span>[<span class='cv'>i</span>] <span class='co'>+</span> <span class='cv'>data</span>[<span class='cv'>i</span><span class='co'>+</span><span class='cn'>1</span>] <span class='co'>+</span> <span class='cv'>data</span>[<span class='cv'>i</span><span class='co'>+</span><span class='cn'>2</span>]\n    <span class='ck'>if</span> <span class='cv'>s</span> <span class='co'>></span> <span class='cv'>max_sum</span>:\n        <span class='cv'>max_sum</span> <span class='co'>=</span> <span class='cv'>s</span></div>",answer:"17",explanation:"窗口依次：(3,1,4)=8, (1,4,1)=6, (4,1,5)=10, (1,5,9)=15, (5,9,2)=16, (9,2,6)=17。最大是17。滑动窗口是时序数据处理的基础模式。"}
+]}
+];
+
+let cur=0,sc=0,ans=new Set(),done=new Set(),tot=0;
+D.forEach(s=>{tot+=s.exercises.length});
+
+function rN(){document.getElementById('nv').innerHTML=D.map((s,i)=>`<div class="ni ${i===cur?'on':''}" onclick="go(${i})"><span class="dt ${done.has(i)?'dn':''}"></span>${s.num} ${s.title}</div>`).join('')}
+
+function rS(){const s=D[cur],m=document.getElementById('mn');
+let eH=s.exercises.map((e,ei)=>{const q=`${cur}-${ei}`,d=ans.has(q);
+if(e.type==='mc')return`<div class="eb"><div class="el">练习 ${ei+1}</div><div class="eq">${e.question}</div><div class="mo" id="m-${q}">${e.options.map((o,oi)=>`<div class="mi ${d?(oi===e.correct?'ok-a':''):''}" onclick="cM('${q}',${oi},${e.correct})" ${d?'style="pointer-events:none"':''}>${String.fromCharCode(65+oi)}. ${o}</div>`).join('')}</div><div class="fb" id="f-${q}"></div></div>`;
+return`<div class="eb"><div class="el">练习 ${ei+1}</div><div class="eq">${e.question}</div><input class="ei" id="i-${q}" placeholder="输入答案..." ${d?'disabled':''}><button class="bs" onclick="cI('${q}',${ei})" ${d?'disabled style="opacity:0.4"':''}>提交</button><div class="fb" id="f-${q}"></div></div>`;
+}).join('');
+const p=cur>0?`<button class="bn" onclick="go(${cur-1})">← 上一节</button>`:'<div></div>';
+const n=cur<D.length-1?`<button class="bn pr" onclick="go(${cur+1})">下一节 →</button>`:'<div></div>';
+m.innerHTML=`<div class="sc on"><div class="sn">${s.num}</div><h2>${s.title}</h2><div class="su">${s.sub}</div>${s.content}${eH}<div class="nb">${p}${n}</div></div>`}
+
+function cM(q,sel,cor){if(ans.has(q))return;ans.add(q);
+const[si,ei]=q.split('-').map(Number),e=D[si].exercises[ei];
+document.getElementById(`m-${q}`).querySelectorAll('.mi').forEach((o,i)=>{o.style.pointerEvents='none';if(i===cor)o.classList.add('ok-a');if(i===sel&&i!==cor)o.classList.add('no-a')});
+const f=document.getElementById(`f-${q}`),ok=sel===cor;
+if(ok){sc++;f.innerHTML=`✅ 正确！${e.explanation}`;f.className='fb ok'}
+else{f.innerHTML=`❌ 错误。${e.explanation}`;f.className='fb no'}
+uP();cD()}
+
+function cI(q,ei){if(ans.has(q))return;
+const[si]=q.split('-').map(Number),e=D[si].exercises[ei];
+const inp=document.getElementById(`i-${q}`),v=inp.value.trim();
+if(!v)return;ans.add(q);inp.disabled=true;
+const f=document.getElementById(`f-${q}`);
+const al=[e.answer,...(e.altAnswers||[])];
+const ok=al.some(a=>v===a||v.toLowerCase()===a.toLowerCase());
+if(ok){sc++;f.innerHTML=`✅ 正确！${e.explanation}`;f.className='fb ok'}
+else{f.innerHTML=`❌ 错误。${e.explanation}<div class="rv">正确答案：${e.answer}</div>`;f.className='fb no'}
+const b=f.previousElementSibling;if(b&&b.tagName==='BUTTON'){b.disabled=true;b.style.opacity='0.4'}
+uP();cD()}
+
+function cD(){const s=D[cur];if(s.exercises.every((_,ei)=>ans.has(`${cur}-${ei}`))){done.add(cur);rN()}}
+function uP(){document.getElementById('tS').textContent=sc;document.getElementById('mS').textContent=tot;document.getElementById('pF').style.width=(ans.size/tot*100)+'%'}
+function go(i){cur=i;rN();rS();window.scrollTo(0,0)}
+
+rN();rS();uP();
+</script>
+</body>
+</html>
