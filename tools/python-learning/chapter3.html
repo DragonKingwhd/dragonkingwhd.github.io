@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python第三章 - 判断语句</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --surface2: #161625;
+  --surface3: #1e1e30;
+  --border: #252540;
+  --text: #e4e2f0;
+  --text-dim: #7878a0;
+  --accent: #e85d26;
+  --accent2: #ff8a50;
+  --accent-glow: rgba(232, 93, 38, 0.15);
+  --green: #34d399;
+  --green-dim: #1a6b4d;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --blue: #60a5fa;
+  --code-bg: #0a0a14;
+  --correct-bg: #0d2818;
+  --correct-border: #166534;
+  --wrong-bg: #2a0f0f;
+  --wrong-border: #7f1d1d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans SC', sans-serif;
+  line-height: 1.85;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Header ── */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,8,16,0.92); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-title { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: 1.5px; }
+.header-ch { font-size: 12px; color: var(--text-dim); }
+.progress-wrap { display: flex; align-items: center; gap: 12px; }
+.progress-bar { width: 160px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width 0.6s ease; width: 0%; }
+.score-disp { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--green); }
+
+/* ── Nav ── */
+.nav {
+  position: fixed; left: 0; top: 53px; bottom: 0; width: 250px;
+  background: var(--surface); border-right: 1px solid var(--border);
+  overflow-y: auto; z-index: 90; padding: 16px 0;
+}
+.nav-item {
+  padding: 9px 20px; font-size: 12.5px; color: var(--text-dim);
+  cursor: pointer; transition: all 0.25s; border-left: 3px solid transparent;
+  display: flex; align-items: center; gap: 9px;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
+.nav-item .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.nav-item .dot.done { background: var(--green); }
+
+/* ── Main ── */
+.main { margin-left: 250px; margin-top: 53px; padding: 36px 52px 120px; max-width: 880px; }
+
+/* ── Section ── */
+.section { display: none; animation: fadeUp 0.35s ease; }
+.section.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.sec-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 6px; }
+.section h2 { font-size: 26px; font-weight: 900; margin-bottom: 6px; background: linear-gradient(135deg, var(--text), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.section .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 17px; font-weight: 700; margin: 26px 0 10px; color: var(--accent2); }
+.section p { margin-bottom: 14px; font-size: 14.5px; }
+.hl { color: var(--accent); font-weight: 500; }
+
+/* Analogy box */
+.analogy {
+  background: var(--surface2); border-left: 3px solid var(--yellow);
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 13.5px; color: var(--text-dim);
+}
+.analogy::before { content: "🔧 机械类比"; display: block; font-size: 11px; font-weight: 700; color: var(--yellow); margin-bottom: 5px; letter-spacing: 1px; }
+
+/* Extension box */
+.extend {
+  background: var(--surface2); border-left: 3px solid var(--blue);
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 13.5px; color: var(--text-dim);
+}
+.extend::before { content: "🚀 拓展知识"; display: block; font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 5px; letter-spacing: 1px; }
+
+/* Warning box */
+.warn {
+  background: rgba(251, 191, 36, 0.06); border-left: 3px solid var(--yellow);
+  padding: 13px 16px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 13.5px; color: var(--yellow);
+}
+.warn::before { content: "⚠️ 常见错误"; display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; letter-spacing: 1px; }
+
+/* Code */
+.code {
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 18px; margin: 12px 0; font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px; line-height: 1.75; overflow-x: auto; white-space: pre; position: relative;
+}
+.c-cmt { color: #555570; } .c-kw { color: #c792ea; } .c-str { color: #c3e88d; }
+.c-num { color: #f78c6c; } .c-fn { color: #82aaff; } .c-op { color: #89ddff; }
+.c-var { color: #e4e2f0; } .c-bool { color: #ff5370; }
+
+/* Exercise */
+.ex-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 22px; margin: 22px 0;
+}
+.ex-label { font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 2px; margin-bottom: 10px; }
+.ex-q { font-size: 14px; margin-bottom: 14px; }
+
+.ex-input {
+  width: 100%; background: var(--code-bg); border: 2px solid var(--border); border-radius: 7px;
+  padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  color: var(--text); outline: none; transition: border-color 0.3s;
+}
+.ex-input:focus { border-color: var(--accent); }
+.ex-input::placeholder { color: #333; }
+
+.btn-sub {
+  margin-top: 10px; padding: 9px 24px; background: var(--accent); color: #fff;
+  border: none; border-radius: 6px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.25s; font-family: 'Noto Sans SC', sans-serif;
+}
+.btn-sub:hover { background: var(--accent2); transform: translateY(-1px); }
+
+.fb { margin-top: 10px; padding: 11px 14px; border-radius: 7px; font-size: 13px; display: none; animation: fadeUp 0.25s ease; }
+.fb.ok { display: block; background: var(--correct-bg); border: 1px solid var(--correct-border); color: var(--green); }
+.fb.no { display: block; background: var(--wrong-bg); border: 1px solid var(--wrong-border); color: var(--red); }
+.fb .reveal { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(255,255,255,0.07); font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+
+/* MC */
+.mc-opts { display: flex; flex-direction: column; gap: 7px; margin: 10px 0; }
+.mc-o {
+  padding: 11px 14px; background: var(--code-bg); border: 2px solid var(--border);
+  border-radius: 7px; cursor: pointer; transition: all 0.25s; font-size: 13px;
+}
+.mc-o:hover { border-color: var(--accent); background: var(--surface2); }
+.mc-o.sel { border-color: var(--accent); background: rgba(232,93,38,0.08); }
+.mc-o.ok-a { border-color: var(--green); background: var(--correct-bg); }
+.mc-o.no-a { border-color: var(--red); background: var(--wrong-bg); }
+
+/* Fill-blank */
+.fill-line {
+  display: flex; align-items: center; gap: 0; margin: 10px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; flex-wrap: wrap;
+  background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+}
+.fill-line .seg { white-space: pre; }
+.fill-blank {
+  width: 140px; background: var(--surface2); border: 1px dashed var(--accent);
+  border-radius: 4px; padding: 4px 8px; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--text); outline: none; text-align: center;
+}
+
+/* Nav buttons */
+.nav-btns { display: flex; justify-content: space-between; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border); }
+.btn-n {
+  padding: 11px 28px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 7px; font-size: 13px; cursor: pointer;
+  transition: all 0.25s; font-family: 'Noto Sans SC', sans-serif;
+}
+.btn-n:hover { border-color: var(--accent); background: var(--surface2); }
+.btn-n.pri { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-n.pri:hover { background: var(--accent2); }
+
+/* Summary */
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.sum-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.sum-card .sc-t { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 1px; margin-bottom: 5px; }
+.sum-card .sc-c { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+.final-sc { text-align: center; padding: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin: 22px 0; }
+.final-sc .big { font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 900; color: var(--accent); }
+.final-sc .lab { font-size: 13px; color: var(--text-dim); margin-top: 6px; }
+
+@media (max-width: 768px) {
+  .nav { display: none; }
+  .main { margin-left: 0; padding: 20px 16px 80px; }
+  .progress-bar { width: 100px; }
+  .sum-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">PYTHON 第三章</div>
+    <div class="header-ch">判断语句</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
+    <div class="score-disp">得分: <span id="tScore">0</span>/<span id="mScore">0</span></div>
+  </div>
+</div>
+
+<div class="nav" id="nav"></div>
+<div class="main" id="main"></div>
+
+<script>
+const S = [
+{
+  id:"bool", title:"布尔类型和比较运算符", num:"3-01",
+  sub:"True和False，程序做判断的基础",
+  content:`
+<p>布尔类型只有两个值：<span class="hl">True</span>（真）和 <span class="hl">False</span>（假）。它是所有判断语句的基础。</p>
+<div class="analogy">就像你YLYJ机器人的传感器信号——要么检测到障碍（True），要么没有（False）。dones[t]就是布尔逻辑：1代表episode结束，0代表继续。</div>
+<h3>比较运算符</h3>
+<p>比较运算符用来比较两个值，结果是True或False：</p>
+<div class="code"><span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op">></span> <span class="c-num">3</span>)     <span class="c-cmt"># True  大于</span>
+<span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op"><</span> <span class="c-num">3</span>)     <span class="c-cmt"># False 小于</span>
+<span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op">==</span> <span class="c-num">5</span>)    <span class="c-cmt"># True  等于（两个等号）</span>
+<span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op">!=</span> <span class="c-num">3</span>)    <span class="c-cmt"># True  不等于</span>
+<span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op">>=</span> <span class="c-num">5</span>)    <span class="c-cmt"># True  大于等于</span>
+<span class="c-fn">print</span>(<span class="c-num">5</span> <span class="c-op"><=</span> <span class="c-num">3</span>)    <span class="c-cmt"># False 小于等于</span></div>
+<div class="warn">= 是赋值（把值交给变量），== 是比较（问"相等吗"）。这是初学者最常犯的错误。<br><br><code>a = 5</code> → 把5交给a<br><code>a == 5</code> → 问"a等于5吗？"返回True</div>
+<h3>布尔值可以存进变量</h3>
+<div class="code"><span class="c-var">is_done</span> <span class="c-op">=</span> <span class="c-bool">True</span>
+<span class="c-var">is_alive</span> <span class="c-op">=</span> <span class="c-num">3</span> <span class="c-op">></span> <span class="c-num">1</span>    <span class="c-cmt"># is_alive是True</span>
+<span class="c-var">is_big</span> <span class="c-op">=</span> <span class="c-num">2</span> <span class="c-op">></span> <span class="c-num">10</span>     <span class="c-cmt"># is_big是False</span></div>
+<div class="extend">在RL里，布尔值无处不在。你的PPO代码里 <code>dones[t]</code> 本质上就是布尔值（0或1），用来控制"是否把未来的估计算进去"。<code>(1 - dones[t])</code> 就是把布尔逻辑转化成了数学运算——True变0（不算未来），False变1（正常算）。</div>
+`,
+  exercises:[
+    {type:"mc", question:"<code>10 != 10</code> 的结果是什么？", options:["True","False"], correct:1, explanation:"10确实等于10，所以\"不等于\"的判断结果是False。"},
+    {type:"mc", question:"<code>3 >= 3</code> 的结果是什么？", options:["True","False"], correct:0, explanation:">=是大于或等于，3等于3，所以结果是True。"},
+    {type:"input", question:"执行以下代码后，result的值是什么？（填True或False）<div class='code'><span class='c-var'>a</span> <span class='c-op'>=</span> <span class='c-num'>7</span>\n<span class='c-var'>b</span> <span class='c-op'>=</span> <span class='c-num'>3</span>\n<span class='c-var'>result</span> <span class='c-op'>=</span> <span class='c-var'>a</span> <span class='c-op'>+</span> <span class='c-var'>b</span> <span class='c-op'>==</span> <span class='c-num'>10</span></div>", answer:"True", explanation:"a+b=10，10==10结果是True。Python先算加法再算比较。"}
+  ]
+},
+{
+  id:"if-basic", title:"if语句的基本格式", num:"3-02",
+  sub:"满足条件就执行，不满足就跳过",
+  content:`
+<p><span class="hl">if</span> 就是"如果"。满足条件就执行缩进的代码，不满足就跳过。</p>
+<div class="code"><span class="c-var">age</span> <span class="c-op">=</span> <span class="c-num">20</span>
+<span class="c-kw">if</span> <span class="c-var">age</span> <span class="c-op">>=</span> <span class="c-num">18</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"成年了"</span>)    <span class="c-cmt"># 条件成立，会执行</span></div>
+<h3>两个必须遵守的语法</h3>
+<p><span class="hl">第一：if行末尾必须有冒号 <code>:</code></span></p>
+<p><span class="hl">第二：下面的代码必须缩进</span>（一般用4个空格或1个Tab）</p>
+<div class="warn">少冒号或者不缩进都会报错。你之前写compute_gae的时候就踩过这两个坑：<br><br>❌ <code>for t in range(len(rewards)-1,-1,-1)</code> → 缺冒号<br>❌ for和return顶格写 → 没有缩进到函数里面</div>
+<h3>条件不成立时</h3>
+<div class="code"><span class="c-var">age</span> <span class="c-op">=</span> <span class="c-num">15</span>
+<span class="c-kw">if</span> <span class="c-var">age</span> <span class="c-op">>=</span> <span class="c-num">18</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"成年了"</span>)    <span class="c-cmt"># 条件不成立，跳过</span>
+<span class="c-fn">print</span>(<span class="c-str">"程序继续"</span>)      <span class="c-cmt"># 没缩进，不属于if，一定会执行</span></div>
+<div class="analogy">就像你做ADAMS仿真设置：如果接触力大于阈值，就触发碰撞响应。没达到阈值就不触发，仿真继续往下跑。</div>
+<div class="extend"><b>缩进决定归属</b>——这是Python最核心的语法特点。其他语言（C/C++/Java）用花括号 {} 来划分代码块，Python用缩进。好处是代码天然整齐，坏处是缩进错了程序就错了。<br><br>你的compute_gae函数结构就是靠缩进组织的：<br>• 一级缩进 → 属于函数<br>• 二级缩进 → 属于for循环</div>
+`,
+  exercises:[
+    {type:"mc", question:"以下哪段代码是正确的？", options:[
+      "if age >= 18:\\n    print(\"成年\")",
+      "if age >= 18\\n    print(\"成年\")",
+      "if age >= 18:  print(\"成年\")",
+      "A和C都正确"
+    ], correct:3, explanation:"A是标准写法。C也是合法的——如果if下面只有一行代码，可以写在同一行。B缺少冒号会报错。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>x</span> <span class='c-op'>=</span> <span class='c-num'>3</span>\n<span class='c-kw'>if</span> <span class='c-var'>x</span> <span class='c-op'>></span> <span class='c-num'>5</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"大\"</span>)\n<span class='c-fn'>print</span>(<span class='c-str'>\"结束\"</span>)</div>", answer:"结束", explanation:"x=3，3>5为False，跳过print(\"大\")。最后的print(\"结束\")没有缩进，不属于if，所以一定会执行。"}
+  ]
+},
+{
+  id:"if-case", title:"案例——成年人判断", num:"3-03",
+  sub:"把if语句用到实际场景",
+  content:`
+<p>用if来做一个简单的成年判断程序：</p>
+<div class="code"><span class="c-var">age</span> <span class="c-op">=</span> <span class="c-fn">int</span>(<span class="c-fn">input</span>(<span class="c-str">"请输入年龄："</span>))
+<span class="c-kw">if</span> <span class="c-var">age</span> <span class="c-op">>=</span> <span class="c-num">18</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"你是成年人"</span>)
+    <span class="c-fn">print</span>(<span class="c-str">"可以进入网吧"</span>)
+<span class="c-fn">print</span>(<span class="c-str">"程序结束"</span>)</div>
+<p>这里有三个知识点的结合：</p>
+<p>1. <span class="hl">input()</span> 获取用户输入（第二章学的）</p>
+<p>2. <span class="hl">int()</span> 把字符串转成整数（第二章学的）</p>
+<p>3. <span class="hl">if</span> 做判断（本章学的）</p>
+<h3>执行流程分析</h3>
+<div class="code"><span class="c-cmt"># 输入20的情况：</span>
+<span class="c-cmt"># age=20 → 20>=18为True → 打印两行 → 打印"程序结束"</span>
+<span class="c-cmt"># 输出：你是成年人 / 可以进入网吧 / 程序结束</span>
+
+<span class="c-cmt"># 输入15的情况：</span>
+<span class="c-cmt"># age=15 → 15>=18为False → 跳过两行 → 打印"程序结束"</span>
+<span class="c-cmt"># 输出：程序结束</span></div>
+<div class="extend"><b>int(input())</b> 这个嵌套写法在Python里很常见。它等价于分两步写：<br><br><code>text = input("请输入年龄：")</code><br><code>age = int(text)</code><br><br>嵌套写法更简洁，但初学时拆开写更容易理解。</div>
+`,
+  exercises:[
+    {type:"input", question:"以下代码，如果用户输入10，会输出几行内容？（填数字）<div class='code'><span class='c-var'>age</span> <span class='c-op'>=</span> <span class='c-fn'>int</span>(<span class='c-fn'>input</span>(<span class='c-str'>\"年龄：\"</span>))\n<span class='c-kw'>if</span> <span class='c-var'>age</span> <span class='c-op'>>=</span> <span class='c-num'>18</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"成年\"</span>)\n    <span class='c-fn'>print</span>(<span class='c-str'>\"欢迎\"</span>)\n<span class='c-fn'>print</span>(<span class='c-str'>\"再见\"</span>)</div>", answer:"1", explanation:"age=10，10>=18为False，if里面的两行都跳过。只有最后没缩进的print(\"再见\")会执行，所以输出1行。"}
+  ]
+},
+{
+  id:"if-else", title:"if else 组合判断", num:"3-04",
+  sub:"二选一：满足走if，不满足走else",
+  content:`
+<p><span class="hl">if</span>是"如果满足就执行"。但如果不满足呢？<span class="hl">else</span>就是"否则"。</p>
+<div class="code"><span class="c-var">age</span> <span class="c-op">=</span> <span class="c-num">15</span>
+<span class="c-kw">if</span> <span class="c-var">age</span> <span class="c-op">>=</span> <span class="c-num">18</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"成年了"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"未成年"</span>)</div>
+<p>二选一，必走其中一条路。永远不会两条都走，也不会两条都不走。</p>
+<div class="analogy">就像YLYJ判断episode状态：机器人要么还活着，要么摔倒了，不存在第三种情况。<br><br><code>if dones[t] == 1:</code> → 摔倒了<br><code>else:</code> → 还活着</div>
+<h3>语法要点</h3>
+<div class="code"><span class="c-kw">if</span> 条件:         <span class="c-cmt"># 冒号！</span>
+    满足时的代码    <span class="c-cmt"># 缩进！</span>
+<span class="c-kw">else</span>:             <span class="c-cmt"># 冒号！</span>
+    不满足时的代码  <span class="c-cmt"># 缩进！</span></div>
+<div class="warn">else不能单独使用，前面必须有if。else后面也要加冒号。<br><br>❌ <code>else</code> → 缺冒号<br>❌ 没有if直接写else → 报错</div>
+<div class="extend"><b>三元表达式</b>——Python有一种把if else写成一行的简洁写法：<br><br><code>result = "成年" if age >= 18 else "未成年"</code><br><br>等价于：<br><code>if age >= 18:</code><br><code>    result = "成年"</code><br><code>else:</code><br><code>    result = "未成年"</code><br><br>在RL代码里经常见到这种写法，比如：<br><code>label = "好" if delta > 0 else "差"</code></div>
+`,
+  exercises:[
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>num</span> <span class='c-op'>=</span> <span class='c-num'>7</span>\n<span class='c-kw'>if</span> <span class='c-var'>num</span> <span class='c-op'>%</span> <span class='c-num'>2</span> <span class='c-op'>==</span> <span class='c-num'>0</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"偶数\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"奇数\"</span>)</div>", answer:"奇数", explanation:"7%2=1，1不等于0，条件为False，走else分支，输出\"奇数\"。"},
+    {type:"mc", question:"if else结构中，两个分支有没有可能都执行？", options:["有可能","不可能"], correct:1, explanation:"if else是二选一，条件为True走if，为False走else，永远只走一条路。"}
+  ]
+},
+{
+  id:"ticket-case", title:"案例——我要买票吗", num:"3-05",
+  sub:"if else的实际应用",
+  content:`
+<div class="code"><span class="c-var">height</span> <span class="c-op">=</span> <span class="c-fn">int</span>(<span class="c-fn">input</span>(<span class="c-str">"请输入身高(cm)："</span>))
+<span class="c-kw">if</span> <span class="c-var">height</span> <span class="c-op">>=</span> <span class="c-num">120</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"需要买票，票价10元"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"不需要买票"</span>)</div>
+<h3>结合f-string和计算</h3>
+<div class="code"><span class="c-var">price</span> <span class="c-op">=</span> <span class="c-num">50</span>
+<span class="c-var">is_vip</span> <span class="c-op">=</span> <span class="c-bool">True</span>
+<span class="c-kw">if</span> <span class="c-var">is_vip</span>:
+    <span class="c-var">price</span> <span class="c-op">=</span> <span class="c-var">price</span> <span class="c-op">*</span> <span class="c-num">0.8</span>
+    <span class="c-fn">print</span>(<span class="c-str">f"VIP价格：{price}元"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">f"原价：{price}元"</span>)</div>
+<p>注意 <code>if is_vip:</code> 没有写 <code>== True</code>。因为 <code>is_vip</code> 本身就是布尔值，直接拿来判断就行。</p>
+<div class="extend"><b>truthy和falsy</b>——Python里不只有True/False可以做判断。以下值都被视为False（"falsy"）：<br><br>• <code>False</code>、<code>0</code>、<code>0.0</code>、<code>""</code>（空字符串）、<code>None</code>、<code>[]</code>（空列表）<br><br>其他所有值都被视为True（"truthy"）。所以 <code>if 5:</code> 会执行，<code>if 0:</code> 不会。<br><br>你PPO代码里 <code>(1 - dones[t])</code> 能工作就是因为：当dones=1时结果为0（falsy），当dones=0时结果为1（truthy）。</div>
+`,
+  exercises:[
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>x</span> <span class='c-op'>=</span> <span class='c-num'>0</span>\n<span class='c-kw'>if</span> <span class='c-var'>x</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"有值\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"空的\"</span>)</div>", answer:"空的", explanation:"0是falsy，if 0:相当于if False:，所以走else分支。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>price</span> <span class='c-op'>=</span> <span class='c-num'>100</span>\n<span class='c-kw'>if</span> <span class='c-bool'>True</span>:\n    <span class='c-var'>price</span> <span class='c-op'>*=</span> <span class='c-num'>0.5</span>\n<span class='c-fn'>print</span>(<span class='c-var'>price</span>)</div>", answer:"50.0", explanation:"条件是True，一定执行。price=100*0.5=50.0（int和float运算结果为float）。"}
+  ]
+},
+{
+  id:"elif", title:"if elif else 多条件判断", num:"3-06",
+  sub:"多选一：从上往下检查，谁先满足走谁",
+  content:`
+<p>if else只能二选一。如果有三种或更多情况呢？用<span class="hl">elif</span>（else if的缩写，"否则如果"）。</p>
+<div class="code"><span class="c-var">score</span> <span class="c-op">=</span> <span class="c-num">85</span>
+<span class="c-kw">if</span> <span class="c-var">score</span> <span class="c-op">>=</span> <span class="c-num">90</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"优秀"</span>)
+<span class="c-kw">elif</span> <span class="c-var">score</span> <span class="c-op">>=</span> <span class="c-num">80</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"良好"</span>)
+<span class="c-kw">elif</span> <span class="c-var">score</span> <span class="c-op">>=</span> <span class="c-num">60</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"及格"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"不及格"</span>)</div>
+<p>Python<span class="hl">从上往下检查</span>，谁先满足就执行谁，执行完直接跳出，后面的不再检查。</p>
+<p>score=85：先查>=90？不满足。再查>=80？满足，打印"良好"，结束。不会再查>=60。</p>
+<div class="analogy">就像你做连杆优化时分级评价：足端轨迹误差<1mm是优秀，<3mm是良好，<5mm是及格，否则不合格。从最严格的标准开始查，达到哪个就归哪个级别。</div>
+<h3>语法规则</h3>
+<p>• <span class="hl">if</span> 只能有一个，放最前面</p>
+<p>• <span class="hl">elif</span> 可以有很多个，放中间</p>
+<p>• <span class="hl">else</span> 最多一个，放最后，也可以不写</p>
+<p>• 每行末尾都要冒号，下面都要缩进</p>
+<div class="extend"><b>顺序很重要！</b>如果你把条件写反了：<br><br><code>if score >= 60:</code> → 85满足，直接打印"及格"<br><code>elif score >= 80:</code> → 永远到不了这里<br><br>因为85>=60先满足了，后面的就不查了。所以一般把<b>最严格的条件放前面</b>。<br><br>在RL的reward设计里也是同样的道理——你设计奖励等级时，要考虑条件的先后顺序。</div>
+`,
+  exercises:[
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>x</span> <span class='c-op'>=</span> <span class='c-num'>75</span>\n<span class='c-kw'>if</span> <span class='c-var'>x</span> <span class='c-op'>>=</span> <span class='c-num'>90</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"A\"</span>)\n<span class='c-kw'>elif</span> <span class='c-var'>x</span> <span class='c-op'>>=</span> <span class='c-num'>80</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"B\"</span>)\n<span class='c-kw'>elif</span> <span class='c-var'>x</span> <span class='c-op'>>=</span> <span class='c-num'>70</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"C\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"D\"</span>)</div>", answer:"C", explanation:"75>=90？不满足。75>=80？不满足。75>=70？满足，输出C，结束。"},
+    {type:"mc", question:"一个if elif else结构中，最多会执行几个分支的代码？", options:["0个","1个","2个","全部"], correct:1, explanation:"多选一结构，从上往下检查，只有第一个满足条件的分支会执行，执行完就跳出。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>t</span> <span class='c-op'>=</span> <span class='c-num'>25</span>\n<span class='c-kw'>if</span> <span class='c-var'>t</span> <span class='c-op'>>=</span> <span class='c-num'>10</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"暖\"</span>)\n<span class='c-kw'>elif</span> <span class='c-var'>t</span> <span class='c-op'>>=</span> <span class='c-num'>20</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"热\"</span>)</div>", answer:"暖", explanation:"25>=10？满足，打印\"暖\"，直接结束。虽然25也>=20，但前面的条件先满足了，不会再检查后面的。这就是顺序很重要的原因。"}
+  ]
+},
+{
+  id:"guess-case", title:"案例——猜猜心里数字", num:"3-07",
+  sub:"if elif else的综合应用",
+  content:`
+<div class="code"><span class="c-var">num</span> <span class="c-op">=</span> <span class="c-num">7</span>
+<span class="c-var">guess</span> <span class="c-op">=</span> <span class="c-fn">int</span>(<span class="c-fn">input</span>(<span class="c-str">"猜一个1-10的数字："</span>))
+<span class="c-kw">if</span> <span class="c-var">guess</span> <span class="c-op">==</span> <span class="c-var">num</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"猜对了！"</span>)
+<span class="c-kw">elif</span> <span class="c-var">guess</span> <span class="c-op">></span> <span class="c-var">num</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"猜大了"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"猜小了"</span>)</div>
+<p>三种情况覆盖了所有可能：等于、大于、小于。这就是一个最简单的<span class="hl">反馈控制逻辑</span>。</p>
+<div class="extend"><b>这个逻辑和RL的核心思想相通。</b><br><br>RL的训练过程本质上就是：尝试动作 → 看结果 → 根据反馈调整。<br><br>• 猜对了（reward正） → 鼓励这个动作<br>• 猜大了（reward负） → 往小调<br>• 猜小了（reward负） → 往大调<br><br>后面学了循环（第四章），你可以把猜数字做成"反复猜直到猜对"，那就更像RL的训练循环了。</div>
+`,
+  exercises:[
+    {type:"input", question:"如果num=7，用户输入5，以上代码输出什么？", answer:"猜小了", explanation:"5<7，不等于也不大于，走else分支，输出\"猜小了\"。"},
+    {type:"mc", question:"猜数字程序中，用 == 而不是 = 来比较，原因是：", options:["= 是赋值，会改变num的值","== 运行更快","= 也可以，只是习惯用==","没有区别"], correct:0, explanation:"= 是赋值操作，会把guess的值赋给num。== 才是比较操作，判断两个值是否相等。"}
+  ]
+},
+{
+  id:"nested", title:"判断语句的嵌套", num:"3-08",
+  sub:"if里面再套if，像俄罗斯套娃",
+  content:`
+<p>if里面可以再写if，用缩进表示层级关系：</p>
+<div class="code"><span class="c-var">age</span> <span class="c-op">=</span> <span class="c-num">20</span>
+<span class="c-var">vip</span> <span class="c-op">=</span> <span class="c-bool">True</span>
+<span class="c-kw">if</span> <span class="c-var">age</span> <span class="c-op">>=</span> <span class="c-num">18</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"成年了"</span>)
+    <span class="c-kw">if</span> <span class="c-var">vip</span>:
+        <span class="c-fn">print</span>(<span class="c-str">"VIP享受折扣"</span>)
+    <span class="c-kw">else</span>:
+        <span class="c-fn">print</span>(<span class="c-str">"普通用户原价"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"未成年禁止进入"</span>)</div>
+<p>外层if先判断年龄，进去之后再判断VIP。缩进层级：</p>
+<div class="code"><span class="c-kw">if</span> 条件A:             <span class="c-cmt"># 第一层</span>
+    代码               <span class="c-cmt"># 第一层的内容</span>
+    <span class="c-kw">if</span> 条件B:          <span class="c-cmt"># 第二层</span>
+        代码           <span class="c-cmt"># 第二层的内容</span>
+    <span class="c-kw">else</span>:              <span class="c-cmt"># 第二层的else</span>
+        代码
+<span class="c-kw">else</span>:                 <span class="c-cmt"># 第一层的else</span>
+    代码</div>
+<div class="analogy">就像你YLYJ的控制逻辑：先判断"机器人还活着吗"，如果活着，再判断"前方有障碍吗"。第一层判断生死，第二层判断路况。</div>
+<div class="warn">嵌套不要超过三层！层数越多代码越难读。如果发现嵌套太深，说明逻辑需要重新设计。<br><br>你写compute_gae的时候就是两层嵌套（函数→循环），已经够用了。</div>
+<div class="extend"><b>用 and/or 减少嵌套</b>——有些嵌套可以用逻辑运算符合并成一层：<br><br>嵌套写法：<br><code>if age >= 18:</code><br><code>    if vip:</code><br><code>        print("VIP成年用户")</code><br><br>合并写法：<br><code>if age >= 18 and vip:</code><br><code>    print("VIP成年用户")</code><br><br><b>and</b>：两个条件都满足才为True<br><b>or</b>：任一条件满足就为True<br><b>not</b>：取反，True变False，False变True</div>
+`,
+  exercises:[
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>a</span> <span class='c-op'>=</span> <span class='c-num'>10</span>\n<span class='c-var'>b</span> <span class='c-op'>=</span> <span class='c-num'>5</span>\n<span class='c-kw'>if</span> <span class='c-var'>a</span> <span class='c-op'>></span> <span class='c-num'>5</span>:\n    <span class='c-kw'>if</span> <span class='c-var'>b</span> <span class='c-op'>></span> <span class='c-num'>3</span>:\n        <span class='c-fn'>print</span>(<span class='c-str'>\"都大\"</span>)\n    <span class='c-kw'>else</span>:\n        <span class='c-fn'>print</span>(<span class='c-str'>\"a大b小\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"a小\"</span>)</div>", answer:"都大", explanation:"a=10>5满足，进入内层。b=5>3满足，打印\"都大\"。"},
+    {type:"mc", question:"<code>True and False</code> 的结果是什么？", options:["True","False"], correct:1, explanation:"and要求两边都为True结果才是True。一边是False，结果就是False。"},
+    {type:"mc", question:"<code>False or True</code> 的结果是什么？", options:["True","False"], correct:0, explanation:"or只要任一边为True结果就是True。"},
+    {type:"mc", question:"<code>not True</code> 的结果是什么？", options:["True","False"], correct:1, explanation:"not取反，True变False。"}
+  ]
+},
+{
+  id:"summary", title:"第三章总结与综合测试", num:"总结",
+  sub:"回顾所有知识点，检验学习成果",
+  content:`
+<h3>知识点回顾</h3>
+<div class="sum-grid">
+  <div class="sum-card"><div class="sc-t">布尔类型</div><div class="sc-c">True / False<br>比较运算产生布尔值</div></div>
+  <div class="sum-card"><div class="sc-t">比较运算符</div><div class="sc-c">== != > < >= <=<br>注意 = 和 == 的区别</div></div>
+  <div class="sum-card"><div class="sc-t">if 语句</div><div class="sc-c">if 条件:<br>    满足时执行</div></div>
+  <div class="sum-card"><div class="sc-t">if else</div><div class="sc-c">二选一<br>条件成立走if，否则走else</div></div>
+  <div class="sum-card"><div class="sc-t">if elif else</div><div class="sc-c">多选一，从上往下查<br>第一个满足的被执行</div></div>
+  <div class="sum-card"><div class="sc-t">嵌套 & 逻辑运算</div><div class="sc-c">if里面套if<br>and / or / not</div></div>
+</div>
+<h3>综合测试</h3>
+<p>以下题目综合考察第三章所有内容：</p>
+`,
+  exercises:[
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>delta</span> <span class='c-op'>=</span> <span class='c-num'>0.495</span>\n<span class='c-kw'>if</span> <span class='c-var'>delta</span> <span class='c-op'>></span> <span class='c-num'>1.0</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"远超预期\"</span>)\n<span class='c-kw'>elif</span> <span class='c-var'>delta</span> <span class='c-op'>></span> <span class='c-num'>0</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"比预期好\"</span>)\n<span class='c-kw'>elif</span> <span class='c-var'>delta</span> <span class='c-op'>></span> <span class='c-num'>-1.0</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"比预期差\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"远低于预期\"</span>)</div>", answer:"比预期好", explanation:"0.495>1.0？不满足。0.495>0？满足，输出\"比预期好\"，结束。"},
+    {type:"mc", question:"以下哪个表达式的结果是True？", options:["5 > 3 and 2 > 4","5 > 3 or 2 > 4","not (5 > 3)","5 == 3"], correct:1, explanation:"A: True and False = False。B: True or False = True。C: not True = False。D: 5不等于3，False。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>x</span> <span class='c-op'>=</span> <span class='c-num'>15</span>\n<span class='c-kw'>if</span> <span class='c-var'>x</span> <span class='c-op'>></span> <span class='c-num'>10</span> <span class='c-kw'>and</span> <span class='c-var'>x</span> <span class='c-op'><</span> <span class='c-num'>20</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"在范围内\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"超出范围\"</span>)</div>", answer:"在范围内", explanation:"15>10为True，15<20为True，True and True = True，走if分支。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>done</span> <span class='c-op'>=</span> <span class='c-num'>1</span>\n<span class='c-var'>reward</span> <span class='c-op'>=</span> <span class='c-num'>-5</span>\n<span class='c-kw'>if</span> <span class='c-var'>done</span> <span class='c-op'>==</span> <span class='c-num'>0</span>:\n    <span class='c-kw'>if</span> <span class='c-var'>reward</span> <span class='c-op'>></span> <span class='c-num'>0</span>:\n        <span class='c-fn'>print</span>(<span class='c-str'>\"活着且表现好\"</span>)\n    <span class='c-kw'>else</span>:\n        <span class='c-fn'>print</span>(<span class='c-str'>\"活着但表现差\"</span>)\n<span class='c-kw'>else</span>:\n    <span class='c-fn'>print</span>(<span class='c-str'>\"已结束\"</span>)</div>", answer:"已结束", explanation:"done=1，done==0为False，跳过整个内层，走外层else，输出\"已结束\"。"},
+    {type:"input", question:"以下代码输出什么？<div class='code'><span class='c-var'>a</span> <span class='c-op'>=</span> <span class='c-num'>5</span>\n<span class='c-var'>b</span> <span class='c-op'>=</span> <span class='c-num'>10</span>\n<span class='c-var'>c</span> <span class='c-op'>=</span> <span class='c-var'>a</span> <span class='c-kw'>if</span> <span class='c-var'>a</span> <span class='c-op'>></span> <span class='c-var'>b</span> <span class='c-kw'>else</span> <span class='c-var'>b</span>\n<span class='c-fn'>print</span>(<span class='c-var'>c</span>)</div>", answer:"10", explanation:"a>b即5>10为False，所以c取else后面的值b=10。这是三元表达式的用法。"},
+    {type:"mc", question:"以下代码有什么问题？<div class='code'><span class='c-var'>x</span> <span class='c-op'>=</span> <span class='c-num'>5</span>\n<span class='c-kw'>if</span> <span class='c-var'>x</span> <span class='c-op'>></span> <span class='c-num'>3</span>\n    <span class='c-fn'>print</span>(<span class='c-str'>\"大于3\"</span>)</div>", options:["x没有定义","缺少冒号","缩进错误","没有问题"], correct:1, explanation:"if那一行末尾少了冒号。正确写法是 if x > 3: 。这是Python语法的硬性要求。"}
+  ]
+}
+];
+
+let cur=0, score=0, answered=new Set(), completed=new Set(), total=0;
+S.forEach(s=>{ total+=s.exercises.length; });
+
+function renderNav(){
+  document.getElementById('nav').innerHTML=S.map((s,i)=>`
+    <div class="nav-item ${i===cur?'active':''}" onclick="go(${i})">
+      <span class="dot ${completed.has(i)?'done':''}"></span>${s.num} ${s.title}
+    </div>`).join('');
+}
+
+function renderSec(){
+  const s=S[cur], m=document.getElementById('main');
+  let exH=s.exercises.map((ex,ei)=>{
+    const qid=`${cur}-${ei}`, done=answered.has(qid);
+    if(ex.type==='mc'){
+      return `<div class="ex-box"><div class="ex-label">练习 ${ei+1}</div>
+        <div class="ex-q">${ex.question}</div>
+        <div class="mc-opts" id="mc-${qid}">${ex.options.map((o,oi)=>`
+          <div class="mc-o ${done?(oi===ex.correct?'ok-a':''):''}" onclick="chkMC('${qid}',${oi},${ex.correct},this)" ${done?'style="pointer-events:none"':''}>${String.fromCharCode(65+oi)}. ${o}</div>`).join('')}
+        </div><div class="fb" id="fb-${qid}"></div></div>`;
+    } else {
+      return `<div class="ex-box"><div class="ex-label">练习 ${ei+1}</div>
+        <div class="ex-q">${ex.question}</div>
+        <input class="ex-input" id="in-${qid}" placeholder="输入答案..." ${done?'disabled':''}>
+        <button class="btn-sub" onclick="chkIn('${qid}',${ei})" ${done?'disabled style="opacity:0.5"':''}>提交</button>
+        <div class="fb" id="fb-${qid}"></div></div>`;
+    }
+  }).join('');
+  const prev=cur>0?`<button class="btn-n" onclick="go(${cur-1})">← 上一节</button>`:'<div></div>';
+  const next=cur<S.length-1?`<button class="btn-n pri" onclick="go(${cur+1})">下一节 →</button>`:'<div></div>';
+  m.innerHTML=`<div class="section active"><div class="sec-num">${s.num}</div><h2>${s.title}</h2><div class="sub">${s.sub}</div>${s.content}${exH}<div class="nav-btns">${prev}${next}</div></div>`;
+}
+
+function chkMC(qid,sel,cor,el){
+  if(answered.has(qid))return; answered.add(qid);
+  const [si,ei]=qid.split('-').map(Number), ex=S[si].exercises[ei];
+  const c=document.getElementById(`mc-${qid}`).querySelectorAll('.mc-o');
+  c.forEach((o,i)=>{ o.style.pointerEvents='none'; if(i===cor)o.classList.add('ok-a'); if(i===sel&&i!==cor)o.classList.add('no-a'); });
+  const fb=document.getElementById(`fb-${qid}`), ok=sel===cor;
+  if(ok){ score++; fb.innerHTML=`✅ 正确！${ex.explanation}`; fb.className='fb ok'; }
+  else { fb.innerHTML=`❌ 错误。${ex.explanation}`; fb.className='fb no'; }
+  upd(); chkDone();
+}
+
+function chkIn(qid,ei){
+  if(answered.has(qid))return;
+  const [si]=qid.split('-').map(Number), ex=S[si].exercises[ei];
+  const inp=document.getElementById(`in-${qid}`), v=inp.value.trim();
+  if(!v)return; answered.add(qid); inp.disabled=true;
+  const fb=document.getElementById(`fb-${qid}`);
+  const alts=[ex.answer,...(ex.altAnswers||[])];
+  const ok=alts.some(a=>v===a||v.toLowerCase()===a.toLowerCase());
+  if(ok){ score++; fb.innerHTML=`✅ 正确！${ex.explanation}`; fb.className='fb ok'; }
+  else { fb.innerHTML=`❌ 错误。${ex.explanation}<div class="reveal">正确答案：${ex.answer}</div>`; fb.className='fb no'; }
+  const btn=fb.previousElementSibling; if(btn&&btn.tagName==='BUTTON'){btn.disabled=true;btn.style.opacity='0.5';}
+  upd(); chkDone();
+}
+
+function chkDone(){
+  const s=S[cur];
+  if(s.exercises.every((_,ei)=>answered.has(`${cur}-${ei}`))){ completed.add(cur); renderNav(); }
+}
+
+function upd(){
+  document.getElementById('tScore').textContent=score;
+  document.getElementById('mScore').textContent=total;
+  document.getElementById('pFill').style.width=(answered.size/total*100)+'%';
+}
+
+function go(i){ cur=i; renderNav(); renderSec(); window.scrollTo(0,0); }
+
+renderNav(); renderSec(); upd();
+</script>
+</body>
+</html>
