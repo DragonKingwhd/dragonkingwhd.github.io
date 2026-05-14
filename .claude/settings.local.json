@@ -17,7 +17,8 @@
       "WebFetch(domain:ocw.metu.edu.tr)",
       "Bash(git remote:*)",
       "Bash(gem install:*)",
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(gh run *)"
     ]
   }
 }
