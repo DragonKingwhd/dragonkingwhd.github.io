@@ -368,14 +368,17 @@ const FEEDS = [
 
 const DEFAULT_LIMIT = 10;        // 默认显示几条未命中的；命中的全部显示
 const EXPANDED = new Set();      // 哪些源已"展开全部"
-const CACHE_TTL_MS = 30 * 60 * 1000;  // 缓存 30 分钟
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;   // RSS 缓存新鲜期 6 小时
+const CORL_TTL_MS  = 24 * 60 * 60 * 1000;  // CoRL 数据稳定，新鲜期 24 小时
+const FETCH_TIMEOUT_MS = 9000;             // 单次代理请求超时 9s（死源快速失败）
 const CACHE_KEY = 'journals_cache_v2';  // bump：现在 item 包含 summary 字段
 
 // CORS 代理回退链。前一个失败自动换下一个。
-// corsproxy.io 最稳定（透传 XML），放第一位；allorigins 第二（也是透传）；rss2json 最后（JSON 但常解析失败）
+// corsproxy.io 改版后必须用 ?url= 新格式（旧格式 403）；codetabs 作为稳定透传备份；allorigins/rss2json 兜底
 // 注：rss.arxiv.org 自带 CORS，会先尝试直连。
 const PROXIES = [
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
     (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
     (url) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`,
 ];
@@ -424,8 +427,19 @@ function parseXML(xmlText) {
     return items;
 }
 
+// 带超时的 fetch：死源/慢代理 9s 后中断，快速回退下一个
+async function fetchT(resource) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+    try {
+        return await fetch(resource, { signal: ctrl.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
 async function fetchDirect(url) {
-    const res = await fetch(url);
+    const res = await fetchT(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     return parseXML(text);
@@ -433,15 +447,15 @@ async function fetchDirect(url) {
 
 async function fetchViaProxy(url, idx) {
     const proxied = PROXIES[idx](url);
-    const res = await fetch(proxied);
+    const res = await fetchT(proxied);
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    // 顺序：0=corsproxy(透传), 1=allorigins(JSON包装), 2=rss2json(JSON结果)
-    if (idx === 0) {
+    // 顺序：0=corsproxy(透传), 1=codetabs(透传), 2=allorigins(JSON包装), 3=rss2json(JSON结果)
+    if (idx === 0 || idx === 1) {
         const text = await res.text();
         return parseXML(text);
     }
-    if (idx === 1) {
+    if (idx === 2) {
         const data = await res.json();
         return parseXML(data.contents);
     }
@@ -700,27 +714,39 @@ async function loadAll(forceRefresh = false) {
 
     const rssFeeds = FEEDS.filter(f => f.type === 'rss');
     const corlFeeds = FEEDS.filter(f => f.type === 'corl');
+    const total = rssFeeds.length + corlFeeds.length;
 
-    statusText.textContent = `加载 0 / ${rssFeeds.length}…`;
+    statusText.textContent = `加载 0 / ${total}…`;
 
-    // 先渲染 CoRL 特殊块（年份切换 UI 立即可见）
-    corlFeeds.forEach(f => renderCorl(f, forceRefresh));
+    // 渲染 CoRL 特殊块并纳入计数
+    const corlPromises = corlFeeds.map(async (f) => {
+        try {
+            const ok = await renderCorl(f, forceRefresh);
+            if (ok === false) errs++;
+        } catch(e) {
+            errs++;
+        } finally {
+            done++;
+            statusText.textContent = `加载 ${done} / ${total}…`;
+        }
+    });
 
-    // 先用缓存渲染 RSS
+    // stale-while-revalidate：只要有缓存就立刻渲染（哪怕过期），无缓存才显示加载中
     rssFeeds.forEach(f => {
         const c = cache[f.url];
-        if (c && (now - c.fetchedAt) < CACHE_TTL_MS) {
-            renderFeed(f, { status: 'ok', items: c.items, fetchedAt: c.fetchedAt, cached: true });
+        if (c) {
+            const stale = (now - c.fetchedAt) >= CACHE_TTL_MS;
+            renderFeed(f, { status: 'ok', items: c.items, fetchedAt: c.fetchedAt, cached: stale });
         } else {
             renderFeed(f, { status: 'loading' });
         }
     });
 
     // 并发拉取所有 RSS
-    await Promise.all(rssFeeds.map(async (f) => {
+    const rssPromises = rssFeeds.map(async (f) => {
         const c = cache[f.url];
         if (c && !forceRefresh && (now - c.fetchedAt) < CACHE_TTL_MS) {
-            done++; statusText.textContent = `加载 ${done} / ${rssFeeds.length}…`;
+            done++; statusText.textContent = `加载 ${done} / ${total}…`;
             return;
         }
         try {
@@ -736,12 +762,14 @@ async function loadAll(forceRefresh = false) {
             }
         } finally {
             done++;
-            statusText.textContent = `加载 ${done} / ${rssFeeds.length}…`;
+            statusText.textContent = `加载 ${done} / ${total}…`;
         }
-    }));
+    });
+
+    await Promise.all([...corlPromises, ...rssPromises]);
 
     saveCache(cache);
-    statusText.textContent = `完成 · 成功 ${rssFeeds.length - errs} / ${rssFeeds.length}` + (errs ? ` · 失败 ${errs}` : '');
+    statusText.textContent = `完成 · 成功 ${total - errs} / ${total}` + (errs ? ` · 失败 ${errs}` : '');
 }
 
 // ============== CoRL 年份切换 ==============
@@ -753,13 +781,37 @@ const CORL_API = (year) => {
     return `https://${base}/notes?content.venueid=robot-learning.org/CoRL/${year}/Conference&limit=1000&offset=0`;
 };
 
+// OpenReview API 无 CORS，必须走代理。带回退链：corsproxy → codetabs → allorigins
+async function fetchOpenReviewJSON(apiUrl) {
+    const attempts = [
+        async () => {
+            const r = await fetchT(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        },
+        async () => {
+            const r = await fetchT(`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(apiUrl)}`);
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        },
+        async () => {
+            const r = await fetchT(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`);
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const wrap = await r.json();
+            return JSON.parse(wrap.contents);
+        },
+    ];
+    let lastErr;
+    for (const attempt of attempts) {
+        try { return await attempt(); }
+        catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('全部代理失败');
+}
+
 async function fetchCorlYear(year) {
     const apiUrl = CORL_API(year);
-    // OpenReview API 无 CORS，强制走代理
-    const proxied = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-    const res = await fetch(proxied);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const data = await fetchOpenReviewJSON(apiUrl);
     const notes = data.notes || [];
     if (notes.length === 0) throw new Error('该届暂无数据');
     return notes.map(n => {
@@ -823,24 +875,29 @@ function renderCorl(feed, forceRefresh) {
             });
         };
 
-        // 先用缓存渲染
-        if (cached && !force && (now - cached.fetchedAt) < CACHE_TTL_MS * 24) {
-            // CoRL 数据稳定，缓存可以长一些（24x = 12h）
+        // 缓存新鲜 → 直接用，不重拉
+        if (cached && !force && (now - cached.fetchedAt) < CORL_TTL_MS) {
             renderBody(cached.items, `${year} 届 · 共 ${cached.items.length} 篇 · <span style="color:var(--warning-color)">缓存</span>`);
-            return;
+            return true;
         }
 
-        // loading
-        renderBody([], `${year} 届 · <span style="color:var(--text-muted)">加载中…</span>`);
+        // stale-while-revalidate：有旧缓存先立刻显示，再后台刷新
+        if (cached && !force) {
+            renderBody(cached.items, `${year} 届 · 共 ${cached.items.length} 篇 · <span style="color:var(--text-muted)">刷新中…</span>`);
+        } else {
+            renderBody([], `${year} 届 · <span style="color:var(--text-muted)">加载中…</span>`);
+        }
         try {
             const items = await fetchCorlYear(year);
             cache[cacheKey] = { items, fetchedAt: Date.now() };
             saveCache(cache);
             renderBody(items, `${year} 届 · 共 ${items.length} 篇 · 更新于 ${new Date().toLocaleString()}`);
+            return true;
         } catch(e) {
             // 失败时若有旧缓存退回
             if (cached) {
                 renderBody(cached.items, `${year} 届 · <span class="err">刷新失败：${escapeHtml(e.message)}</span> · 显示缓存`);
+                return true;
             } else {
                 block.innerHTML = `
                     <div class="feed-head">
@@ -853,11 +910,12 @@ function renderCorl(feed, forceRefresh) {
                 block.querySelectorAll('.year-chip:not(.disabled)').forEach(chip => {
                     chip.addEventListener('click', () => renderFor(parseInt(chip.dataset.year, 10), false));
                 });
+                return false;
             }
         }
     };
 
-    renderFor(block._corlYear, forceRefresh);
+    return renderFor(block._corlYear, forceRefresh);
 }
 
 // ============== 初始化 ==============
