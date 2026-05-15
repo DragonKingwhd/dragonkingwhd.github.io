@@ -73,6 +73,36 @@ permalink: /docs/
     </div>
   </div>
 
+  {% if site.data.external_resources.resources %}
+  <!-- 推荐资源 -->
+  <div class="kb-container kb-section">
+    <div class="kb-section-head">
+      <h2>推荐资源 <span class="kb-section-tag">External Resources</span></h2>
+      <p>精选的外部学习资源与开源教材</p>
+    </div>
+    <div class="kb-grid">
+      {% for resource in site.data.external_resources.resources %}
+      <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="kb-card">
+        <div class="kb-card-header">
+          <span style="font-size: 2.4rem;">{{ resource.icon }}</span>
+        </div>
+        <div class="kb-card-content">
+          <h3>{{ resource.title }}</h3>
+          {% if resource.source %}<p class="kb-card-subtitle">{{ resource.source }}</p>{% endif %}
+          <p class="kb-card-description">{{ resource.description }}</p>
+          <div class="kb-card-meta">
+            {% for tag in resource.tags limit:3 %}
+            <span class="kb-tag">{{ tag }}</span>
+            {% endfor %}
+            {% if resource.date %}<span class="kb-date">{{ resource.date }}</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- 底部统计 -->
   <div class="kb-footer">
     <div class="kb-container">
@@ -212,6 +242,42 @@ permalink: /docs/
   margin-left: auto;
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+/* 推荐资源区段 */
+.kb-section {
+  margin-top: 3.5rem;
+}
+.kb-section-head {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border, #e7e5e4);
+}
+.kb-section-head h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text, #1a1a1a);
+  margin: 0 0 0.35rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  border: none;
+  padding: 0;
+}
+.kb-section-head h2 .kb-section-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute, #a3a3a3);
+}
+.kb-section-head p {
+  color: var(--text-soft, #525252);
+  font-size: 0.95rem;
+  margin: 0;
 }
 
 /* 底部统计 */

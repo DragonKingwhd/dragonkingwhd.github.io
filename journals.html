@@ -1,0 +1,937 @@
+---
+layout: default
+title: 期刊订阅
+permalink: /journals/
+---
+
+<style>
+.journals-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.journals-toolbar .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.chip {
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.chip:hover { color: var(--primary-color); }
+.chip.active {
+    background: var(--gradient-primary);
+    color: #fff;
+    border-color: transparent;
+}
+.journals-toolbar input.search-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 0.9rem;
+    color: var(--text-primary);
+    font-family: inherit;
+}
+.journals-toolbar input.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.journals-toolbar .meta {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.feed-block {
+    background: var(--bg-glass);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    border-radius: var(--border-radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+}
+.feed-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+.feed-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+.feed-cat {
+    display: inline-block;
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--accent-color);
+    border-radius: 12px;
+    padding: 0.15rem 0.65rem;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+.feed-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.feed-meta a { color: var(--text-secondary); margin-left: 0.5rem; }
+.feed-meta .err { color: var(--danger-color); }
+
+.feed-items { list-style: none; padding: 0; margin: 0; }
+.feed-items li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+.feed-items li:last-child { border-bottom: none; }
+.feed-items a {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+.feed-items a:hover { color: var(--primary-color); }
+.feed-items .date {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+}
+
+.feed-empty { color: var(--text-muted); font-size: 0.9rem; padding: 0.5rem 0; }
+.feed-loading { color: var(--text-muted); font-size: 0.9rem; }
+
+/* 关键词面板 */
+.kw-panel {
+    background: var(--bg-glass);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+.kw-panel summary {
+    cursor: pointer;
+    color: var(--accent-color);
+    font-weight: 600;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.kw-panel summary::-webkit-details-marker { display: none; }
+.kw-panel summary::before {
+    content: '▶';
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+}
+.kw-panel[open] summary::before { transform: rotate(90deg); }
+.kw-panel summary .kw-count {
+    background: var(--accent-color);
+    color: #fff;
+    border-radius: 10px;
+    padding: 0.05rem 0.55rem;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+}
+.kw-panel summary .kw-hint {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-left: auto;
+}
+.kw-body { padding-top: 0.75rem; }
+.kw-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+}
+.kw-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--accent-color);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 12px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+}
+.kw-chip .kw-del {
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.15s;
+}
+.kw-chip .kw-del:hover { color: var(--danger-color); }
+.kw-input-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.kw-input-row input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    border-radius: var(--border-radius-sm);
+    padding: 0.4rem 0.75rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+.kw-input-row input:focus { outline: none; border-color: var(--accent-color); }
+.kw-preset {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+}
+.kw-preset:hover { color: var(--accent-color); background: rgba(124,58,237,0.08); }
+
+/* 命中关键词的论文高亮 */
+.feed-items li.matched {
+    border-left: 3px solid var(--accent-color);
+    padding-left: 0.6rem;
+    background: linear-gradient(90deg, rgba(124,58,237,0.08), transparent 40%);
+    border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+    margin: 0.2rem 0;
+}
+.feed-items li.matched::before {
+    content: '★';
+    color: var(--accent-color);
+    margin-right: 0.3rem;
+    font-size: 0.85rem;
+}
+.kw-hit {
+    color: var(--accent-color);
+    background: rgba(124,58,237,0.15);
+    padding: 0 0.15rem;
+    border-radius: 2px;
+}
+.expand-toggle {
+    margin-top: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(0, 212, 255, 0.06);
+    border: 1px dashed rgba(0, 212, 255, 0.25);
+    border-radius: var(--border-radius-sm);
+    color: var(--primary-color);
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    user-select: none;
+}
+.expand-toggle:hover { background: rgba(0, 212, 255, 0.12); }
+
+.kw-options {
+    margin-top: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.kw-opt-label { color: var(--text-secondary); }
+.kw-opt-btn {
+    cursor: pointer;
+    padding: 0.18rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid rgba(124,58,237,0.25);
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    user-select: none;
+}
+.kw-opt-btn:hover { color: var(--accent-color); }
+.kw-opt-btn.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+.kw-opt-sep { color: var(--text-muted); }
+.kw-opt-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+.kw-opt-check input { cursor: pointer; }
+.kw-opt-check i { color: var(--accent-color); font-style: italic; }
+
+/* CoRL 年份小标签 */
+.year-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.25rem 0 0.85rem;
+}
+.year-chip {
+    background: rgba(124, 58, 237, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(124, 58, 237, 0.25);
+    padding: 0.2rem 0.7rem;
+    border-radius: 14px;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+.year-chip:hover { color: var(--accent-color); border-color: var(--accent-color); }
+.year-chip.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+.year-chip.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.feed-loading::after {
+    content: '⠋';
+    display: inline-block;
+    margin-left: 0.5rem;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    0%{content:'⠋'}12%{content:'⠙'}25%{content:'⠹'}37%{content:'⠸'}
+    50%{content:'⠼'}62%{content:'⠴'}75%{content:'⠦'}87%{content:'⠧'}100%{content:'⠇'}
+}
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="fas fa-rss"></i> 期刊订阅</h1>
+        <p class="page-subtitle">机器人、AI 领域顶刊与 arXiv 订阅源，页面打开时自动拉取最新文章</p>
+    </div>
+</div>
+
+<section class="content-section">
+    <div class="container">
+
+        <div class="journals-toolbar">
+            <div class="filter-chips" id="cat-filter"></div>
+            <input type="search" class="search-input" id="search-input" placeholder="搜索文章标题..." />
+            <span class="meta" id="status-text">准备中…</span>
+            <button class="btn btn-secondary" id="refresh-btn" style="padding:0.4rem 0.9rem;">
+                <i class="fas fa-sync-alt"></i> 强制刷新
+            </button>
+        </div>
+
+        <details class="kw-panel" id="kw-panel">
+            <summary>
+                <i class="fas fa-tags"></i> 关键词置顶
+                <span class="kw-count" id="kw-count">0</span>
+                <span class="kw-hint">命中标题/摘要的论文会飘到每个源的顶部并高亮</span>
+            </summary>
+            <div class="kw-body">
+                <div class="kw-chips" id="kw-chips"></div>
+                <div class="kw-input-row">
+                    <input type="text" id="kw-input" placeholder="输入关键词，回车添加（不区分大小写）…" />
+                    <span class="kw-preset" id="kw-preset-load">载入预设</span>
+                    <span class="kw-preset" id="kw-clear">清空</span>
+                </div>
+                <div class="kw-options">
+                    <span class="kw-opt-label">搜索范围：</span>
+                    <span class="kw-opt-btn" data-scope="title">仅标题</span>
+                    <span class="kw-opt-btn" data-scope="all">标题+摘要</span>
+                    <span class="kw-opt-sep">·</span>
+                    <label class="kw-opt-check">
+                        <input type="checkbox" id="kw-wholeword" /> 全词匹配（不匹配 extreme<i>ly</i> 等变形）
+                    </label>
+                </div>
+            </div>
+        </details>
+
+        <div id="feeds-container"></div>
+    </div>
+</section>
+
+<script>
+// ============== 配置 ==============
+const FEEDS = [
+{% for feed in site.data.feeds %}
+    { name: {{ feed.name | jsonify }}, url: {{ feed.url | default: "" | jsonify }}, category: {{ feed.category | default: "其他" | jsonify }}, type: {{ feed.type | default: "rss" | jsonify }} },
+{% endfor %}
+];
+
+const DEFAULT_LIMIT = 10;        // 默认显示几条未命中的；命中的全部显示
+const EXPANDED = new Set();      // 哪些源已"展开全部"
+const CACHE_TTL_MS = 30 * 60 * 1000;  // 缓存 30 分钟
+const CACHE_KEY = 'journals_cache_v2';  // bump：现在 item 包含 summary 字段
+
+// CORS 代理回退链。前一个失败自动换下一个。
+// corsproxy.io 最稳定（透传 XML），放第一位；allorigins 第二（也是透传）；rss2json 最后（JSON 但常解析失败）
+// 注：rss.arxiv.org 自带 CORS，会先尝试直连。
+const PROXIES = [
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`,
+];
+
+// ============== 缓存 ==============
+function loadCache() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return {};
+        return JSON.parse(raw);
+    } catch(e) { return {}; }
+}
+function saveCache(c) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch(e){}
+}
+
+// ============== 解析 ==============
+function stripHtml(s) {
+    return (s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function parseXML(xmlText) {
+    const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    if (doc.querySelector('parsererror')) throw new Error('XML 解析失败');
+    const items = [];
+    doc.querySelectorAll('item').forEach(node => {
+        items.push({
+            title: (node.querySelector('title')?.textContent || '').trim(),
+            link: (node.querySelector('link')?.textContent || '').trim(),
+            pubDate: (node.querySelector('pubDate')?.textContent
+                     || node.querySelector('dc\\:date, date')?.textContent || '').trim(),
+            summary: stripHtml(node.querySelector('description')?.textContent
+                     || node.querySelector('content\\:encoded')?.textContent || ''),
+        });
+    });
+    if (items.length === 0) {
+        doc.querySelectorAll('entry').forEach(node => {
+            items.push({
+                title: (node.querySelector('title')?.textContent || '').trim(),
+                link: node.querySelector('link')?.getAttribute('href') || '',
+                pubDate: (node.querySelector('updated, published')?.textContent || '').trim(),
+                summary: stripHtml(node.querySelector('summary, content')?.textContent || ''),
+            });
+        });
+    }
+    return items;
+}
+
+async function fetchDirect(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    return parseXML(text);
+}
+
+async function fetchViaProxy(url, idx) {
+    const proxied = PROXIES[idx](url);
+    const res = await fetch(proxied);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    // 顺序：0=corsproxy(透传), 1=allorigins(JSON包装), 2=rss2json(JSON结果)
+    if (idx === 0) {
+        const text = await res.text();
+        return parseXML(text);
+    }
+    if (idx === 1) {
+        const data = await res.json();
+        return parseXML(data.contents);
+    }
+    const data = await res.json();
+    if (data.status !== 'ok') throw new Error(data.message || 'rss2json failed');
+    return (data.items || []).map(it => ({
+        title: it.title, link: it.link, pubDate: it.pubDate,
+        summary: stripHtml(it.description || it.content || '')
+    }));
+}
+
+async function fetchFeed(feed) {
+    // arXiv 自带 CORS，先试直连
+    if (feed.url.includes('arxiv.org')) {
+        try { return await fetchDirect(feed.url); } catch(e) { /* fall through */ }
+    }
+    let lastErr;
+    for (let i = 0; i < PROXIES.length; i++) {
+        try { return await fetchViaProxy(feed.url, i); }
+        catch(e) { lastErr = e; }
+    }
+    throw lastErr || new Error('全部代理失败');
+}
+
+// ============== 渲染 ==============
+const container = document.getElementById('feeds-container');
+const statusText = document.getElementById('status-text');
+const catFilter = document.getElementById('cat-filter');
+const searchInput = document.getElementById('search-input');
+
+let currentCat = '全部';
+let currentSearch = '';
+
+function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+}
+
+function formatDate(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s.slice(0, 10);
+    return d.toISOString().slice(0, 10);
+}
+
+// ============== 关键词 ==============
+const KW_STORAGE = 'journals_keywords_v1';
+const KW_PRESET = [
+    'legged robot','quadruped','humanoid','parkour','locomotion',
+    'reinforcement learning','sim-to-real','sim2real','isaac lab','isaac gym',
+    'PPO','depth perception','perceptive locomotion','foothold','terrain',
+    'biped','BLDC','domain randomization','distillation','imitation learning','world model'
+];
+let KEYWORDS = [];
+try { KEYWORDS = JSON.parse(localStorage.getItem(KW_STORAGE) || '[]'); } catch(e){}
+
+const KW_OPTS_KEY = 'journals_kw_opts_v1';
+let KW_OPTS = { scope: 'all', wholeWord: false };
+try { Object.assign(KW_OPTS, JSON.parse(localStorage.getItem(KW_OPTS_KEY) || '{}')); } catch(e){}
+function saveKwOpts() { localStorage.setItem(KW_OPTS_KEY, JSON.stringify(KW_OPTS)); }
+
+function kwMatches(keyword, text) {
+    if (!text) return false;
+    const hay = text.toLowerCase();
+    const needle = keyword.toLowerCase();
+    if (!KW_OPTS.wholeWord) return hay.includes(needle);
+    // 全词匹配：纯 ASCII 词用 \b 边界；含非 ASCII（如中文）回退到普通子串
+    if (/^[\x20-\x7e]+$/.test(keyword)) {
+        const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp('\\b' + escaped + '\\b', 'i');
+        return re.test(text);
+    }
+    return hay.includes(needle);
+}
+
+function saveKeywords() {
+    localStorage.setItem(KW_STORAGE, JSON.stringify(KEYWORDS));
+    document.getElementById('kw-count').textContent = KEYWORDS.length;
+    renderKwChips();
+}
+
+function renderKwChips() {
+    const wrap = document.getElementById('kw-chips');
+    if (!wrap) return;
+    if (KEYWORDS.length === 0) {
+        wrap.innerHTML = '<span style="color:var(--text-muted);font-size:0.82rem;">暂无关键词，添加后命中的论文会自动置顶</span>';
+        return;
+    }
+    wrap.innerHTML = KEYWORDS.map((k, i) =>
+        `<span class="kw-chip">${escapeHtml(k)}<span class="kw-del" data-i="${i}">×</span></span>`
+    ).join('');
+    wrap.querySelectorAll('.kw-del').forEach(d => {
+        d.addEventListener('click', () => {
+            KEYWORDS.splice(parseInt(d.dataset.i, 10), 1);
+            saveKeywords();
+            rerenderAllFromCache();
+        });
+    });
+}
+
+function matchKeywords(item) {
+    if (KEYWORDS.length === 0) return [];
+    const text = KW_OPTS.scope === 'title'
+        ? (item.title || '')
+        : ((item.title || '') + ' ' + (item.summary || ''));
+    return KEYWORDS.filter(k => kwMatches(k, text));
+}
+
+function highlightKw(text) {
+    if (!KEYWORDS.length || !text) return escapeHtml(text);
+    let out = escapeHtml(text);
+    const sorted = [...KEYWORDS].sort((a, b) => b.length - a.length);
+    sorted.forEach(k => {
+        const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const useBoundary = KW_OPTS.wholeWord && /^[\x20-\x7e]+$/.test(k);
+        const pattern = useBoundary ? `(\\b${escaped}\\b)` : `(${escaped})`;
+        const re = new RegExp(pattern, 'gi');
+        out = out.replace(re, '<span class="kw-hit">$1</span>');
+    });
+    return out;
+}
+
+function sortItems(items) {
+    // 1) 时间倒序  2) 命中关键词的置顶
+    const withMeta = items.map(it => ({
+        ...it,
+        _matched: matchKeywords(it),
+        _ts: it.pubDate ? new Date(it.pubDate).getTime() || 0 : 0,
+    }));
+    withMeta.sort((a, b) => {
+        const am = a._matched.length > 0 ? 1 : 0;
+        const bm = b._matched.length > 0 ? 1 : 0;
+        if (am !== bm) return bm - am;       // 命中的在前
+        return b._ts - a._ts;                 // 时间倒序
+    });
+    return withMeta;
+}
+
+function renderItemList(items, feedKey) {
+    const sorted = sortItems(items);
+    if (sorted.length === 0) return `<div class="feed-empty">暂无内容</div>`;
+
+    // 搜索过滤
+    const filtered = currentSearch
+        ? sorted.filter(it => it.title.toLowerCase().includes(currentSearch))
+        : sorted;
+
+    const matchedCount = filtered.filter(it => it._matched.length > 0).length;
+    const expanded = EXPANDED.has(feedKey);
+
+    // 命中的全部显示；未命中的按 DEFAULT_LIMIT 限制（除非展开）
+    let visible;
+    if (expanded) {
+        visible = filtered;
+    } else {
+        const matched = filtered.filter(it => it._matched.length > 0);
+        const unmatched = filtered.filter(it => it._matched.length === 0).slice(0, DEFAULT_LIMIT);
+        visible = matched.concat(unmatched);
+    }
+
+    const html = visible.map(it => {
+        const matched = it._matched.length > 0;
+        return `<li class="${matched ? 'matched' : ''}">
+            <a href="${escapeHtml(it.link)}" target="_blank" rel="noopener">${highlightKw(it.title)}</a>
+            <span class="date">${formatDate(it.pubDate)}</span>
+            ${it.authors ? `<div class="date" style="margin-left:0">${escapeHtml(it.authors)}</div>` : ''}
+        </li>`;
+    }).join('');
+
+    const hiddenCount = filtered.length - visible.length;
+    let toggle = '';
+    if (filtered.length > DEFAULT_LIMIT + matchedCount) {
+        toggle = expanded
+            ? `<div class="expand-toggle" data-feed="${escapeHtml(feedKey)}">收起 ▲</div>`
+            : `<div class="expand-toggle" data-feed="${escapeHtml(feedKey)}">展开全部（还有 ${hiddenCount} 篇）▼</div>`;
+    }
+
+    return '<ul class="feed-items">' + html + '</ul>' + toggle;
+}
+
+function rerenderAllFromCache() {
+    const cache = loadCache();
+    FEEDS.forEach(f => {
+        if (f.type === 'corl') {
+            renderCorl(f, false);
+        } else {
+            const c = cache[f.url];
+            if (c) renderFeed(f, { status: 'ok', items: c.items, fetchedAt: c.fetchedAt, cached: true });
+        }
+    });
+}
+
+function renderFeed(feed, state) {
+    const id = 'feed-' + feed.name.replace(/\W+/g, '-');
+    let block = document.getElementById(id);
+    if (!block) {
+        block = document.createElement('div');
+        block.className = 'feed-block';
+        block.id = id;
+        block.dataset.category = feed.category;
+        block.dataset.name = feed.name.toLowerCase();
+        container.appendChild(block);
+    }
+
+    let body = '';
+    if (state.status === 'loading') {
+        body = `<div class="feed-loading">加载中</div>`;
+    } else if (state.status === 'error') {
+        body = `<div class="feed-empty">加载失败：${escapeHtml(state.error || '未知错误')}</div>`;
+    } else {
+        body = renderItemList(state.items || [], feed.name);
+    }
+
+    const metaParts = [];
+    if (state.fetchedAt) metaParts.push('更新于 ' + new Date(state.fetchedAt).toLocaleString());
+    if (state.cached) metaParts.push('<span style="color:var(--warning-color)">缓存</span>');
+    if (state.status === 'error') metaParts.push(`<span class="err">${escapeHtml(state.error || '')}</span>`);
+    metaParts.push(`<a href="${escapeHtml(feed.url)}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> 源</a>`);
+
+    block.innerHTML = `
+        <div class="feed-head">
+            <h3 class="feed-title">${escapeHtml(feed.name)}<span class="feed-cat">${escapeHtml(feed.category)}</span></h3>
+            <div class="feed-meta">${metaParts.join(' · ')}</div>
+        </div>
+        ${body}
+    `;
+}
+
+function applyFilter() {
+    document.querySelectorAll('.feed-block').forEach(block => {
+        const matchCat = currentCat === '全部' || block.dataset.category === currentCat;
+        block.style.display = matchCat ? '' : 'none';
+    });
+}
+
+function renderCategoryChips() {
+    const cats = ['全部', ...new Set(FEEDS.map(f => f.category))];
+    catFilter.innerHTML = cats.map(c =>
+        `<span class="chip ${c === '全部' ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</span>`
+    ).join('');
+    catFilter.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            catFilter.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentCat = chip.dataset.cat;
+            applyFilter();
+        });
+    });
+}
+
+async function loadAll(forceRefresh = false) {
+    const cache = forceRefresh ? {} : loadCache();
+    const now = Date.now();
+    let done = 0, errs = 0;
+
+    const rssFeeds = FEEDS.filter(f => f.type === 'rss');
+    const corlFeeds = FEEDS.filter(f => f.type === 'corl');
+
+    statusText.textContent = `加载 0 / ${rssFeeds.length}…`;
+
+    // 先渲染 CoRL 特殊块（年份切换 UI 立即可见）
+    corlFeeds.forEach(f => renderCorl(f, forceRefresh));
+
+    // 先用缓存渲染 RSS
+    rssFeeds.forEach(f => {
+        const c = cache[f.url];
+        if (c && (now - c.fetchedAt) < CACHE_TTL_MS) {
+            renderFeed(f, { status: 'ok', items: c.items, fetchedAt: c.fetchedAt, cached: true });
+        } else {
+            renderFeed(f, { status: 'loading' });
+        }
+    });
+
+    // 并发拉取所有 RSS
+    await Promise.all(rssFeeds.map(async (f) => {
+        const c = cache[f.url];
+        if (c && !forceRefresh && (now - c.fetchedAt) < CACHE_TTL_MS) {
+            done++; statusText.textContent = `加载 ${done} / ${rssFeeds.length}…`;
+            return;
+        }
+        try {
+            const items = await fetchFeed(f);
+            cache[f.url] = { items, fetchedAt: Date.now() };
+            renderFeed(f, { status: 'ok', items, fetchedAt: cache[f.url].fetchedAt });
+        } catch(e) {
+            errs++;
+            if (c) {
+                renderFeed(f, { status: 'ok', items: c.items, fetchedAt: c.fetchedAt, cached: true, error: e.message });
+            } else {
+                renderFeed(f, { status: 'error', error: e.message });
+            }
+        } finally {
+            done++;
+            statusText.textContent = `加载 ${done} / ${rssFeeds.length}…`;
+        }
+    }));
+
+    saveCache(cache);
+    statusText.textContent = `完成 · 成功 ${rssFeeds.length - errs} / ${rssFeeds.length}` + (errs ? ` · 失败 ${errs}` : '');
+}
+
+// ============== CoRL 年份切换 ==============
+const CORL_YEARS = [2022, 2023, 2024, 2025, 2026];
+const CORL_DEFAULT_YEAR = 2025;
+// 2022/2023 用 v1 API，2024+ 用 v2 API
+const CORL_API = (year) => {
+    const base = year <= 2023 ? 'api.openreview.net' : 'api2.openreview.net';
+    return `https://${base}/notes?content.venueid=robot-learning.org/CoRL/${year}/Conference&limit=1000&offset=0`;
+};
+
+async function fetchCorlYear(year) {
+    const apiUrl = CORL_API(year);
+    // OpenReview API 无 CORS，强制走代理
+    const proxied = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    const res = await fetch(proxied);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const notes = data.notes || [];
+    if (notes.length === 0) throw new Error('该届暂无数据');
+    return notes.map(n => {
+        const c = n.content || {};
+        const title = c.title?.value || c.title || '(无标题)';
+        const authors = c.authors?.value || c.authors || [];
+        const abstract = c.abstract?.value || c.abstract || '';
+        const id = n.id;
+        return {
+            title: title,
+            link: `https://openreview.net/forum?id=${id}`,
+            authors: Array.isArray(authors) ? authors.slice(0, 4).join(', ') + (authors.length > 4 ? ' 等' : '') : '',
+            summary: abstract,
+            pubDate: n.cdate ? new Date(n.cdate).toISOString() : '',
+        };
+    });
+}
+
+function renderCorl(feed, forceRefresh) {
+    const id = 'feed-' + feed.name.replace(/\W+/g, '-');
+    let block = document.getElementById(id);
+    if (!block) {
+        block = document.createElement('div');
+        block.className = 'feed-block';
+        block.id = id;
+        block.dataset.category = feed.category;
+        block.dataset.name = feed.name.toLowerCase();
+        container.appendChild(block);
+    }
+
+    // 状态保存在 block 上
+    if (!block._corlYear) block._corlYear = CORL_DEFAULT_YEAR;
+
+    const renderFor = async (year, force) => {
+        block._corlYear = year;
+        const cacheKey = `corl_${year}`;
+        const cache = loadCache();
+        const now = Date.now();
+        const cached = cache[cacheKey];
+
+        const yearTabs = CORL_YEARS.map(y => {
+            const disabled = y === 2026 ? 'disabled' : '';
+            const active = y === year ? 'active' : '';
+            return `<span class="year-chip ${active} ${disabled}" data-year="${y}">${y}</span>`;
+        }).join('');
+
+        const renderBody = (items, meta) => {
+            const body = renderItemList(items, feed.name + '-' + year);
+
+            block.innerHTML = `
+                <div class="feed-head">
+                    <h3 class="feed-title">${escapeHtml(feed.name)}<span class="feed-cat">${escapeHtml(feed.category)}</span></h3>
+                    <div class="feed-meta">${meta}</div>
+                </div>
+                <div class="year-tabs">${yearTabs}</div>
+                ${body}
+            `;
+            // 重新绑定年份点击
+            block.querySelectorAll('.year-chip:not(.disabled)').forEach(chip => {
+                chip.addEventListener('click', () => renderFor(parseInt(chip.dataset.year, 10), false));
+            });
+        };
+
+        // 先用缓存渲染
+        if (cached && !force && (now - cached.fetchedAt) < CACHE_TTL_MS * 24) {
+            // CoRL 数据稳定，缓存可以长一些（24x = 12h）
+            renderBody(cached.items, `${year} 届 · 共 ${cached.items.length} 篇 · <span style="color:var(--warning-color)">缓存</span>`);
+            return;
+        }
+
+        // loading
+        renderBody([], `${year} 届 · <span style="color:var(--text-muted)">加载中…</span>`);
+        try {
+            const items = await fetchCorlYear(year);
+            cache[cacheKey] = { items, fetchedAt: Date.now() };
+            saveCache(cache);
+            renderBody(items, `${year} 届 · 共 ${items.length} 篇 · 更新于 ${new Date().toLocaleString()}`);
+        } catch(e) {
+            // 失败时若有旧缓存退回
+            if (cached) {
+                renderBody(cached.items, `${year} 届 · <span class="err">刷新失败：${escapeHtml(e.message)}</span> · 显示缓存`);
+            } else {
+                block.innerHTML = `
+                    <div class="feed-head">
+                        <h3 class="feed-title">${escapeHtml(feed.name)}<span class="feed-cat">${escapeHtml(feed.category)}</span></h3>
+                        <div class="feed-meta"><span class="err">${escapeHtml(e.message)}</span></div>
+                    </div>
+                    <div class="year-tabs">${yearTabs}</div>
+                    <div class="feed-empty">加载失败：${escapeHtml(e.message)}</div>
+                `;
+                block.querySelectorAll('.year-chip:not(.disabled)').forEach(chip => {
+                    chip.addEventListener('click', () => renderFor(parseInt(chip.dataset.year, 10), false));
+                });
+            }
+        }
+    };
+
+    renderFor(block._corlYear, forceRefresh);
+}
+
+// ============== 初始化 ==============
+renderCategoryChips();
+renderKwChips();
+document.getElementById('kw-count').textContent = KEYWORDS.length;
+if (KEYWORDS.length > 0) document.getElementById('kw-panel').open = true;
+
+function syncKwOptsUI() {
+    document.querySelectorAll('.kw-opt-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.scope === KW_OPTS.scope);
+    });
+    document.getElementById('kw-wholeword').checked = !!KW_OPTS.wholeWord;
+}
+syncKwOptsUI();
+document.querySelectorAll('.kw-opt-btn').forEach(b => {
+    b.addEventListener('click', () => {
+        KW_OPTS.scope = b.dataset.scope;
+        saveKwOpts();
+        syncKwOptsUI();
+        rerenderAllFromCache();
+    });
+});
+document.getElementById('kw-wholeword').addEventListener('change', (e) => {
+    KW_OPTS.wholeWord = e.target.checked;
+    saveKwOpts();
+    rerenderAllFromCache();
+});
+
+loadAll();
+
+document.getElementById('refresh-btn').addEventListener('click', () => loadAll(true));
+
+const kwInput = document.getElementById('kw-input');
+kwInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const v = kwInput.value.trim();
+        if (v && !KEYWORDS.some(k => k.toLowerCase() === v.toLowerCase())) {
+            KEYWORDS.push(v);
+            saveKeywords();
+            rerenderAllFromCache();
+        }
+        kwInput.value = '';
+    }
+});
+document.getElementById('kw-preset-load').addEventListener('click', () => {
+    KW_PRESET.forEach(k => {
+        if (!KEYWORDS.some(x => x.toLowerCase() === k.toLowerCase())) KEYWORDS.push(k);
+    });
+    saveKeywords();
+    rerenderAllFromCache();
+});
+document.getElementById('kw-clear').addEventListener('click', () => {
+    if (KEYWORDS.length === 0) return;
+    if (confirm('清空所有关键词？')) {
+        KEYWORDS = [];
+        saveKeywords();
+        rerenderAllFromCache();
+    }
+});
+
+searchInput.addEventListener('input', (e) => {
+    currentSearch = e.target.value.trim().toLowerCase();
+    rerenderAllFromCache();
+    applyFilter();
+});
+
+// 展开/收起 全局委托
+document.getElementById('feeds-container').addEventListener('click', (e) => {
+    const t = e.target.closest('.expand-toggle');
+    if (!t) return;
+    const key = t.dataset.feed;
+    if (EXPANDED.has(key)) EXPANDED.delete(key);
+    else EXPANDED.add(key);
+    rerenderAllFromCache();
+});
+</script>

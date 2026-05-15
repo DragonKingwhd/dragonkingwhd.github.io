@@ -1,315 +1,81 @@
 ---
-layout: null
-title: 首页
+layout: default
+title: Dragonking
+permalink: /
 ---
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragonking's Blog</title>
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
-            font-family: 'Noto Sans SC', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #e0e0e0;
-        }
+<div class="home-image-wrap">
+    <img src="{{ '/assets/img/home.jpg' | relative_url }}" alt="Dragonking" class="home-image">
+    <p class="home-motto" aria-label="热爱可抵岁月漫长">
+        <span class="ch">热</span><span class="ch">爱</span><span class="ch">可</span><span class="ch">抵</span><span class="ch">岁</span><span class="ch">月</span><span class="ch">漫</span><span class="ch">长</span>
+    </p>
+</div>
 
-        .container {
-            max-width: 1000px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .header {
-            margin-bottom: 80px;
-        }
-
-        .title {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            color: #999;
-            letter-spacing: 2px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 60px;
-        }
-
-        .card {
-            padding: 60px 40px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .card:hover {
-            background: rgba(0, 212, 255, 0.1);
-            border-color: #00d4ff;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.15);
-        }
-
-        .card-icon {
-            font-size: 48px;
-            color: #00d4ff;
-        }
-
-        .card-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .card-description {
-            font-size: 14px;
-            color: #999;
-            line-height: 1.6;
-        }
-
-        .footer {
-            color: #666;
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        /* Fortune Banner */
-        .fortune-banner {
-            display: block;
-            text-decoration: none;
-            color: inherit;
-            margin-bottom: 50px;
-            padding: 28px 40px;
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(168, 85, 247, 0.08));
-            border: 1px solid rgba(124, 58, 237, 0.35);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .fortune-banner::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), transparent 40%, transparent 60%, rgba(168, 85, 247, 0.4));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .fortune-banner:hover::before { opacity: 1; }
-
-        .fortune-banner:hover {
-            background: linear-gradient(135deg, rgba(124, 58, 237, 0.25), rgba(168, 85, 247, 0.15));
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.2);
-        }
-
-        .fortune-banner-inner {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 24px;
-        }
-
-        .fortune-sticks-icon {
-            width: 48px;
-            height: 48px;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .fortune-stick {
-            position: absolute;
-            bottom: 6px;
-            width: 4px;
-            height: 32px;
-            border-radius: 2px;
-            transform-origin: bottom center;
-        }
-
-        .fortune-stick:nth-child(1) { left: 14px; background: #a855f7; animation: stickShake1 2.5s ease-in-out infinite; }
-        .fortune-stick:nth-child(2) { left: 20px; background: #c084fc; animation: stickShake2 2.5s ease-in-out infinite 0.15s; height: 36px; }
-        .fortune-stick:nth-child(3) { left: 26px; background: #7c3aed; animation: stickShake3 2.5s ease-in-out infinite 0.3s; }
-        .fortune-stick:nth-child(4) { left: 32px; background: #a855f7; animation: stickShake1 2.5s ease-in-out infinite 0.1s; height: 30px; }
-
-        .fortune-cup {
-            position: absolute;
-            bottom: 0;
-            left: 8px;
-            width: 32px;
-            height: 18px;
-            border: 2px solid #a855f7;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            background: rgba(124, 58, 237, 0.2);
-        }
-
-        @keyframes stickShake1 { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
-        @keyframes stickShake2 { 0%,100% { transform: rotate(2deg); } 50% { transform: rotate(-5deg); } }
-        @keyframes stickShake3 { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(3deg); } }
-
-        .fortune-text { text-align: left; }
-
-        .fortune-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #d8b4fe;
-            margin-bottom: 4px;
-        }
-
-        .fortune-subtitle {
-            font-size: 11px;
-            color: #a78bfa;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-        }
-
-        .fortune-arrow {
-            font-size: 20px;
-            color: #a855f7;
-            transition: transform 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .fortune-banner:hover .fortune-arrow { transform: translateX(5px); }
-
-        @media (max-width: 768px) {
-            .fortune-banner { padding: 20px 24px; margin-bottom: 30px; }
-            .fortune-title { font-size: 18px; }
-            .fortune-subtitle { font-size: 10px; letter-spacing: 3px; }
-            .fortune-sticks-icon { width: 40px; height: 40px; }
-
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .title {
-                font-size: 32px;
-            }
-
-            .card {
-                padding: 40px 20px;
-            }
-
-            .card-icon {
-                font-size: 36px;
-            }
-
-            .card-title {
-                font-size: 18px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="title">Dragonking</div>
-            <div class="subtitle">天下英雄如过江之鲫</div>
-        </div>
-
-        <a href="/fortune/" class="fortune-banner">
-            <div class="fortune-banner-inner">
-                <div class="fortune-sticks-icon">
-                    <div class="fortune-stick"></div>
-                    <div class="fortune-stick"></div>
-                    <div class="fortune-stick"></div>
-                    <div class="fortune-stick"></div>
-                    <div class="fortune-cup"></div>
-                </div>
-                <div class="fortune-text">
-                    <div class="fortune-title">赛博抽签筒</div>
-                    <div class="fortune-subtitle">Cyber Fortune Oracle</div>
-                </div>
-                <div class="fortune-arrow">→</div>
-            </div>
-        </a>
-
-        <div class="grid">
-            <a href="/blog/" class="card">
-                <div class="card-icon">📚</div>
-                <div class="card-title">知识文章</div>
-                <div class="card-description">技术分享与思考</div>
-            </a>
-
-            <a href="/tools/" class="card">
-                <div class="card-icon">🛠️</div>
-                <div class="card-title">实用工具</div>
-                <div class="card-description">开发辅助工具集</div>
-            </a>
-
-            <a href="/floating-diary/" class="card">
-                <div class="card-icon">✍️</div>
-                <div class="card-title">浮生日记</div>
-                <div class="card-description">生活与思考的记录</div>
-            </a>
-
-            <a href="/guestbook/" class="card">
-                <div class="card-icon">💬</div>
-                <div class="card-title">留言板</div>
-                <div class="card-description">欢迎交流和反馈</div>
-            </a>
-        </div>
-
-        <div class="footer">© 2024-<script>document.write(new Date().getFullYear())</script> Dragonking | Powered by Jekyll</div>
-    </div>
-    <script>
- window.difyChatbotConfig = {
-  token: '8iLYu0HfcV1BttsA',
-  inputs: {},
-  systemVariables: {},
-  userVariables: {},
- }
-</script>
-<script
- src="https://udify.app/embed.min.js"
- id="8iLYu0HfcV1BttsA"
- defer>
-</script>
 <style>
-  #dify-chatbot-bubble-button {
-    background-color: #1C64F2 !important;
-  }
-  #dify-chatbot-bubble-window {
-    width: 24rem !important;
-    height: 40rem !important;
-  }
+.main { padding: 0 !important; }
+.home-image-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 8vh 1.5rem 1.5rem;
+}
+.home-image {
+    display: block;
+    width: 50%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    opacity: 0.3;
+}
+.home-motto {
+    margin: 2.25rem 0 0;
+    font-family: 'Kaiti SC', 'STKaiti', 'KaiTi', 'BiauKai', '楷体', 'Noto Serif SC', serif;
+    font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    display: flex;
+}
+.home-motto .ch {
+    display: inline-block;
+    opacity: 0;
+    color: #e2dccf;
+    transform: scale(0.3);
+    animation: mottoPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.home-motto .ch:nth-child(1) { animation-delay: 0.45s; }
+.home-motto .ch:nth-child(2) { animation-delay: 0.67s; }
+.home-motto .ch:nth-child(3) { animation-delay: 0.89s; }
+.home-motto .ch:nth-child(4) { animation-delay: 1.11s; }
+.home-motto .ch:nth-child(5) { animation-delay: 1.33s; }
+.home-motto .ch:nth-child(6) { animation-delay: 1.55s; }
+.home-motto .ch:nth-child(7) { animation-delay: 1.77s; }
+.home-motto .ch:nth-child(8) { animation-delay: 1.99s; }
+@keyframes mottoPop {
+    0%   { opacity: 0; transform: scale(0.3);  color: #e2dccf; }
+    60%  { opacity: 1; transform: scale(1.18); color: #b9926a; }
+    100% { opacity: 1; transform: scale(1);    color: #1a1a1a; }
+}
+@media (max-width: 880px) {
+    .home-image { width: 80%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .home-motto .ch { animation: none; opacity: 1; transform: none; color: #1a1a1a; }
+}
 </style>
-</body>
-</html>
+
+<script>
+    window.difyChatbotConfig = {
+        token: '8iLYu0HfcV1BttsA',
+        inputs: {},
+        systemVariables: {},
+        userVariables: {},
+    }
+</script>
+<script src="https://udify.app/embed.min.js" id="8iLYu0HfcV1BttsA" defer></script>
+<style>
+    #dify-chatbot-bubble-button { background-color: var(--accent, #c2410c) !important; }
+    #dify-chatbot-bubble-window { width: 24rem !important; height: 40rem !important; }
+</style>

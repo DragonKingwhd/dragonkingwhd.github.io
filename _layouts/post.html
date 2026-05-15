@@ -2,99 +2,246 @@
 layout: default
 ---
 
-<article class="post">
-    <header class="post-header">
-        <div class="container">
-            <h1>{{ page.title }}</h1>
-            <div class="post-meta">
-                <span class="post-date">
-                    <i class="fas fa-calendar"></i>
-                    {{ page.date | date: site.date_format }}
-                </span>
-                
-                {% if page.author %}
-                <span class="post-author">
-                    <i class="fas fa-user"></i>
-                    {{ page.author }}
-                </span>
-                {% endif %}
-                
-                {% if page.categories.size > 0 %}
-                <span class="post-categories">
-                    <i class="fas fa-folder"></i>
-                    {% for category in page.categories %}
-                    <span>{{ category }}</span>
-                    {% unless forloop.last %}, {% endunless %}
-                    {% endfor %}
-                </span>
-                {% endif %}
+<div class="post-layout">
 
-                {% if page.tags.size > 0 %}
-                <div class="post-tags">
-                    <i class="fas fa-tags"></i>
-                    {% for tag in page.tags %}
-                    <span class="tag">#{{ tag }}</span>
-                    {% endfor %}
+    <div class="content-wrap">
+
+        <div class="crumb">
+            <a href="{{ '/' | relative_url }}">notes</a>
+            <span class="sep">/</span>
+            <a href="{{ '/blog/' | relative_url }}">blog</a>
+            <span class="sep">/</span>
+            {{ page.title | truncate: 40 }}
+        </div>
+
+        <article class="post">
+            <header class="post-header">
+                <h1>{{ page.title }}</h1>
+                <div class="post-meta">
+                    <span><i class="fas fa-calendar"></i>{{ page.date | date: "%Y-%m-%d" }}</span>
+                    {% if page.author %}<span><i class="fas fa-user"></i>{{ page.author }}</span>{% endif %}
+                    {% if page.categories.size > 0 %}
+                    <span>
+                        <i class="fas fa-folder"></i>
+                        {% for c in page.categories %}{{ c }}{% unless forloop.last %}, {% endunless %}{% endfor %}
+                    </span>
+                    {% endif %}
+                    {% if page.tags.size > 0 %}
+                    <span class="post-tags">
+                        {% for t in page.tags %}<span class="tag">#{{ t }}</span>{% endfor %}
+                    </span>
+                    {% endif %}
                 </div>
-                {% endif %}
+            </header>
+
+            <div class="post-content" id="postContent">
+                {{ content }}
             </div>
-        </div>
-    </header>
-    
-    <div class="post-content">
-        <div class="container">
-            {{ content }}
-        </div>
-    </div>
-    
-    <footer class="post-footer">
-        <div class="container">
-            <div class="post-navigation">
-                {% if page.previous %}
-                <div class="nav-previous">
+
+            <footer class="post-footer">
+                {% if page.previous or page.next %}
+                <div class="post-navigation">
+                    {% if page.previous %}
                     <a href="{{ page.previous.url | relative_url }}">
-                        <i class="fas fa-arrow-left"></i>
-                        <div>
-                            <span>上一篇</span>
-                            <h4>{{ page.previous.title }}</h4>
-                        </div>
+                        ← <strong>{{ page.previous.title }}</strong>
                     </a>
+                    {% else %}<span></span>{% endif %}
+                    {% if page.next %}
+                    <a href="{{ page.next.url | relative_url }}" style="text-align:right;">
+                        <strong>{{ page.next.title }}</strong> →
+                    </a>
+                    {% endif %}
                 </div>
                 {% endif %}
-                
-                {% if page.next %}
-                <div class="nav-next">
-                    <a href="{{ page.next.url | relative_url }}">
-                        <div>
-                            <span>下一篇</span>
-                            <h4>{{ page.next.title }}</h4>
-                        </div>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-            
-            <div class="post-share">
-                <h4>分享这篇文章</h4>
-                <div class="share-buttons">
-                    <a href="https://twitter.com/intent/tweet?text={{ page.title | uri_escape }}&url={{ page.url | absolute_url }}" 
-                       target="_blank" class="share-btn twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | absolute_url }}" 
-                       target="_blank" class="share-btn facebook">
-                        <i class="fab fa-facebook"></i>
-                    </a>
-                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url }}" 
-                       target="_blank" class="share-btn linkedin">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-</article>
+            </footer>
+        </article>
 
-<!-- Gitalk评论区 -->
-{% include gitalk.html %}
+        {% include gitalk.html %}
+
+    </div>
+
+    <aside class="post-toc" id="postToc" aria-label="目录" hidden>
+        <div class="post-toc-title">目录</div>
+        <nav class="post-toc-nav" id="postTocNav"></nav>
+    </aside>
+
+</div>
+
+<button class="toc-fab" id="tocFab" aria-label="打开目录" hidden>
+    <i class="fas fa-list-ul"></i>
+</button>
+<div class="toc-backdrop" id="tocBackdrop"></div>
+
+<style>
+.post-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+@media (min-width: 1180px) {
+    .post-layout {
+        grid-template-columns: minmax(0, 1fr) 232px;
+        gap: 2.5rem;
+        max-width: 1080px;
+        margin: 0 auto;
+        align-items: start;
+    }
+    .post-layout .content-wrap { margin: 0; max-width: none; }
+}
+
+.post-toc {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    font-size: 0.85rem;
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--border);
+}
+.post-toc-title {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 0.75rem;
+}
+.post-toc-nav { display: flex; flex-direction: column; gap: 0.1rem; }
+.post-toc-nav a {
+    display: block;
+    color: var(--text-soft);
+    padding: 0.28rem 0.5rem;
+    border-radius: var(--radius-sm);
+    line-height: 1.4;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.post-toc-nav a:hover { color: var(--text); background: var(--bg-soft); }
+.post-toc-nav a.lvl-2 { padding-left: 1.15rem; font-size: 0.8rem; }
+.post-toc-nav a.lvl-3 { padding-left: 1.85rem; font-size: 0.78rem; color: var(--text-mute); }
+.post-toc-nav a.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+    font-weight: 500;
+}
+
+.post-content :is(h1, h2, h3) { scroll-margin-top: 1.5rem; }
+
+/* Mobile: floating button + slide-in panel */
+.toc-fab {
+    display: none;
+    position: fixed;
+    right: 1.25rem;
+    bottom: 5.5rem;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(194, 65, 12, 0.3);
+    z-index: 60;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.toc-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 70;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.toc-backdrop.show { opacity: 1; pointer-events: auto; }
+
+@media (max-width: 1179px) {
+    .toc-fab { display: flex; }
+    .post-toc {
+        position: fixed;
+        top: 0; right: 0; bottom: 0;
+        width: min(78vw, 300px);
+        max-height: 100vh;
+        background: var(--bg);
+        border-left: 1px solid var(--border);
+        padding: 2rem 1.25rem;
+        z-index: 80;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+    }
+    .post-toc.open { transform: translateX(0); }
+}
+</style>
+
+<script>
+(function () {
+    const content = document.getElementById('postContent');
+    const tocAside = document.getElementById('postToc');
+    const tocNav = document.getElementById('postTocNav');
+    const fab = document.getElementById('tocFab');
+    const backdrop = document.getElementById('tocBackdrop');
+    if (!content || !tocAside) return;
+
+    const heads = Array.from(content.querySelectorAll('h1, h2, h3'));
+    if (heads.length < 3) return;
+
+    const slug = (s, i) => (s.trim().toLowerCase()
+        .replace(/[^\w一-龥]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'sec') + '-' + i;
+
+    const links = [];
+    heads.forEach((h, i) => {
+        if (!h.id) h.id = slug(h.textContent, i);
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent;
+        a.className = 'lvl-' + (h.tagName === 'H1' ? '1' : h.tagName === 'H2' ? '2' : '3');
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', '#' + h.id);
+            closePanel();
+        });
+        tocNav.appendChild(a);
+        links.push({ a, h });
+    });
+
+    tocAside.hidden = false;
+    if (fab) fab.hidden = false;
+
+    // Scroll-spy
+    let active = null;
+    const setActive = (link) => {
+        if (active === link) return;
+        if (active) active.a.classList.remove('active');
+        if (link) {
+            link.a.classList.add('active');
+            link.a.scrollIntoView({ block: 'nearest' });
+        }
+        active = link;
+    };
+    const io = new IntersectionObserver((entries) => {
+        const visible = entries.filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length) {
+            const id = visible[0].target.id;
+            setActive(links.find(l => l.h.id === id));
+        }
+    }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+    heads.forEach(h => io.observe(h));
+
+    // Mobile toggle
+    function openPanel() {
+        tocAside.classList.add('open');
+        backdrop.classList.add('show');
+    }
+    function closePanel() {
+        tocAside.classList.remove('open');
+        backdrop.classList.remove('show');
+    }
+    if (fab) fab.addEventListener('click', openPanel);
+    if (backdrop) backdrop.addEventListener('click', closePanel);
+})();
+</script>

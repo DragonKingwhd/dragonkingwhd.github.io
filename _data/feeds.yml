@@ -1,0 +1,47 @@
+# 期刊订阅源配置
+# 添加新订阅：在下面追加一个条目即可（name / url / category 可选）
+# category 用于分组显示
+
+- name: "Science Robotics"
+  url: "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
+  category: "顶刊"
+
+- name: "Nature Machine Intelligence"
+  url: "https://www.nature.com/natmachintell.rss"
+  category: "顶刊"
+
+- name: "IEEE T-RO (Trans. Robotics)"
+  url: "https://ieeexplore.ieee.org/rss/TOC7083369.XML"
+  category: "IEEE"
+
+- name: "IEEE RA-L (Robotics Automation Letters)"
+  url: "https://ieeexplore.ieee.org/rss/TOC8860.XML"
+  category: "IEEE"
+
+- name: "IJRR (Int. J. Robotics Research)"
+  url: "https://journals.sagepub.com/action/showFeed?type=etoc&feed=rss&jc=ijr"
+  category: "顶刊"
+
+- name: "CoRL"
+  type: "corl"
+  category: "会议"
+
+- name: "arXiv 机器人 (cs.RO)"
+  url: "https://rss.arxiv.org/rss/cs.RO"
+  category: "arXiv"
+
+- name: "arXiv 机器学习 (cs.LG)"
+  url: "https://rss.arxiv.org/rss/cs.LG"
+  category: "arXiv"
+
+- name: "arXiv 人工智能 (cs.AI)"
+  url: "https://rss.arxiv.org/rss/cs.AI"
+  category: "arXiv"
+
+- name: "arXiv 计算机视觉 (cs.CV)"
+  url: "https://rss.arxiv.org/rss/cs.CV"
+  category: "arXiv"
+
+- name: "arXiv 系统与控制 (cs.SY)"
+  url: "https://rss.arxiv.org/rss/cs.SY"
+  category: "arXiv"

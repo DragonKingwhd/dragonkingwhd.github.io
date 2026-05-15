@@ -53,15 +53,30 @@ GitHub Pages 会在推送到 main 分支时自动构建和部署。
   - `css/style.css` - 主样式表，包含用于主题的 CSS 变量
   - `js/main.js` - 客户端 JavaScript（导航、平滑滚动、返回顶部按钮）
 
-### 关键页面
+### 关键页面（根目录，导航出现）
 
 - **`index.html`** - 首页，采用卡片式导航
 - **`blog.html`** - 博客列表页面，支持搜索和分类筛选
-- **`floating-diary.html`** - 日记条目显示
-- **`guestbook.html`** - 留言板，集成 Gitalk 评论
+- **`knowledge-base.html`** - 知识库（permalink `/docs/`）
 - **`tools.html`** - 工具集合页面
-- **`material-properties.html`** - 材料属性工具
-- **`sim2sim-guide.html`** - Sim2Sim 部署指南
+- **`floating-diary.html`** - 日记条目显示
+- **`journals.html`** - 期刊订阅（RSS 实时聚合）
+- **`guestbook.html`** - 留言板，集成 Gitalk 评论
+- **`about.md`** - 关于页
+
+### 子目录
+
+- **`tools/`** - 工具子页（独立工具页面集中存放）
+  - `material-properties.html` - 材料属性工具
+  - `sim2sim-guide.html` - Sim2Sim 部署指南
+  - `isaac-sim-vs-mujoco.html` - Isaac Sim vs MuJoCo 对比
+  - `vocab-cards.html` - 词汇闪卡
+  - `fortune.html` - 命运 / 趣味页
+  - `plot-viewer.html` / `plot-viewer-offline.html` - 数据曲线图
+  - `urdf-converter.html`、`sw-to-urdf.html`、`fov-calculator.html` 等
+  - `python-learning/`、`robot-rl-learning/` - 学习子模块
+- **`docs/`** - 开发文档（`MD_TO_WORD_DEPLOYMENT.md` 等部署/集成说明）
+- **`scripts/`** - 维护脚本（`deploy.sh`）
 
 ### 网站结构树
 
@@ -70,7 +85,7 @@ GitHub Pages 会在推送到 main 分支时自动构建和部署。
 ```
 Dragonking 的博客 (https://dragonkingwhd.github.io)
 │
-├── 📚 知识文章 (/blog/)
+├── 📚 博客 (/blog/)
 │   ├── blog.html - 博客列表页面
 │   │   ├── 搜索功能 - 按标题和标签搜索
 │   │   ├── 分类筛选 - 按文章分类过滤
@@ -100,7 +115,7 @@ Dragonking 的博客 (https://dragonkingwhd.github.io)
 │   ├── tools/plot-viewer-offline.html - 绘图查看器（离线版）
 │   │   └── 支持离线使用
 │   │
-│   ├── material-properties.html - 材料属性工具
+│   ├── tools/material-properties.html - 材料属性工具
 │   │   └── 材料参数查询和计算
 │   │
 │   └── md-to-word.html - Markdown 转 Word 工具

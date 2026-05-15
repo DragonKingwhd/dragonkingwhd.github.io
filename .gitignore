@@ -1,0 +1,17 @@
+# Jekyll build output
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# Ruby / Bundler
+vendor/
+.bundle/
+
+# Claude Code local settings (not for public repo)
+.claude/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~

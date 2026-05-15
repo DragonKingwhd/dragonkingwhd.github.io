@@ -1,122 +1,127 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
+    <title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
     <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines }}{% else %}{{ site.description }}{% endif %}">
-    
-    <!-- Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Gitalk评论系统CSS -->
+
     {% if site.gitalk.enable %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
     {% endif %}
-    
-    <!-- CSS -->
+
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 
-    <!-- SEO & Feed -->
     {% seo %}
     {% feed_meta %}
 </head>
-<body class="{% if page.layout == 'home' %}home-page{% endif %}">
-    <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;">跳转到主要内容</a>
+<body>
 
-    <!-- Navigation -->
-    <nav class="navbar {% if page.layout == 'home' %}navbar-transparent{% endif %}" id="navbar">
-        <div class="nav-container">
-            <a href="{{ '/' | relative_url }}" class="nav-brand">
-                <i class="fas fa-dragon"></i>
-                <span>{{ site.title }}</span>
+    <div class="sidebar-mobile-bar">
+        <a href="{{ '/' | relative_url }}" class="brand-name">{{ site.title }}</a>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="切换侧栏">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <div class="app">
+        <aside class="sidebar" id="sidebar">
+
+            <a href="{{ '/' | relative_url }}" class="sidebar-brand">
+                <span class="brand-name">{{ site.title }}</span>
+                <span class="brand-tag">notes · index</span>
             </a>
-            
-            <button class="nav-toggle" id="navToggle" aria-label="切换导航">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            
-            <ul class="nav-menu" id="navMenu">
-                {% for item in site.navigation %}
-                <li class="nav-item">
-                    <a href="{{ item.url | relative_url }}" 
-                       class="nav-link {% if page.url == item.url %}active{% endif %}">
-                        <i class="{{ item.icon }}"></i>
-                        <span>{{ item.title }}</span>
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main id="main-content" class="main-content {% if page.layout == 'home' %}main-fullscreen{% endif %}">
-        {{ content }}
-    </main>
+            <nav class="sidebar-group">
+                <div class="sidebar-group-title">Reading</div>
+                <a href="{{ '/blog/' | relative_url }}" class="sidebar-link {% if page.url contains '/blog' %}active{% endif %}">
+                    Blog <span class="cn">博客</span>
+                </a>
+                <a href="{{ '/docs/' | relative_url }}" class="sidebar-link {% if page.url == '/docs/' or page.url contains '/docs/' %}active{% endif %}">
+                    Knowledge <span class="cn">知识库</span>
+                </a>
+                <a href="{{ '/journals/' | relative_url }}" class="sidebar-link {% if page.url contains '/journals' %}active{% endif %}">
+                    Journals <span class="cn">期刊订阅</span>
+                </a>
+            </nav>
 
-    <!-- 主题切换器 -->
-    {% include theme-switcher.html %}
+            <nav class="sidebar-group">
+                <div class="sidebar-group-title">Building</div>
+                <a href="{{ '/tools/' | relative_url }}" class="sidebar-link {% if page.url contains '/tools' %}active{% endif %}">
+                    Tools <span class="cn">实用工具</span>
+                </a>
+            </nav>
 
-    <!-- Footer (only show if not home page) -->
-    {% unless page.layout == 'home' %}
-    <footer class="site-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>{{ site.title }}</h4>
-                <p>{{ site.description }}</p>
-            </div>
-            
-            <div class="footer-section">
-                <h4>快速链接</h4>
-                <ul>
-                    {% for item in site.navigation %}
-                    <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h4>联系方式</h4>
-                <div class="social-links">
-                    {% if site.social.github %}
-                    <a href="https://github.com/{{ site.social.github }}" target="_blank" rel="noopener" aria-label="GitHub">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    {% endif %}
+            <nav class="sidebar-group">
+                <div class="sidebar-group-title">Personal</div>
+                <a href="{{ '/floating-diary/' | relative_url }}" class="sidebar-link {% if page.url contains '/floating-diary' or page.url contains '/diary' %}active{% endif %}">
+                    Diary <span class="cn">浮生日记</span>
+                </a>
+                <a href="{{ '/guestbook/' | relative_url }}" class="sidebar-link {% if page.url contains '/guestbook' %}active{% endif %}">
+                    Guestbook <span class="cn">留言板</span>
+                </a>
+            </nav>
 
-                    {% if site.social.email %}
-                    <a href="mailto:{{ site.social.email }}" aria-label="发送邮件">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                    {% endif %}
+            <a href="{{ '/fortune/' | relative_url }}" class="sidebar-featured">
+                <span class="sidebar-featured-text">
+                    <small>Featured</small>
+                    Cyber Fortune Oracle
+                </span>
+                <span class="arrow">→</span>
+            </a>
+
+            <div class="sidebar-footer">
+                <div class="row">
+                    <a href="{{ '/about/' | relative_url }}">About</a>
+                    {% if site.social.github %}<a href="https://github.com/{{ site.social.github }}" target="_blank" rel="noopener">GitHub</a>{% endif %}
+                    {% if site.social.email %}<a href="mailto:{{ site.social.email }}">Email</a>{% endif %}
                 </div>
+                <div>Harry Wang · since 2024</div>
             </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. Powered by Jekyll & GitHub Pages</p>
-        </div>
-    </footer>
-    {% endunless %}
+        </aside>
 
-    <!-- 不蒜子访客统计 -->
+        <main class="main" id="main-content">
+            {{ content }}
+        </main>
+    </div>
+
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    
-    <!-- Gitalk评论系统JS -->
+
     {% if site.gitalk.enable %}
     <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
     {% endif %}
-    
-    <!-- JavaScript -->
-    <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
+
+    <script>
+        (function () {
+            const toggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!toggle || !sidebar || !backdrop) return;
+
+            const close = () => {
+                sidebar.classList.remove('open');
+                backdrop.classList.remove('show');
+                document.body.classList.remove('no-scroll');
+            };
+            toggle.addEventListener('click', () => {
+                const isOpen = sidebar.classList.toggle('open');
+                backdrop.classList.toggle('show', isOpen);
+                document.body.classList.toggle('no-scroll', isOpen);
+            });
+            backdrop.addEventListener('click', close);
+            sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+                if (window.innerWidth <= 880) close();
+            }));
+        })();
+    </script>
 </body>
 </html>

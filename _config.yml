@@ -45,6 +45,9 @@ navigation:
   - title: 浮生日记
     url: /floating-diary/
     icon: "fas fa-feather"
+  - title: 期刊订阅
+    url: /journals/
+    icon: "fas fa-rss"
   - title: 留言板
     url: /guestbook/
     icon: "fas fa-comments"

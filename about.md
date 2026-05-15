@@ -4,12 +4,87 @@ title: 关于我
 permalink: /about/
 ---
 
+<style>
+.about-header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+.about-header .container { padding: 0; max-width: none; margin: 0; }
+.about-intro { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.avatar-fallback {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.about-text h1 { margin: 0 0 0.45rem; }
+.about-text .lead { color: var(--text-soft); margin: 0 0 0.75rem; }
+.about-text .social-links { display: flex; gap: 0.75rem; }
+.about-text .social-links a {
+    width: 34px; height: 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-soft);
+    transition: all 0.15s ease;
+}
+.about-text .social-links a:hover { color: var(--accent); border-color: var(--accent); }
+
+.about-section { margin-bottom: 2.5rem; }
+.about-section h2 {
+    display: flex; align-items: center; gap: 0.5rem;
+    border: none; padding: 0; margin-top: 0;
+    font-size: 1.15rem;
+}
+.about-section h2 i { color: var(--accent); font-size: 0.95em; }
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
+.skill-category h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+.skills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.skill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    padding: 0.18rem 0.6rem;
+    border-radius: 3px;
+}
+.interests {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.interest {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    background: var(--bg-soft);
+}
+.interest i { color: var(--accent); font-size: 1.2rem; margin-bottom: 0.45rem; display: block; }
+.interest h4 { margin: 0 0 0.3rem; font-size: 0.95rem; }
+.interest p { color: var(--text-soft); font-size: 0.85rem; margin: 0; }
+.contact-info { display: flex; flex-direction: column; gap: 0.5rem; }
+.contact-item { display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-mono); font-size: 0.88rem; }
+.contact-item i { color: var(--accent); width: 1.1em; }
+.contact-item a { color: var(--text); border-bottom: 1px dotted var(--border); }
+.contact-item a:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+
+<div class="content-wrap">
+
 <section class="about-header">
     <div class="container">
         <div class="about-intro">
-            <div class="about-avatar">
-                <img src="{{ '/assets/images/avatar.jpg' | relative_url }}" alt="我的头像" class="avatar">
-            </div>
+            <div class="about-avatar avatar-fallback" aria-label="Harry Wang">HW</div>
             <div class="about-text">
                 <h1>关于我</h1>
                 <p class="lead">你好！我是一名机器人与机械工程方向的研究者和开发者</p>
@@ -149,3 +224,4 @@ permalink: /about/
         </div>
     </div>
 </section>
+</div>
