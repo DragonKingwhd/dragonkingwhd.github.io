@@ -57,14 +57,18 @@ social:
   github: DragonKingwhd
   email: dragonkingwhd@gmail.com
 
-# Gitalk评论配置
-gitalk:
+# giscus 评论系统（基于 GitHub Discussions，无需在前端暴露任何密钥）
+# 配置步骤见 README 或 https://giscus.app
+giscus:
   enable: true
-  clientID: 'Ov23lieztwsFgq1qhD5a'    # GitHub OAuth App Client ID
-  clientSecret: '68a2a2fe16bc6b68cbed8ffac842abfd0e7560fb'  # GitHub OAuth App Client Secret
-  repo: 'dragonkingwhd.github.io'               # 存储评论的GitHub仓库
-  owner: 'DragonKingwhd'                         # GitHub仓库的所有者
-  admin: ['DragonKingwhd']                       # 管理员（可以初始化评论）
+  repo: 'DragonKingwhd/dragonkingwhd.github.io'   # owner/repo
+  repo_id: 'R_kgDOPlOpOg'                         # 从 giscus.app 获取
+  category: 'Comments'                            # GitHub Discussions 分类名
+  category_id: 'DIC_kwDOPlOpOs4C9Glf'             # 从 giscus.app 获取
+  mapping: 'pathname'                             # 每个页面路径对应一个 discussion
+  reactions_enabled: '1'
+  theme: 'light'
+  lang: 'zh-CN'
 
 # 网站主题配置
 theme_config:

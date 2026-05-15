@@ -4,150 +4,53 @@ title: 留言板
 permalink: /guestbook/
 ---
 
-<div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-comments"></i> 留言板</h1>
-        <p class="page-description">欢迎在这里留下您的宝贵意见和建议！</p>
+<div class="content-wrap">
+
+    <div class="crumb">
+        <a href="{{ '/' | relative_url }}">notes</a>
+        <span class="sep">/</span>
+        guestbook
     </div>
-</div>
 
-<div class="content-section">
-    <div class="container">
-        <div class="guestbook-intro">
-            <div class="intro-card">
-                <div class="intro-icon">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <div class="intro-content">
-                    <h3>感谢您的访问</h3>
-                    <p>这里是我的数字留言板，您可以：</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> 分享您对网站的看法</li>
-                        <li><i class="fas fa-check"></i> 提出改进建议</li>
-                        <li><i class="fas fa-check"></i> 交流技术心得</li>
-                        <li><i class="fas fa-check"></i> 或者只是简单地打个招呼</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-comments"></i> 留言板</h1>
+        <p class="page-subtitle">欢迎在这里留下你的想法、建议，或只是打个招呼</p>
+    </div>
 
-        <!-- Gitalk 评论区 -->
-        <div class="gitalk-section">
-            {% include gitalk.html %}
+    <div class="gb-intro">
+        <i class="fas fa-heart gb-intro-icon"></i>
+        <div>
+            <p>这里是我的数字留言板，你可以：</p>
+            <ul>
+                <li>分享你对网站的看法</li>
+                <li>提出改进建议</li>
+                <li>交流技术心得</li>
+                <li>或者只是简单地打个招呼</li>
+            </ul>
         </div>
     </div>
+
+    {% include comments.html %}
+
 </div>
 
 <style>
-.guestbook-intro {
-    margin-bottom: 3rem;
-}
-
-.intro-card {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
+.gb-intro {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.25rem;
     align-items: flex-start;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 2.5rem;
 }
+.gb-intro-icon { font-size: 1.5rem; color: var(--accent); flex-shrink: 0; margin-top: 0.15rem; }
+.gb-intro p { margin: 0 0 0.5rem; color: var(--text); font-weight: 500; }
+.gb-intro ul { margin: 0; padding-left: 1.1rem; }
+.gb-intro li { color: var(--text-soft); margin-bottom: 0.3rem; }
 
-.intro-icon {
-    font-size: 2rem;
-    color: var(--primary-color, #00d4ff);
-    flex-shrink: 0;
-}
-
-.intro-content h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.3rem;
-}
-
-.intro-content ul {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0 0 0;
-}
-
-.intro-content li {
-    padding: 0.5rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.intro-content i {
-    color: var(--primary-color, #00d4ff);
-}
-
-/* Gitalk 评论区样式 */
-.gitalk-section {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(0, 212, 255, 0.2);
-}
-
-.comments-section {
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-}
-
-.comments-header {
-    margin-bottom: 1.5rem;
-}
-
-.comments-header h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.3rem;
-    color: var(--text-primary, #fff);
-}
-
-.comments-header p {
-    margin: 0;
-    color: var(--text-secondary, #999);
-    font-size: 0.95rem;
-}
-
-/* Gitalk 容器自适应 */
-#gitalk-container {
-    color: var(--text-primary, #fff);
-}
-
-#gitalk-container .gt-container {
-    background: transparent !important;
-}
-
-#gitalk-container .gt-header-textarea {
-    background: var(--bg-tertiary, rgba(0, 0, 0, 0.3)) !important;
-    border: 1px solid rgba(0, 212, 255, 0.2) !important;
-    color: var(--text-primary, #fff) !important;
-}
-
-#gitalk-container .gt-btn {
-    background: linear-gradient(135deg, var(--primary-color, #00d4ff), var(--accent-color, #7c3aed)) !important;
-    border: none !important;
-    color: white !important;
-}
-
-#gitalk-container .gt-btn:hover {
-    opacity: 0.9 !important;
-}
-
-@media (max-width: 768px) {
-    .gitalk-section {
-        margin-top: 2rem;
-        padding-top: 1rem;
-    }
-
-    .comments-section {
-        padding: 1rem;
-    }
-
-    .intro-card {
-        flex-direction: column;
-    }
+@media (max-width: 600px) {
+    .gb-intro { flex-direction: column; gap: 0.75rem; padding: 1.25rem; }
 }
 </style>

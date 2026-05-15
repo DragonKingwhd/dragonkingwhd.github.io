@@ -587,6 +587,31 @@ img, video, iframe { border-radius: var(--radius); margin: 1.25rem 0; }
 .navbar, .nav-container, .nav-menu, .nav-toggle, .nav-brand, #navbar { display: none !important; }
 .skip-link, .theme-switcher { display: none !important; }
 
+/* ─────── Comments (giscus) ─────── */
+
+.comments-section {
+    margin-top: 3rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border);
+}
+.comments-header { margin-bottom: 1.25rem; }
+.comments-header h3 {
+    margin: 0 0 0.3rem;
+    font-size: 1.15rem;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.comments-header h3 i { color: var(--accent); font-size: 0.95em; }
+.comments-header p {
+    margin: 0;
+    color: var(--text-mute);
+    font-size: 0.88rem;
+}
+.giscus, .giscus-frame { width: 100%; }
+
 /* ─────── Misc ─────── */
 
 .no-scroll { overflow: hidden; }

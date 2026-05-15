@@ -4,144 +4,69 @@ title: 浮生日记
 permalink: /floating-diary/
 ---
 
-<div class="page-header">
-    <div class="container">
-        <h1><i class="fas fa-pen-fancy"></i> 浮生日记</h1>
-        <p class="page-subtitle">记录生活中的点滴思考</p>
+<div class="content-wrap">
+
+    <div class="crumb">
+        <a href="{{ '/' | relative_url }}">notes</a>
+        <span class="sep">/</span>
+        diary
     </div>
+
+    <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-pen-fancy"></i> 浮生日记</h1>
+        <p class="page-subtitle">浮生若梦 · 记录思考、感悟与成长的点滴</p>
+    </div>
+
+    {% assign sorted_diaries = site.diary_posts | sort: 'date' | reverse %}
+    {% if sorted_diaries.size > 0 %}
+    <div class="diary-timeline">
+        {% for diary in sorted_diaries %}
+        <article class="diary-card">
+            <a href="{{ diary.url | relative_url }}" class="diary-card-date">
+                <span class="day">{{ diary.date | date: "%d" }}</span>
+                <span class="month">{{ diary.date | date: "%Y.%m" }}</span>
+            </a>
+            <div class="diary-card-content">
+                <h2 class="diary-card-title">
+                    <a href="{{ diary.url | relative_url }}">{{ diary.title }}</a>
+                </h2>
+                {% if diary.mood %}<span class="diary-mood">{{ diary.mood }}</span>{% endif %}
+                <p class="diary-excerpt">{{ diary.excerpt | strip_html | truncatewords: 45 }}</p>
+                <a href="{{ diary.url | relative_url }}" class="read-more-btn">
+                    阅读全文 <span aria-hidden="true">→</span>
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <h3>还没有日记</h3>
+        <p>在 <code>_diary_posts</code> 文件夹中添加 markdown 文件来发布日记</p>
+    </div>
+    {% endif %}
+
+    {% include comments.html %}
+
 </div>
 
-<section class="content-section">
-    <div class="container">
-        <div class="diary-intro">
-            <div class="intro-card">
-                <div class="intro-icon">
-                    <i class="fas fa-feather-alt"></i>
-                </div>
-                <div class="intro-content">
-                    <h3>浮生若梦</h3>
-                    <p>用文字记录生活的点滴，让瞬间变成永恒。这里是我的个人日记本，记录思考、感悟与成长。</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="diary-list-container">
-            {% assign sorted_diaries = site.diary_posts | sort: 'date' | reverse %}
-            {% if sorted_diaries.size > 0 %}
-            <div class="diary-timeline">
-                {% for diary in sorted_diaries %}
-                <article class="diary-card">
-                    <div class="diary-card-date">
-                        <span class="day">{{ diary.date | date: "%d" }}</span>
-                        <span class="month">{{ diary.date | date: "%m月" }}</span>
-                        <span class="year">{{ diary.date | date: "%Y" }}</span>
-                    </div>
-                    <div class="diary-card-content">
-                        <h2 class="diary-card-title">
-                            <a href="{{ diary.url | relative_url }}">{{ diary.title }}</a>
-                        </h2>
-                        {% if diary.mood %}
-                        <span class="diary-mood">{{ diary.mood }}</span>
-                        {% endif %}
-                        <p class="diary-excerpt">{{ diary.excerpt | strip_html | truncatewords: 50 }}</p>
-                        <a href="{{ diary.url | relative_url }}" class="read-more-btn">
-                            阅读全文 <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-book-open"></i>
-                <h3>还没有日记</h3>
-                <p>在 _diary_posts 文件夹中添加 markdown 文件来发布日记</p>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Gitalk 评论区 -->
-        <div class="gitalk-section">
-            {% include gitalk.html %}
-        </div>
-    </div>
-</section>
-
 <style>
-.diary-intro {
-    margin-bottom: 3rem;
-}
-
-.intro-card {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 12px;
-    padding: 2rem;
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-}
-
-.intro-icon {
-    font-size: 2.5rem;
-    color: var(--primary-color, #00d4ff);
-    flex-shrink: 0;
-}
-
-.intro-content h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.3rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.intro-content p {
-    margin: 0;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-/* 日记时间线 */
-.diary-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
+.diary-timeline { display: flex; flex-direction: column; gap: 1.25rem; }
 
 .diary-card {
     display: flex;
-    gap: 2rem;
-    background: var(--bg-glass);
-    border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 12px;
-    padding: 2rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    position: relative;
+    gap: 1.5rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-
-.diary-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    transform: scaleY(0);
-    transition: transform 0.3s;
-}
-
-.diary-card:hover::before {
-    transform: scaleY(1);
-}
-
 .diary-card:hover {
-    transform: translateX(8px);
-    border-color: var(--primary-color);
-    box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .diary-card-date {
@@ -149,179 +74,92 @@ permalink: /floating-diary/
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 80px;
-    padding: 1rem;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-    border-radius: 12px;
+    min-width: 76px;
+    padding: 0.85rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius);
     text-align: center;
+    flex-shrink: 0;
+    color: inherit;
 }
-
 .diary-card-date .day {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
+    font-family: var(--font-sans);
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--accent);
     line-height: 1;
 }
-
 .diary-card-date .month {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-soft);
+    margin-top: 0.35rem;
+    letter-spacing: 0.04em;
 }
 
-.diary-card-date .year {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    opacity: 0.7;
-}
-
-.diary-card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
+.diary-card-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .diary-card-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    line-height: 1.35;
+    border: none;
+    padding: 0;
 }
-
-.diary-card-title a {
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all 0.3s;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.diary-card:hover .diary-card-title a {
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-}
+.diary-card-title a { color: var(--text); }
+.diary-card-title a:hover { color: var(--accent); }
 
 .diary-mood {
     display: inline-block;
-    padding: 0.35rem 0.75rem;
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 20px;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    padding: 0.15rem 0.6rem;
+    border-radius: 3px;
+    margin-bottom: 0.6rem;
     width: fit-content;
 }
-
 .diary-excerpt {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
+    color: var(--text-soft);
+    font-size: 0.93rem;
+    line-height: 1.7;
+    margin: 0 0 1rem;
     flex-grow: 1;
 }
-
 .read-more-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 0.4rem;
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 500;
     width: fit-content;
 }
+.read-more-btn:hover { color: var(--accent-hover); }
 
-.read-more-btn:hover {
-    transform: translateX(4px);
-    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
-}
-
-.read-more-btn i {
-    transition: transform 0.3s;
-}
-
-.read-more-btn:hover i {
-    transform: translateX(2px);
-}
-
-/* 空状态 */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: var(--bg-glass);
-    border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 12px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-soft);
 }
+.empty-state i { font-size: 2.5rem; color: var(--text-faint); margin-bottom: 1rem; }
+.empty-state h3 { border: none; padding: 0; margin: 0 0 0.4rem; }
 
-.empty-state i {
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    opacity: 0.5;
-}
-
-.empty-state h3 {
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-    color: var(--text-secondary);
-}
-
-/* Gitalk 评论区样式 */
-.gitalk-section {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(0, 212, 255, 0.2);
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-    .intro-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .diary-card {
-        flex-direction: column;
-        gap: 1.5rem;
-        padding: 1.5rem;
-    }
-
+@media (max-width: 600px) {
+    .diary-card { flex-direction: column; gap: 1rem; }
     .diary-card-date {
         flex-direction: row;
         gap: 0.5rem;
-        padding: 0.75rem 1rem;
         min-width: auto;
+        padding: 0.5rem 0.85rem;
+        align-self: flex-start;
     }
-
-    .diary-card-date .day {
-        font-size: 1.5rem;
-    }
-
-    .diary-card-date .month,
-    .diary-card-date .year {
-        font-size: 0.85rem;
-    }
-
-    .diary-card-title {
-        font-size: 1.2rem;
-    }
-
-    .diary-card:hover {
-        transform: translateX(4px);
-    }
-
-    .gitalk-section {
-        margin-top: 2rem;
-        padding-top: 1rem;
-    }
+    .diary-card-date .day { font-size: 1.3rem; }
+    .diary-card-date .month { margin-top: 0; }
 }
 </style>
