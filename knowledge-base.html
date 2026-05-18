@@ -4,334 +4,228 @@ title: 知识库 - 技术文章合集
 permalink: /docs/
 ---
 
-<div class="knowledge-base-page">
+<div class="kb-doc">
+
   <!-- 页面头部 -->
-  <div class="kb-header">
-    <div class="kb-container">
-      <h1 class="kb-title">知识库</h1>
-      <p class="kb-subtitle">技术文章与深度分析合集</p>
+  <header class="kb-head">
+    <p class="kb-eyebrow">KNOWLEDGE BASE · 目录</p>
+    <h1 class="kb-h1">知识库</h1>
+    <p class="kb-sub">技术文章与深度分析合集 · 像翻一本书的目录一样浏览</p>
+    <div class="kb-filter">
+      <i class="fas fa-search"></i>
+      <input type="text" id="kbFilter" placeholder="筛选标题 / 关键词 / 标签…" autocomplete="off" aria-label="筛选文章">
+      <span class="kb-filter-count" id="kbFilterCount"></span>
     </div>
-  </div>
+  </header>
 
-  <!-- 知识库文章列表 -->
-  <div class="kb-container">
-    <div class="kb-grid">
+  {% assign kb_posts = site.posts | where: "kb", true | sort: "date" | reverse %}
+  {% assign total = kb_posts.size | plus: 4 %}
 
-      <!-- 文章卡片 1: Isaac Sim vs MuJoCo -->
-      <a href="/isaac-sim-vs-mujoco/" class="kb-card">
-        <div class="kb-card-header">
-          <i class="fas fa-robot"></i>
-        </div>
-        <div class="kb-card-content">
-          <h3>Isaac Sim vs MuJoCo</h3>
-          <p class="kb-card-subtitle">4000美元的抉择：GPU算力 vs 物理精度</p>
-          <p class="kb-card-description">深入对比NVIDIA Isaac Lab和Google DeepMind MuJoCo的架构、性能、成本，以及在不同场景下的最优选择。包含完整的性能基准、代码示例和部署指南。</p>
-          <div class="kb-card-meta">
-            <span class="kb-tag">机器人仿真</span>
-            <span class="kb-tag">Isaac Sim</span>
-            <span class="kb-tag">MuJoCo</span>
-            <span class="kb-date">2025-01-10</span>
-          </div>
-        </div>
-      </a>
+  <div class="kb-toc" id="kbToc">
 
-      <!-- 文章卡片 2: Sim2Sim部署 -->
-      <a href="/sim2sim-guide/" class="kb-card">
-        <div class="kb-card-header">
-          <i class="fas fa-exchange-alt"></i>
-        </div>
-        <div class="kb-card-content">
-          <h3>Sim2Sim部署指南</h3>
-          <p class="kb-card-subtitle">从IsaacLab到Mujoco的策略迁移完全指南</p>
-          <p class="kb-card-description">深入探讨强化学习策略从NVIDIA IsaacLab仿真环境迁移到Mujoco物理引擎的完整过程，包括观测空间对齐、时间步参数同步，以及机器人抖动问题的系统性解决方案。</p>
-          <div class="kb-card-meta">
-            <span class="kb-tag">强化学习</span>
-            <span class="kb-tag">部署</span>
-            <span class="kb-tag">sim-to-sim</span>
-            <span class="kb-date">2025-01-09</span>
-          </div>
-        </div>
-      </a>
+    <!-- ========== 全部文章：合并固定页 + kb 博客文章，按时间从新到旧 ========== -->
+    {%- capture rowblock -%}
+2026-05-18|@|机器人运动学|@|/robot-kinematics/|@|从坐标变换到零空间理论的完整推导 · 含 9 张矢量图与 4 个例题|@|机器人学,运动学,WBC|@|fas fa-link||ROW||2025-01-10|@|Isaac Sim vs MuJoCo|@|/isaac-sim-vs-mujoco/|@|4000 美元的抉择：GPU 算力 vs 物理精度 · 性能基准与部署指南|@|机器人仿真,Isaac Sim,MuJoCo|@|fas fa-robot||ROW||2025-01-09|@|Sim2Sim 部署指南|@|/sim2sim-guide/|@|从 IsaacLab 到 Mujoco 的策略迁移完全指南 · 观测对齐与抖动排查|@|强化学习,部署,sim-to-sim|@|fas fa-exchange-alt||ROW||2024-12-20|@|材料属性参考|@|/tools/material-properties/|@|常见工程材料的密度、弹性模量、泊松比、导热系数数据库|@|材料学,参考资料|@|fas fa-flask||ROW||{% for p in kb_posts %}{% assign kc = p.categories[0] %}{% case kc %}{% when "计算机科学" %}{% assign ic = "fas fa-brain" %}{% when "力学" %}{% assign ic = "fas fa-wave-square" %}{% when "工程技术" %}{% assign ic = "fas fa-sliders-h" %}{% when "机器人学" %}{% assign ic = "fas fa-robot" %}{% else %}{% assign ic = "fas fa-book-open" %}{% endcase %}{{ p.date | date: '%Y-%m-%d' }}|@|{{ p.title }}|@|{{ p.url | relative_url }}|@|{{ p.excerpt | strip_html | strip_newlines | truncate: 96 }}|@|{{ p.tags | join: ',' }}|@|{{ ic }}||ROW||{% endfor %}
+    {%- endcapture -%}
+    {% assign rows = rowblock | strip | split: '||ROW||' | sort | reverse %}
 
-      <!-- 文章卡片 3: 材料属性 -->
-      <a href="/material-properties/" class="kb-card">
-        <div class="kb-card-header">
-          <i class="fas fa-flask"></i>
-        </div>
-        <div class="kb-card-content">
-          <h3>材料属性参考</h3>
-          <p class="kb-card-subtitle">常见材料的物理属性数据库</p>
-          <p class="kb-card-description">整理汇总常见工程材料的密度、弹性模量、泊松比、导热系数等关键物理属性，为仿真建模和工程设计提供参考数据。</p>
-          <div class="kb-card-meta">
-            <span class="kb-tag">材料学</span>
-            <span class="kb-tag">参考资料</span>
-            <span class="kb-date">2024-12-20</span>
-          </div>
-        </div>
-      </a>
+    {% for row in rows %}
+    {% assign r = row | strip %}
+    {% if r == '' %}{% continue %}{% endif %}
+    {% assign c = r | split: '|@|' %}
+    <a class="kb-entry" href="{{ c[2] }}" data-key="{{ c[1] }} {{ c[4] }}">
+      <span class="kb-i"><i class="{{ c[5] }}"></i></span>
+      <span class="kb-body">
+        <span class="kb-t">{{ c[1] }}</span>
+        <span class="kb-d">{{ c[3] }}</span>
+        <span class="kb-tags">{% assign tg = c[4] | split: ',' %}{% for t in tg limit:3 %}<i>{{ t }}</i>{% endfor %}</span>
+      </span>
+      <span class="kb-lead"></span>
+      <span class="kb-date">{{ c[0] }}</span>
+    </a>
+    {% endfor %}
 
-    </div>
-  </div>
-
-  {% if site.data.external_resources.resources %}
-  <!-- 推荐资源 -->
-  <div class="kb-container kb-section">
-    <div class="kb-section-head">
-      <h2>推荐资源 <span class="kb-section-tag">External Resources</span></h2>
-      <p>精选的外部学习资源与开源教材</p>
-    </div>
-    <div class="kb-grid">
+    {% if site.data.external_resources.resources %}
+    <!-- ========== 附录：推荐外部资源 ========== -->
+    <section class="kb-chapter kb-appendix">
+      <h3 class="kb-appendix-title">推荐资源 <span>External Resources</span></h3>
       {% for resource in site.data.external_resources.resources %}
-      <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="kb-card">
-        <div class="kb-card-header">
-          <span style="font-size: 2.4rem;">{{ resource.icon }}</span>
-        </div>
-        <div class="kb-card-content">
-          <h3>{{ resource.title }}</h3>
-          {% if resource.source %}<p class="kb-card-subtitle">{{ resource.source }}</p>{% endif %}
-          <p class="kb-card-description">{{ resource.description }}</p>
-          <div class="kb-card-meta">
-            {% for tag in resource.tags limit:3 %}
-            <span class="kb-tag">{{ tag }}</span>
-            {% endfor %}
-            {% if resource.date %}<span class="kb-date">{{ resource.date }}</span>{% endif %}
-          </div>
-        </div>
+      <a class="kb-entry kb-entry-ext" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer"
+         data-key="{{ resource.title }} {{ resource.source }} {{ resource.tags | join: ' ' }}">
+        <span class="kb-i"><i class="fas fa-external-link-alt"></i></span>
+        <span class="kb-body">
+          <span class="kb-t">{{ resource.title }}{% if resource.source %} <em>· {{ resource.source }}</em>{% endif %}</span>
+          <span class="kb-d">{{ resource.description | truncate: 96 }}</span>
+          {% if resource.tags %}<span class="kb-tags">{% for tag in resource.tags limit:3 %}<i>{{ tag }}</i>{% endfor %}</span>{% endif %}
+        </span>
+        <span class="kb-lead"></span>
+        <span class="kb-date">{% if resource.date %}{{ resource.date }}{% else %}↗{% endif %}</span>
       </a>
       {% endfor %}
-    </div>
-  </div>
-  {% endif %}
+    </section>
+    {% endif %}
 
-  <!-- 底部统计 -->
-  <div class="kb-footer">
-    <div class="kb-container">
-      <p>📚 共 <span class="kb-count">3</span> 篇深度文章 | 持续更新中...</p>
-    </div>
+    <p class="kb-empty" id="kbEmpty" hidden>没有匹配的条目，换个关键词试试。</p>
   </div>
+
+  <footer class="kb-foot">
+    <span>📚 共 <strong>{{ total }}</strong> 篇深度文章 · 持续更新中</span>
+  </footer>
 </div>
 
 <style>
-/* ========== 知识库页面样式 ========== */
-.knowledge-base-page {
-  background: var(--bg-primary);
-  color: var(--text-primary);
+/* ========== 知识库 · Word 目录式 ========== */
+.kb-doc {
+  background: var(--bg-primary); color: var(--text-primary);
   min-height: calc(100vh - 60px);
+  max-width: 980px; margin: 0; padding: 0 0 4rem;
 }
 
-.kb-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* 页面头部 */
-.kb-header {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
-  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-  padding: 4rem 2rem;
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.kb-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.kb-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* 文章网格 */
-.kb-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-  margin-bottom: 4rem;
-}
-
-/* 文章卡片 */
-.kb-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-glass);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 12px;
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-  height: 100%;
-}
-
-.kb-card:hover {
-  border-color: var(--primary-color);
-  background: rgba(0, 212, 255, 0.05);
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.15);
-}
-
-.kb-card-header {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-  padding: 2rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-}
-
-.kb-card-header i {
-  font-size: 3rem;
-  color: var(--primary-color);
-}
-
-.kb-card-content {
-  padding: 1.5rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.kb-card-content h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.kb-card-subtitle {
-  font-size: 0.95rem;
-  color: var(--primary-color);
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.kb-card-description {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  flex: 1;
-}
-
-.kb-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 212, 255, 0.1);
-}
-
-.kb-tag {
-  display: inline-block;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  color: var(--primary-color);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.kb-date {
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-/* 推荐资源区段 */
-.kb-section {
-  margin-top: 3.5rem;
-}
-.kb-section-head {
-  text-align: center;
+/* 头部 */
+.kb-head {
+  padding: 2.6rem 0 1.6rem; border-bottom: 1px solid var(--border);
   margin-bottom: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border, #e7e5e4);
 }
-.kb-section-head h2 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text, #1a1a1a);
-  margin: 0 0 0.35rem;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  border: none;
-  padding: 0;
+.kb-eyebrow {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+  color: var(--text-mute); text-transform: uppercase; margin-bottom: 0.5rem;
 }
-.kb-section-head h2 .kb-section-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+.kb-h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.35rem; border: none; padding: 0; }
+.kb-sub { color: var(--text-soft); font-size: 1rem; margin-bottom: 1.4rem; }
+
+/* 筛选框 */
+.kb-filter {
+  display: flex; align-items: center; gap: 0.6rem;
+  border: 1px solid var(--border-strong); border-radius: var(--radius);
+  padding: 0.6rem 0.9rem; max-width: 460px; background: var(--bg-soft);
+  transition: border-color .15s, box-shadow .15s;
+}
+.kb-filter:focus-within { border-color: var(--accent); box-shadow: var(--shadow-glow); background: var(--bg); }
+.kb-filter i { color: var(--text-mute); font-size: 0.9rem; }
+.kb-filter input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-family: var(--font-sans); font-size: 0.95rem; color: var(--text);
+}
+.kb-filter-count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-mute); }
+
+/* 目录容器：编号计数器 */
+.kb-toc { counter-reset: kbnum; }
+/* hidden 属性需显式覆盖 flex 显示，否则筛选不生效 */
+.kb-entry[hidden], .kb-chapter[hidden] { display: none !important; }
+
+/* 推荐资源附录 */
+.kb-appendix { margin-top: 2.6rem; padding-top: 1.6rem; border-top: 1px solid var(--border); }
+.kb-appendix-title {
+  display: flex; align-items: baseline; gap: 0.7rem;
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  margin: 0 0 0.4rem; padding: 0; border: none;
+}
+.kb-appendix-title span {
+  margin-left: auto; font-family: var(--font-mono); font-size: 0.7rem;
+  font-weight: 500; letter-spacing: 0.12em; color: var(--text-mute);
   text-transform: uppercase;
-  color: var(--text-mute, #a3a3a3);
-}
-.kb-section-head p {
-  color: var(--text-soft, #525252);
-  font-size: 0.95rem;
-  margin: 0;
 }
 
-/* 底部统计 */
-.kb-footer {
-  background: rgba(0, 212, 255, 0.05);
-  border-top: 1px solid rgba(0, 212, 255, 0.1);
-  padding: 2rem;
-  text-align: center;
-  margin-top: 3rem;
+/* 条目（Word 目录行） */
+.kb-entry {
+  display: flex; align-items: baseline; gap: 0.7rem;
+  padding: 0.55rem 0.6rem; text-decoration: none; color: inherit;
+  border-radius: var(--radius-sm); position: relative;
+  counter-increment: kbnum;
+}
+.kb-entry:hover { background: var(--accent-soft); }
+.kb-entry:hover .kb-t { color: var(--accent-hover); }
+.kb-i {
+  flex: 0 0 auto; width: 1.4rem; text-align: center;
+  color: var(--text-mute); font-size: 0.9rem;
+}
+.kb-entry:hover .kb-i { color: var(--accent); }
+.kb-entry::before {
+  content: counter(kbnum, decimal-leading-zero);
+  flex: 0 0 auto; font-family: var(--font-mono); font-size: 0.8rem;
+  color: var(--text-mute); min-width: 1.8rem;
+}
+.kb-body { flex: 0 1 auto; min-width: 0; }
+.kb-t {
+  display: block; font-size: 1rem; font-weight: 600; color: var(--text);
+  line-height: 1.35;
+}
+.kb-t em { font-weight: 400; font-style: normal; color: var(--text-soft); font-size: 0.9rem; }
+.kb-d {
+  display: block; font-size: 0.85rem; color: var(--text-soft);
+  margin-top: 0.15rem; line-height: 1.5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60ch;
+}
+.kb-tags { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+.kb-tags i {
+  font-style: normal; font-size: 0.7rem; color: var(--text-mute);
+  background: var(--bg-code); border: 1px solid var(--border-soft);
+  padding: 0.08rem 0.45rem; border-radius: 10px;
+}
+/* Word 风格点线引导 */
+.kb-lead {
+  flex: 1 1 auto; align-self: flex-end; margin-bottom: 0.3rem;
+  border-bottom: 1px dotted var(--border-strong); min-width: 2rem;
+}
+.kb-date {
+  flex: 0 0 auto; font-family: var(--font-mono); font-size: 0.8rem;
+  color: var(--text-mute); white-space: nowrap;
+}
+.kb-entry:hover .kb-date { color: var(--accent); }
+
+.kb-empty {
+  text-align: center; color: var(--text-mute); font-size: 0.95rem;
+  padding: 3rem 0;
 }
 
-.kb-footer p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+.kb-foot {
+  margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--border);
+  font-size: 0.9rem; color: var(--text-soft);
 }
+.kb-foot strong { color: var(--accent); font-family: var(--font-mono); }
 
-.kb-count {
-  color: var(--primary-color);
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .kb-header {
-    padding: 2rem 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .kb-title {
-    font-size: 2rem;
-  }
-
-  .kb-subtitle {
-    font-size: 1rem;
-  }
-
-  .kb-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .kb-container {
-    padding: 0 1rem;
-  }
+@media (max-width: 720px) {
+  .kb-h1 { font-size: 1.9rem; }
+  .kb-d { white-space: normal; max-width: none; }
+  .kb-lead { display: none; }
+  .kb-entry { flex-wrap: wrap; }
+  .kb-date { margin-left: auto; }
 }
 </style>
 
 <script>
-// 数据驱动的动态效果（可选）
-document.addEventListener('DOMContentLoaded', function() {
-  const cards = document.querySelectorAll('.kb-card');
-  cards.forEach((card, index) => {
-    card.style.animationDelay = `${index * 0.1}s`;
+// 即时筛选 + 空章节隐藏（CSS 计数器自动跳过隐藏行，无需手动重编号）
+(function () {
+  const input = document.getElementById('kbFilter');
+  const toc = document.getElementById('kbToc');
+  const empty = document.getElementById('kbEmpty');
+  const countEl = document.getElementById('kbFilterCount');
+  if (!input || !toc) return;
+
+  const entries = Array.from(toc.querySelectorAll('.kb-entry'));
+  const chapters = Array.from(toc.querySelectorAll('.kb-chapter'));
+
+  function apply() {
+    const q = input.value.trim().toLowerCase();
+    let visible = 0;
+    entries.forEach(e => {
+      const hay = (e.getAttribute('data-key') || '').toLowerCase();
+      const hit = !q || hay.indexOf(q) !== -1;
+      e.hidden = !hit;
+      if (hit) visible++;
+    });
+    chapters.forEach(c => {
+      c.hidden = !c.querySelector('.kb-entry:not([hidden])');
+    });
+    empty.hidden = visible !== 0;
+    countEl.textContent = q ? visible + ' / ' + entries.length : '';
+  }
+
+  input.addEventListener('input', apply);
+  document.addEventListener('keydown', ev => {
+    if (ev.key === '/' && document.activeElement !== input && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+      ev.preventDefault(); input.focus();
+    }
   });
-});
+})();
 </script>

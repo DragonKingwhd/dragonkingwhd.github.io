@@ -1,0 +1,834 @@
+---
+layout: default
+title: 机器人运动学 - 从坐标变换到零空间理论 - 知识库
+permalink: /robot-kinematics/
+excerpt: "系统梳理机器人运动学：坐标变换、开链与闭链、正/逆运动学、一阶微分运动学与静力学，以及奇异性与零空间理论（WBC 数学基础）的完整推导。"
+---
+
+<!-- 样式置顶：首屏即带样式，消除无样式闪烁(FOUC) -->
+<style>
+/* ===== 机器人运动学文章 ===== */
+.rk-page { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+/* 文章在站点 main 区域内左对齐铺开，避免与站点侧栏之间出现大片空白 */
+.rk-container { width: 100%; max-width: 1180px; margin: 0; padding: 0; }
+
+.rk-header {
+  background: linear-gradient(135deg, var(--accent-soft), var(--bg-soft));
+  border-bottom: 1px solid var(--border);
+  padding: 2.6rem 2.4rem 2.4rem;
+  margin-bottom: 2.2rem;
+  border-radius: var(--radius-lg);
+}
+.rk-eyebrow {
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+  color: var(--text-mute); text-transform: uppercase; margin-bottom: 0.6rem;
+}
+.rk-title { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.4rem; border: none; padding: 0; }
+.rk-subtitle { font-size: 1.15rem; color: var(--text-soft); margin-bottom: 0.5rem; }
+.rk-tagline { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-mute); }
+
+.rk-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem; padding-bottom: 4rem; }
+
+/* 侧边目录 */
+.rk-toc { position: sticky; top: 1.5rem; align-self: start; font-size: 0.9rem; }
+.rk-toc-head {
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-mute); margin-bottom: 0.8rem;
+}
+.rk-toc ul { list-style: none; }
+.rk-toc-link {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.45rem 0.7rem; border-radius: var(--radius-sm);
+  color: var(--text-soft); text-decoration: none; border-left: 2px solid transparent;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.rk-toc-link i { width: 1rem; text-align: center; color: var(--text-mute); font-size: 0.82rem; }
+.rk-toc-link:hover { background: var(--accent-soft); color: var(--accent); }
+.rk-toc-link.active { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.rk-toc-link.active i { color: var(--accent); }
+.rk-toc-refs { margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid var(--border-soft); }
+.rk-toc-refs h4 { font-size: 0.78rem; color: var(--text-mute); margin-bottom: 0.6rem; font-weight: 600; }
+.rk-toc-refs ul { list-style: none; }
+.rk-toc-refs a { display: flex; gap: 0.45rem; align-items: center; padding: 0.3rem 0; font-size: 0.82rem; color: var(--text-soft); text-decoration: none; }
+.rk-toc-refs a:hover { color: var(--accent); }
+
+/* 正文 */
+.rk-content { min-width: 0; }
+.rk-section { margin-bottom: 3rem; scroll-margin-top: 1.5rem; }
+.rk-section h2 {
+  font-size: 1.55rem; font-weight: 700; margin-bottom: 1.1rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+}
+.rk-section h2 i { color: var(--accent); font-size: 1.1rem; }
+.rk-section h3 {
+  font-size: 1.12rem; font-weight: 600; margin: 1.6rem 0 0.7rem;
+  color: var(--text); border: none; padding: 0;
+}
+.rk-content p { line-height: 1.85; margin-bottom: 1rem; color: var(--text); }
+.rk-list { margin: 0.4rem 0 1.2rem 1.4rem; }
+.rk-list li { line-height: 1.8; margin-bottom: 0.45rem; }
+/* 仅块级展示公式(<p class="rk-eq">)可横向滚动；行内公式 <span> 保持内联，勿加 overflow */
+p.rk-eq { overflow-x: auto; }
+span.rk-eq { display: inline; }
+.rk-qed { color: var(--accent); font-weight: 700; margin-left: 0.4rem; }
+
+/* 公式渲染前先隐藏，避免出现 \(q\) 原始文本闪烁；visibility 保留占位不产生跳动 */
+.rk-page:not(.math-ready) .rk-eq { visibility: hidden; }
+
+/* 提示框 */
+.rk-callout {
+  display: flex; gap: 0.9rem; padding: 1.1rem 1.2rem;
+  border-radius: var(--radius); margin: 1.3rem 0;
+  border: 1px solid var(--border); background: var(--bg-soft);
+}
+.rk-callout > i { font-size: 1.05rem; margin-top: 0.15rem; }
+/* 仅标题 strong(内层 div 的直接子元素)块级；段落内的 <strong> 保持内联，不换行 */
+.rk-callout > div > strong { display: block; margin-bottom: 0.3rem; }
+.rk-callout p { margin: 0.35rem 0 0; font-size: 0.95rem; line-height: 1.75; }
+.rk-callout p strong { display: inline; }
+.rk-callout-info { background: var(--accent-soft); border-color: var(--accent-border); }
+.rk-callout-info > i { color: var(--accent); }
+.rk-callout-tip { background: #f0fdf4; border-color: #bbf7d0; }
+.rk-callout-tip > i { color: var(--success-color); }
+.rk-callout-warn { background: #fffbeb; border-color: #fde68a; }
+.rk-callout-warn > i { color: var(--warning-color); }
+
+/* 表格 */
+.rk-table-wrap { overflow-x: auto; margin: 1.2rem 0; }
+.rk-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.rk-table th, .rk-table td { border: 1px solid var(--border); padding: 0.65rem 0.85rem; text-align: left; }
+.rk-table th { background: var(--bg-code); font-weight: 600; }
+.rk-table tr:nth-child(even) td { background: var(--bg-soft); }
+
+/* 图示 */
+.rk-fig {
+  margin: 1.4rem 0; padding: 1.2rem; background: var(--bg-soft);
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.rk-fig svg { display: block; width: 100%; height: auto; max-width: 720px; margin: 0 auto; }
+.rk-fig figcaption {
+  margin-top: 0.8rem; font-size: 0.85rem; color: var(--text-mute);
+  text-align: center; font-family: var(--font-mono);
+}
+.rk-fig svg text { font-family: var(--font-sans); }
+
+/* 例题块 */
+.rk-example {
+  margin: 1.5rem 0; border: 1px solid var(--accent-border);
+  border-radius: var(--radius); overflow: hidden; background: var(--bg-elev);
+}
+.rk-example-head {
+  background: var(--accent-soft); color: var(--accent-hover);
+  padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.95rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  border-bottom: 1px solid var(--accent-border);
+}
+.rk-example-body { padding: 1.1rem 1.2rem; }
+.rk-example-body p { margin-bottom: 0.8rem; }
+.rk-step {
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent);
+  margin: 1.1rem 0 0.4rem; font-weight: 600;
+}
+
+.rk-back { margin-top: 2rem; }
+.rk-back a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.rk-back a:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .rk-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rk-toc { position: static; border-bottom: 1px solid var(--border); padding-bottom: 1.2rem; }
+  .rk-toc ul { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .rk-toc-link { border-left: none; border: 1px solid var(--border); }
+  .rk-toc-link.active { border-color: var(--accent-border); }
+  .rk-title { font-size: 2rem; }
+  .rk-container { padding: 0 1.1rem; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+
+<!-- MathJax 配置（须在加载器之前），并在排版完成后揭示公式 -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] },
+    startup: {
+      pageReady() {
+        return MathJax.startup.defaultPageReady().then(function () {
+          var p = document.querySelector('.rk-page');
+          if (p) p.classList.add('math-ready');
+        });
+      }
+    }
+  };
+  // 兜底：若 MathJax 加载失败（如离线），4s 后也揭示，避免公式永久隐藏
+  setTimeout(function () {
+    var p = document.querySelector('.rk-page');
+    if (p) p.classList.add('math-ready');
+  }, 4000);
+</script>
+
+<div class="rk-page">
+
+  <!-- 页面头部 -->
+  <div class="rk-header">
+    <div class="rk-container">
+      <p class="rk-eyebrow">KNOWLEDGE · ROBOTICS</p>
+      <h1 class="rk-title">机器人运动学</h1>
+      <p class="rk-subtitle">从坐标变换到零空间理论的完整推导</p>
+      <p class="rk-tagline">坐标变换 · 开链 / 闭链 · 正逆运动学 · 雅可比与静力学 · 奇异性 · WBC 零空间</p>
+    </div>
+  </div>
+
+  <div class="rk-layout rk-container">
+
+    <!-- 侧边目录 -->
+    <nav class="rk-toc" id="rkToc">
+      <div class="rk-toc-head">章节导航</div>
+      <ul>
+        <li><a href="#overview" class="rk-toc-link"><i class="fas fa-compass"></i> 概述</a></li>
+        <li><a href="#chains" class="rk-toc-link"><i class="fas fa-link"></i> 开链与闭链</a></li>
+        <li><a href="#frames" class="rk-toc-link"><i class="fas fa-arrows-to-dot"></i> 坐标变换</a></li>
+        <li><a href="#fk" class="rk-toc-link"><i class="fas fa-arrow-right"></i> 正向运动学</a></li>
+        <li><a href="#ik" class="rk-toc-link"><i class="fas fa-arrow-left"></i> 逆向运动学</a></li>
+        <li><a href="#diff" class="rk-toc-link"><i class="fas fa-superscript"></i> 微分运动学与静力学</a></li>
+        <li><a href="#singularity" class="rk-toc-link"><i class="fas fa-bullseye"></i> 奇异性与零空间</a></li>
+        <li><a href="#nullspace-proof" class="rk-toc-link"><i class="fas fa-square-root-variable"></i> 零空间数学证明</a></li>
+        <li><a href="#summary" class="rk-toc-link"><i class="fas fa-flag-checkered"></i> 小结</a></li>
+      </ul>
+      <div class="rk-toc-refs">
+        <h4>课程讲义 · NTU 林沛群</h4>
+        <ul>
+          <li><a href="https://www.coursera.org/learn/robotics1" target="_blank" rel="noopener noreferrer"><i class="fas fa-graduation-cap"></i> 機器人學一 Coursera（含讲义）</a></li>
+          <li><a href="https://www.youtube.com/playlist?list=PLj6E8qlqmkFvo_OT6iWHks5wZNsMoSboK" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i> 機器人學 NTU OCW 视频</a></li>
+          <li><a href="http://peichunlin.me.ntu.edu.tw/Homepage/Intro2Robotics.htm" target="_blank" rel="noopener noreferrer"><i class="fas fa-chalkboard-teacher"></i> 林沛群教授课程主页</a></li>
+          <li><a href="https://ocw.aca.ntu.edu.tw/" target="_blank" rel="noopener noreferrer"><i class="fas fa-university"></i> 臺大开放式课程 NTU OCW</a></li>
+        </ul>
+        <h4 style="margin-top:1.2rem;">延伸阅读</h4>
+        <ul>
+          <li><a href="https://hades.mech.northwestern.edu/index.php/Modern_Robotics" target="_blank" rel="noopener noreferrer"><i class="fas fa-book"></i> Modern Robotics (Lynch &amp; Park) 教材主页</a></li>
+          <li><a href="http://hades.mech.northwestern.edu/index.php/Modern_Robotics#Lecture_videos_and_slides" target="_blank" rel="noopener noreferrer"><i class="fas fa-film"></i> Modern Robotics 视频与讲义 Slides</a></li>
+          <li><a href="https://www.cs.cmu.edu/afs/cs/academic/class/16741-s07/www/index.html" target="_blank" rel="noopener noreferrer"><i class="fas fa-book"></i> CMU 16-741 Mechanics of Manipulation</a></li>
+          <li><a href="http://zackory.com/16741-24/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chalkboard"></i> CMU 16-741 (2024) 课程讲义</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- 正文 -->
+    <article class="rk-content">
+
+      <section id="overview" class="rk-section">
+        <h2><i class="fas fa-compass"></i> 概述</h2>
+        <p>
+          <strong>运动学（Kinematics）</strong>研究的是机构在<em>不考虑力与力矩</em>的前提下，几何位形与运动之间的关系。
+          对一个机器人而言，它回答两类核心问题：
+        </p>
+        <ul class="rk-list">
+          <li><strong>正向运动学</strong>：已知各关节变量 <span class="rk-eq">\(q\)</span>，末端执行器在世界坐标系下的位姿 <span class="rk-eq">\(T\)</span> 是多少？</li>
+          <li><strong>逆向运动学</strong>：已知期望末端位姿 <span class="rk-eq">\(T_d\)</span>，需要哪些关节变量 <span class="rk-eq">\(q\)</span> 才能达到？</li>
+        </ul>
+        <p>
+          再往上一层，对它们求导得到<strong>微分运动学</strong>（雅可比矩阵），它把关节速度映射到末端速度；
+          通过虚功原理，雅可比的转置又把末端力映射回关节力矩——这构成了<strong>静力学</strong>对偶关系。
+          当雅可比降秩时出现<strong>奇异性</strong>，而冗余机器人的<strong>零空间</strong>则是全身控制（WBC）实现多任务优先级的数学基础。
+        </p>
+        <div class="rk-callout rk-callout-info">
+          <i class="fas fa-info-circle"></i>
+          <div>
+            <strong>本文的阅读主线</strong>
+            <p>机构（开链 / 闭链）→ 坐标如何描述（变换）→ 位形关系（正/逆运动学）→ 速度与力关系（雅可比 / 静力学）→ 退化与冗余（奇异性 / 零空间）。每一节都给出可直接落地的公式与工程注记。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="chains" class="rk-section">
+        <h2><i class="fas fa-link"></i> 开链与闭链</h2>
+        <p>
+          机器人本体在拓扑上是由<strong>连杆（link）</strong>通过<strong>关节（joint）</strong>连接而成的<strong>运动链（kinematic chain）</strong>。
+          按其连接图的拓扑结构，可分为开链与闭链——这是后续所有运动学推导的出发点，因此本文对它做重点展开。
+        </p>
+
+        <h3>1. 开链（Open / Serial Chain）</h3>
+        <p>
+          连杆首尾串联、不构成任何回路，称为<strong>开式运动链</strong>，对应的连接图是一棵<strong>树</strong>（无环图）。
+          典型代表是六轴工业机械臂——从基座一路串到末端法兰，中间没有任何"并联回路"。
+        </p>
+        <ul class="rk-list">
+          <li><strong>自由度（Grübler 公式，空间情形）</strong>：
+            <span class="rk-eq">\( \mathrm{DoF} = 6(N-1) - \sum_{i=1}^{J} (6 - f_i) \)</span>，
+            其中 <span class="rk-eq">\(N\)</span> 为含基座的连杆数，<span class="rk-eq">\(J\)</span> 为关节数，<span class="rk-eq">\(f_i\)</span> 为第 <span class="rk-eq">\(i\)</span> 个关节的自由度。
+            对单回路全为单自由度关节的串联臂，化简为 <span class="rk-eq">\(\mathrm{DoF}=J\)</span>，即"几个关节就有几个自由度"。</li>
+          <li><strong>正运动学</strong>：闭式存在，直接连乘各关节变换即可（见后文）。</li>
+          <li><strong>优点</strong>：工作空间大、建模简单、运动学解析友好。</li>
+          <li><strong>缺点</strong>：误差沿链累积、末端刚度低、电机需置于关节处导致惯量大。</li>
+        </ul>
+
+        <h3>2. 闭链（Closed / Parallel Chain）</h3>
+        <p>
+          当运动链中存在<strong>至少一个回路</strong>时即为<strong>闭式运动链</strong>。
+          典型代表：Stewart 平台（6-UPS 并联机构）、Delta 并联机器人、四杆机构，以及腿足机器人中常见的<strong>五连杆 / 平行四边形腿</strong>。
+        </p>
+        <div class="rk-callout rk-callout-tip">
+          <i class="fas fa-lightbulb"></i>
+          <div>
+            <strong>闭链分析的核心：环闭合约束（Loop-Closure Constraint）</strong>
+            <p>沿任意一个独立回路绕行一周，位姿变换的乘积必须回到单位阵：</p>
+            <p class="rk-eq">\[ \prod_{k \in \text{loop}} T_k(q_k) = I_{4\times4} \]</p>
+            <p>它对位置给出 3 个标量方程、对姿态给出 3 个标量方程（空间情形）。把关节变量分为<strong>主动关节</strong> <span class="rk-eq">\(q_a\)</span> 与<strong>被动关节</strong> <span class="rk-eq">\(q_p\)</span>，约束方程 <span class="rk-eq">\(\,g(q_a,q_p)=0\,\)</span> 隐式地确定了被动关节，从而把高维关节空间约束到低维<strong>约束流形</strong>上。</p>
+          </div>
+        </div>
+
+        <p>对环闭合约束求时间导数，得到速度层的线性约束：</p>
+        <p class="rk-eq">\[ \frac{\partial g}{\partial q_a}\,\dot q_a + \frac{\partial g}{\partial q_p}\,\dot q_p = 0
+        \;\;\Longrightarrow\;\;
+        \dot q_p = -\Big(\tfrac{\partial g}{\partial q_p}\Big)^{-1}\tfrac{\partial g}{\partial q_a}\,\dot q_a \]</p>
+        <p>
+          只要 <span class="rk-eq">\(\partial g/\partial q_p\)</span> 可逆，被动关节速度就能由主动关节速度唯一解出；
+          其不可逆之处正对应闭链特有的<strong>构型奇异（configuration singularity）</strong>。
+        </p>
+
+        <h3>3. 开链 vs 闭链对照</h3>
+        <div class="rk-table-wrap">
+          <table class="rk-table">
+            <thead>
+              <tr><th>维度</th><th>开链（串联）</th><th>闭链（并联）</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>拓扑</td><td>树（无回路）</td><td>含一个或多个回路</td></tr>
+              <tr><td>正运动学</td><td>简单（连乘），唯一解</td><td>困难（需解非线性方程组），可能多解</td></tr>
+              <tr><td>逆运动学</td><td>困难 / 多解</td><td>相对简单，常有闭式</td></tr>
+              <tr><td>刚度 / 精度</td><td>低（误差累积）</td><td>高（误差平均、载荷分担）</td></tr>
+              <tr><td>工作空间</td><td>大、灵活</td><td>小、受约束</td></tr>
+              <tr><td>负载惯量</td><td>大（电机在关节）</td><td>小（电机常在基座）</td></tr>
+              <tr><td>典型应用</td><td>焊接 / 装配机械臂</td><td>飞行模拟器、3D 打印、高速分拣、腿足并联腿</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rk-callout rk-callout-info">
+          <i class="fas fa-robot"></i>
+          <div>
+            <strong>工程实践：混合链</strong>
+            <p>真实人形 / 四足机器人往往是<strong>混合链</strong>——整体是开式树结构（便于全身建模），但单条腿内含平行四连杆等闭环（提升刚度、把电机移到髋部以降低腿部惯量）。处理方法是：先对闭环用环闭合约束消去被动关节，把每条腿"等效"为一个开链子模块，再纳入全身的树状模型统一做 FK / Jacobian / WBC。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="frames" class="rk-section">
+        <h2><i class="fas fa-arrows-to-dot"></i> 坐标变换</h2>
+        <p>描述位姿首先要有"坐标系"和"在坐标系之间搬运向量"的工具。</p>
+
+        <h3>1. 旋转矩阵与 SO(3)</h3>
+        <p>
+          姿态用旋转矩阵 <span class="rk-eq">\(R \in SO(3)\)</span> 描述，满足正交且行列式为 1：
+        </p>
+        <p class="rk-eq">\[ R^\top R = I, \qquad \det R = +1 \]</p>
+        <p>它的列向量就是被旋转坐标系三个轴在参考系下的方向，因此既是旋转算子又是基变换矩阵。常用最小表示有欧拉角、轴角和单位四元数（避免万向锁）。</p>
+
+        <p>
+          下面用两张图把"旋转矩阵到底是什么"讲透——讲法与配图思路<strong>改编自台大林沛群教授《機器人學》课程</strong>"轉動 / Rotation Matrix"专题讲义
+          （<a href="https://www.coursera.org/learn/robotics1" target="_blank" rel="noopener noreferrer">原课程见此</a>），此处按本站风格重绘为原创矢量图，保证不失效。
+          <strong>第一张</strong>说明：把 <span class="rk-eq">\({}^{A}_{B}R\)</span> 按列拆开，
+          每一列恰好是 <span class="rk-eq">\(\{B\}\)</span> 的一个坐标轴单位向量"在 <span class="rk-eq">\(\{A\}\)</span> 中看到的样子"。
+        </p>
+
+        <figure class="rk-fig">
+          <svg viewBox="0 0 720 340" role="img" aria-label="旋转矩阵的列即为坐标系 B 的基向量">
+            <defs>
+              <marker id="rkArrK" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#1a1a1a"/>
+              </marker>
+              <marker id="rkArrO" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#c2410c"/>
+              </marker>
+            </defs>
+            <!-- 参考系 {A} -->
+            <g stroke="#1a1a1a" stroke-width="2.2" fill="none" marker-end="url(#rkArrK)">
+              <line x1="150" y1="250" x2="150" y2="90"/>
+              <line x1="150" y1="250" x2="310" y2="250"/>
+              <line x1="150" y1="250" x2="70" y2="320"/>
+            </g>
+            <text x="150" y="78" font-size="17" font-style="italic" fill="#1a1a1a" text-anchor="middle">Z_A</text>
+            <text x="322" y="255" font-size="17" font-style="italic" fill="#1a1a1a">X_A</text>
+            <text x="48" y="334" font-size="17" font-style="italic" fill="#1a1a1a">Y_A</text>
+            <text x="120" y="278" font-size="16" fill="#1a1a1a">{A}</text>
+            <!-- 被描述系 {B}：原点偏移并倾斜 -->
+            <g stroke="#c2410c" stroke-width="2.4" fill="none" marker-end="url(#rkArrO)">
+              <line x1="420" y1="200" x2="470" y2="92"/>
+              <line x1="420" y1="200" x2="560" y2="172"/>
+              <line x1="420" y1="200" x2="372" y2="290"/>
+            </g>
+            <circle cx="420" cy="200" r="4" fill="#c2410c"/>
+            <text x="476" y="86" font-size="17" font-style="italic" fill="#c2410c">Ẑ_B</text>
+            <text x="566" y="172" font-size="17" font-style="italic" fill="#c2410c">Ŷ_B</text>
+            <text x="360" y="306" font-size="17" font-style="italic" fill="#c2410c">X̂_B</text>
+            <text x="430" y="196" font-size="16" fill="#c2410c">{B}</text>
+            <!-- 注解 -->
+            <text x="600" y="248" font-size="14" fill="#15803d" text-anchor="middle">R 的三列 =</text>
+            <text x="600" y="268" font-size="14" fill="#15803d" text-anchor="middle">X̂_B, Ŷ_B, Ẑ_B</text>
+            <text x="600" y="288" font-size="14" fill="#15803d" text-anchor="middle">（由 {A} 看）</text>
+          </svg>
+          <figcaption>图 1 · 旋转矩阵的列 = 坐标系 {B} 的基向量在 {A} 中的方向（按列分块）</figcaption>
+        </figure>
+
+        <p>写成"方向余弦（direction cosines）"形式，每个元素就是两组基向量的点积：</p>
+        <p class="rk-eq">\[ {}^{A}_{B}R = \big[\; {}^{A}\hat{X}_B \;\big|\; {}^{A}\hat{Y}_B \;\big|\; {}^{A}\hat{Z}_B \;\big]
+        = \begin{bmatrix}
+        \hat{X}_B\!\cdot\!\hat{X}_A & \hat{Y}_B\!\cdot\!\hat{X}_A & \hat{Z}_B\!\cdot\!\hat{X}_A \\
+        \hat{X}_B\!\cdot\!\hat{Y}_A & \hat{Y}_B\!\cdot\!\hat{Y}_A & \hat{Z}_B\!\cdot\!\hat{Y}_A \\
+        \hat{X}_B\!\cdot\!\hat{Z}_A & \hat{Y}_B\!\cdot\!\hat{Z}_A & \hat{Z}_B\!\cdot\!\hat{Z}_A
+        \end{bmatrix} \]</p>
+
+        <p>
+          <strong>第二张</strong>说明同一个 <span class="rk-eq">\(R\)</span> 的第二重身份：它还能把一个向量从 <span class="rk-eq">\(\{B\}\)</span> 坐标换算到 <span class="rk-eq">\(\{A\}\)</span> 坐标。
+          同一个物理点 <span class="rk-eq">\(P\)</span>，在两套基下分量不同，二者由 <span class="rk-eq">\({}^{A}P = {}^{A}_{B}R\,{}^{B}P\)</span> 联系——
+          与图 1 中按列分块得到的矩阵<strong>完全是同一个</strong>，这正是"旋转矩阵既描述姿态、又变换坐标"的统一之处。
+        </p>
+
+        <figure class="rk-fig">
+          <svg viewBox="0 0 720 320" role="img" aria-label="用旋转矩阵变换向量在两坐标系下的坐标">
+            <defs>
+              <marker id="rkArrK2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#1a1a1a"/>
+              </marker>
+              <marker id="rkArrO2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#c2410c"/>
+              </marker>
+              <marker id="rkArrG2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#15803d"/>
+              </marker>
+            </defs>
+            <!-- 共原点的 {A}(黑) 与 {B}(橙) -->
+            <g stroke="#1a1a1a" stroke-width="2.2" fill="none" marker-end="url(#rkArrK2)">
+              <line x1="220" y1="210" x2="220" y2="70"/>
+              <line x1="220" y1="210" x2="380" y2="210"/>
+              <line x1="220" y1="210" x2="140" y2="280"/>
+            </g>
+            <text x="220" y="58" font-size="16" font-style="italic" fill="#1a1a1a" text-anchor="middle">Z_A</text>
+            <text x="392" y="215" font-size="16" font-style="italic" fill="#1a1a1a">X_A</text>
+            <text x="118" y="294" font-size="16" font-style="italic" fill="#1a1a1a">Y_A</text>
+            <text x="190" y="232" font-size="15" fill="#1a1a1a">{A}</text>
+            <g stroke="#c2410c" stroke-width="2.2" fill="none" marker-end="url(#rkArrO2)">
+              <line x1="220" y1="210" x2="300" y2="92"/>
+              <line x1="220" y1="210" x2="392" y2="150"/>
+              <line x1="220" y1="210" x2="178" y2="296"/>
+            </g>
+            <text x="306" y="86" font-size="16" font-style="italic" fill="#c2410c">Ẑ_B</text>
+            <text x="400" y="150" font-size="16" font-style="italic" fill="#c2410c">Ŷ_B</text>
+            <text x="166" y="312" font-size="16" font-style="italic" fill="#c2410c">X̂_B</text>
+            <text x="240" y="196" font-size="15" fill="#c2410c">{B}</text>
+            <!-- 同一向量 P -->
+            <line x1="220" y1="210" x2="470" y2="170" stroke="#15803d" stroke-width="3" marker-end="url(#rkArrG2)"/>
+            <text x="478" y="170" font-size="18" font-style="italic" fill="#15803d">P</text>
+            <!-- 关系式 -->
+            <text x="560" y="150" font-size="15" fill="#15803d" text-anchor="middle">同一点 P：</text>
+            <text x="560" y="174" font-size="15" fill="#15803d" text-anchor="middle">ᴬP = ᴬ_B R · ᴮP</text>
+            <text x="560" y="198" font-size="13" fill="#a3a3a3" text-anchor="middle">分量随基而变</text>
+          </svg>
+          <figcaption>图 2 · 同一旋转矩阵把向量坐标从 {B} 换算到 {A}：ᴬP = ᴬ₍B₎R · ᴮP</figcaption>
+        </figure>
+
+        <div class="rk-callout rk-callout-tip">
+          <i class="fas fa-lightbulb"></i>
+          <div>
+            <strong>一句话记忆</strong>
+            <p>旋转矩阵 <span class="rk-eq">\({}^{A}_{B}R\)</span> 的列 = "<span class="rk-eq">\(\{B\}\)</span> 的轴在 <span class="rk-eq">\(\{A\}\)</span> 里长什么样"；正因为如此，左乘它就能把 <span class="rk-eq">\(\{B\}\)</span> 系坐标搬到 <span class="rk-eq">\(\{A\}\)</span> 系——<strong>描述姿态</strong>与<strong>变换坐标</strong>是同一个矩阵的两种用法。</p>
+          </div>
+        </div>
+
+        <h3>2. 齐次变换与 SE(3)</h3>
+        <p>把旋转 <span class="rk-eq">\(R\)</span> 和平移 <span class="rk-eq">\(p\)</span> 统一进 4×4 齐次变换矩阵 <span class="rk-eq">\(T \in SE(3)\)</span>：</p>
+        <p class="rk-eq">\[ {}^{A}T_{B} = \begin{bmatrix} {}^{A}R_{B} & {}^{A}p_{B} \\ 0\;0\;0 & 1 \end{bmatrix},
+        \qquad {}^{A}T_{C} = {}^{A}T_{B}\,{}^{B}T_{C} \]</p>
+        <p>左上标 / 右下标约定保证相邻变换"首尾相接"即可链式相乘，这是正运动学连乘的基础。其逆为：</p>
+        <p class="rk-eq">\[ T^{-1} = \begin{bmatrix} R^\top & -R^\top p \\ 0\;0\;0 & 1 \end{bmatrix} \]</p>
+
+        <h3>3. DH 参数与指数积（PoE）</h3>
+        <p>
+          两种主流的连杆建模约定：
+        </p>
+        <ul class="rk-list">
+          <li><strong>Denavit–Hartenberg (DH)</strong>：用 <span class="rk-eq">\((\theta_i,\,d_i,\,a_i,\,\alpha_i)\)</span> 四参数描述相邻关节坐标系，紧凑但坐标系放置有规则约束。</li>
+          <li><strong>指数积 (Product of Exponentials)</strong>：<span class="rk-eq">\( T(q) = e^{[\mathcal{S}_1]q_1}\cdots e^{[\mathcal{S}_n]q_n} M \)</span>，用关节旋量 <span class="rk-eq">\(\mathcal{S}_i\)</span> 直接表达，几何意义清晰，与李群 / 旋量理论无缝衔接，是现代机器人学的首选。</li>
+        </ul>
+
+        <p>DH 四参数的几何含义：沿 <span class="rk-eq">\(\hat z_{i-1}\)</span> 与 <span class="rk-eq">\(\hat z_{i}\)</span> 两轴的公垂线建立关系——</p>
+        <figure class="rk-fig">
+          <svg viewBox="0 0 720 300" role="img" aria-label="DH 四参数几何示意">
+            <!-- 关节 i-1 的 z 轴 -->
+            <line x1="120" y1="270" x2="120" y2="60" stroke="#1a1a1a" stroke-width="2.4"/>
+            <text x="108" y="52" font-size="15" font-style="italic" fill="#1a1a1a">z_{i-1}</text>
+            <!-- 关节 i 的 z 轴（倾斜，体现 alpha） -->
+            <line x1="470" y1="250" x2="540" y2="60" stroke="#1a1a1a" stroke-width="2.4"/>
+            <text x="544" y="56" font-size="15" font-style="italic" fill="#1a1a1a">z_i</text>
+            <!-- 公垂线 = a_i 沿 x_i -->
+            <line x1="120" y1="150" x2="470" y2="150" stroke="#c2410c" stroke-width="2.6" stroke-dasharray="0"/>
+            <text x="285" y="142" font-size="16" font-style="italic" fill="#c2410c" text-anchor="middle">a_i  （连杆长度）</text>
+            <text x="478" y="150" font-size="14" font-style="italic" fill="#c2410c">x_i</text>
+            <!-- d_i 沿 z_{i-1} -->
+            <line x1="120" y1="270" x2="120" y2="150" stroke="#15803d" stroke-width="2.6"/>
+            <text x="62" y="215" font-size="16" font-style="italic" fill="#15803d">d_i</text>
+            <text x="40" y="232" font-size="12" fill="#15803d">(连杆偏距)</text>
+            <!-- theta_i 绕 z_{i-1} 的转角 -->
+            <path d="M120 200 A 50 50 0 0 1 168 188" fill="none" stroke="#7c3aed" stroke-width="2"/>
+            <text x="176" y="196" font-size="15" font-style="italic" fill="#7c3aed">θ_i</text>
+            <text x="150" y="226" font-size="12" fill="#7c3aed">(关节角，绕 z_{i-1})</text>
+            <!-- alpha_i 绕 x_i 的扭角 -->
+            <path d="M455 150 A 40 40 0 0 0 480 116" fill="none" stroke="#7c3aed" stroke-width="2"/>
+            <text x="495" y="120" font-size="15" font-style="italic" fill="#7c3aed">α_i</text>
+            <text x="430" y="186" font-size="12" fill="#7c3aed">(连杆扭角，绕 x_i)</text>
+            <circle cx="120" cy="150" r="4" fill="#c2410c"/>
+            <circle cx="470" cy="150" r="4" fill="#c2410c"/>
+          </svg>
+          <figcaption>图 3 · DH 四参数：a_i 连杆长度 / α_i 连杆扭角 / d_i 连杆偏距 / θ_i 关节角</figcaption>
+        </figure>
+        <p>对应的单关节齐次变换由"绕 <span class="rk-eq">\(\hat z\)</span> 转 <span class="rk-eq">\(\theta_i\)</span>、沿 <span class="rk-eq">\(\hat z\)</span> 移 <span class="rk-eq">\(d_i\)</span>、沿 <span class="rk-eq">\(\hat x\)</span> 移 <span class="rk-eq">\(a_i\)</span>、绕 <span class="rk-eq">\(\hat x\)</span> 转 <span class="rk-eq">\(\alpha_i\)</span>"四步复合而成：</p>
+        <p class="rk-eq">\[ {}^{i-1}T_i = \mathrm{Rot}_z(\theta_i)\,\mathrm{Trans}_z(d_i)\,\mathrm{Trans}_x(a_i)\,\mathrm{Rot}_x(\alpha_i)
+        = \begin{bmatrix}
+        c\theta_i & -s\theta_i c\alpha_i & s\theta_i s\alpha_i & a_i c\theta_i \\
+        s\theta_i & c\theta_i c\alpha_i & -c\theta_i s\alpha_i & a_i s\theta_i \\
+        0 & s\alpha_i & c\alpha_i & d_i \\
+        0 & 0 & 0 & 1
+        \end{bmatrix} \]</p>
+        <p>旋转关节变 <span class="rk-eq">\(\theta_i\)</span>、移动关节变 <span class="rk-eq">\(d_i\)</span>，其余三参数为机械结构常数——这就是 FK 连乘的"积木"。</p>
+      </section>
+
+      <section id="fk" class="rk-section">
+        <h2><i class="fas fa-arrow-right"></i> 正向运动学</h2>
+        <p>
+          对开链，正运动学就是把基座到末端的所有关节变换依次相乘：
+        </p>
+        <p class="rk-eq">\[ {}^{0}T_{n}(q) = {}^{0}T_{1}(q_1)\,{}^{1}T_{2}(q_2)\cdots{}^{n-1}T_{n}(q_n) \]</p>
+        <p>
+          解唯一、计算量小、可解析微分，这是开链相对闭链最大的工程优势。
+        </p>
+        <p>
+          对<strong>闭链</strong>则没有这种现成的连乘式：末端位姿必须在<strong>满足环闭合约束</strong> <span class="rk-eq">\(g(q_a,q_p)=0\)</span> 的前提下求得。
+          典型流程是——给定主动关节 <span class="rk-eq">\(q_a\)</span>，先用牛顿迭代解出被动关节 <span class="rk-eq">\(q_p\)</span>，再代入某条支链做 FK。
+          因此并联机构的正运动学常是<strong>多解、需数值求解</strong>的，与其"逆运动学反而简单"恰好互补。
+        </p>
+        <div class="rk-example">
+          <div class="rk-example-head"><i class="fas fa-pen-ruler"></i> 例题 · 平面二连杆机械臂的正运动学</div>
+          <div class="rk-example-body">
+            <p>取课程最经典的范例：两段连杆长 <span class="rk-eq">\(l_1, l_2\)</span>，两个旋转关节角 <span class="rk-eq">\(\theta_1,\theta_2\)</span>，求末端点 <span class="rk-eq">\(P=(x,y)\)</span>。</p>
+            <figure class="rk-fig">
+              <svg viewBox="0 0 720 300" role="img" aria-label="平面二连杆机械臂">
+                <!-- 基座坐标 -->
+                <line x1="100" y1="240" x2="100" y2="120" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <line x1="100" y1="240" x2="240" y2="240" stroke="#a3a3a3" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <text x="246" y="245" font-size="13" fill="#a3a3a3">x₀</text>
+                <!-- 连杆1 -->
+                <line x1="100" y1="240" x2="300" y2="130" stroke="#c2410c" stroke-width="6" stroke-linecap="round"/>
+                <text x="185" y="172" font-size="15" font-style="italic" fill="#c2410c">l₁</text>
+                <!-- 连杆2 -->
+                <line x1="300" y1="130" x2="470" y2="170" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
+                <text x="392" y="142" font-size="15" font-style="italic" fill="#1a1a1a">l₂</text>
+                <!-- 关节 -->
+                <circle cx="100" cy="240" r="8" fill="#fff" stroke="#c2410c" stroke-width="3"/>
+                <circle cx="300" cy="130" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+                <circle cx="470" cy="170" r="6" fill="#15803d"/>
+                <text x="478" y="170" font-size="16" font-style="italic" fill="#15803d">P=(x,y)</text>
+                <!-- 角度弧 -->
+                <path d="M150 240 A 50 50 0 0 0 135 210" fill="none" stroke="#7c3aed" stroke-width="2"/>
+                <text x="158" y="222" font-size="15" font-style="italic" fill="#7c3aed">θ₁</text>
+                <path d="M340 145 A 45 45 0 0 0 343 168" fill="none" stroke="#7c3aed" stroke-width="2"/>
+                <text x="350" y="135" font-size="15" font-style="italic" fill="#7c3aed">θ₂</text>
+                <text x="70" y="262" font-size="14" fill="#1a1a1a">基座</text>
+              </svg>
+              <figcaption>图 4 · 平面二连杆臂：θ₁ 绕基座、θ₂ 为相对肘关节角</figcaption>
+            </figure>
+
+            <div class="rk-step">Step 1 · 写出各关节齐次变换</div>
+            <p class="rk-eq">\[ {}^{0}T_1=\begin{bmatrix} c_1 & -s_1 & l_1 c_1\\ s_1 & c_1 & l_1 s_1\\ 0&0&1 \end{bmatrix},\quad
+            {}^{1}T_2=\begin{bmatrix} c_2 & -s_2 & l_2 c_2\\ s_2 & c_2 & l_2 s_2\\ 0&0&1 \end{bmatrix} \]</p>
+            <p>（平面情形用 3×3 齐次矩阵；<span class="rk-eq">\(c_i=\cos\theta_i,\ s_i=\sin\theta_i\)</span>。）</p>
+
+            <div class="rk-step">Step 2 · 连乘得末端位姿</div>
+            <p class="rk-eq">\[ {}^{0}T_2={}^{0}T_1\,{}^{1}T_2=\begin{bmatrix} c_{12} & -s_{12} & l_1c_1+l_2c_{12}\\ s_{12} & c_{12} & l_1s_1+l_2s_{12}\\ 0&0&1 \end{bmatrix} \]</p>
+            <p>其中 <span class="rk-eq">\(c_{12}=\cos(\theta_1+\theta_2)\)</span>。读出末端位置即闭式正解：</p>
+            <p class="rk-eq">\[ \boxed{\;x=l_1\cos\theta_1+l_2\cos(\theta_1+\theta_2),\qquad y=l_1\sin\theta_1+l_2\sin(\theta_1+\theta_2)\;} \]</p>
+            <p>末端朝向 <span class="rk-eq">\(\phi=\theta_1+\theta_2\)</span>。注意：解<strong>唯一且解析</strong>——这正是开链 FK 的优势，下一节的逆解则会出现"肘上/肘下"两组解。</p>
+          </div>
+        </div>
+
+        <div class="rk-callout rk-callout-warn">
+          <i class="fas fa-triangle-exclamation"></i>
+          <div>
+            <strong>常见坑</strong>
+            <p>DH 参数有"标准 DH"与"改进 DH (Craig)"两套约定，坐标系归属不同，混用会导致 FK 整体错位。落地前务必确认所用框架（如 URDF、MuJoCo、Pinocchio）采用的是哪一套。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ik" class="rk-section">
+        <h2><i class="fas fa-arrow-left"></i> 逆向运动学</h2>
+        <p>给定期望位姿 <span class="rk-eq">\(T_d\)</span>，求关节变量 <span class="rk-eq">\(q\)</span> 使 <span class="rk-eq">\(T(q)=T_d\)</span>。它是一个非线性方程组，通常存在以下特性：</p>
+        <ul class="rk-list">
+          <li><strong>多解</strong>：如六轴臂著名的"肘上 / 肘下""翻腕"等多达 8 组解。</li>
+          <li><strong>无解</strong>：目标在工作空间外。</li>
+          <li><strong>无穷解</strong>：冗余机器人（DoF &gt; 任务维数）。</li>
+        </ul>
+
+        <h3>1. 解析法（闭式）</h3>
+        <p>满足 Pieper 准则（如末端三轴交于一点）的机械臂可写出闭式解，速度快、可枚举全部解，工业臂广泛采用。</p>
+
+        <div class="rk-example">
+          <div class="rk-example-head"><i class="fas fa-pen-ruler"></i> 例题 · 接上例，平面二连杆臂的逆解（含双解）</div>
+          <div class="rk-example-body">
+            <p>已知目标点 <span class="rk-eq">\((x,y)\)</span>，反求 <span class="rk-eq">\(\theta_1,\theta_2\)</span>。同一个点通常对应<strong>两组</strong>关节角——"肘上(elbow-up)"与"肘下(elbow-down)"。</p>
+            <figure class="rk-fig">
+              <svg viewBox="0 0 720 300" role="img" aria-label="二连杆逆解的肘上肘下双解">
+                <circle cx="140" cy="220" r="8" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+                <text x="110" y="244" font-size="13" fill="#1a1a1a">基座</text>
+                <circle cx="470" cy="170" r="6" fill="#15803d"/>
+                <text x="480" y="172" font-size="15" font-style="italic" fill="#15803d">目标 (x,y)</text>
+                <!-- 肘上解 -->
+                <line x1="140" y1="220" x2="300" y2="95" stroke="#c2410c" stroke-width="5" stroke-linecap="round"/>
+                <line x1="300" y1="95" x2="470" y2="170" stroke="#c2410c" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="300" cy="95" r="6" fill="#fff" stroke="#c2410c" stroke-width="3"/>
+                <text x="280" y="84" font-size="13" fill="#c2410c">肘上 (elbow-up)</text>
+                <!-- 肘下解 -->
+                <line x1="140" y1="220" x2="330" y2="255" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 0" opacity="0.55"/>
+                <line x1="330" y1="255" x2="470" y2="170" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+                <circle cx="330" cy="255" r="6" fill="#fff" stroke="#1a1a1a" stroke-width="3" opacity="0.7"/>
+                <text x="300" y="284" font-size="13" fill="#525252">肘下 (elbow-down)</text>
+                <line x1="140" y1="220" x2="470" y2="170" stroke="#a3a3a3" stroke-width="1.4" stroke-dasharray="5 4"/>
+                <text x="250" y="205" font-size="13" fill="#a3a3a3">r = √(x²+y²)</text>
+              </svg>
+              <figcaption>图 5 · 同一目标点的两组逆解：肘上 / 肘下（θ₂ 异号）</figcaption>
+            </figure>
+
+            <div class="rk-step">Step 1 · 由余弦定理求 θ₂</div>
+            <p class="rk-eq">\[ \cos\theta_2=\frac{x^2+y^2-l_1^2-l_2^2}{2\,l_1 l_2}
+            \;\Longrightarrow\; \theta_2=\pm\arccos\!\Big(\tfrac{x^2+y^2-l_1^2-l_2^2}{2 l_1 l_2}\Big) \]</p>
+            <p><span class="rk-eq">\(+\)</span> 号 → 肘下，<span class="rk-eq">\(-\)</span> 号 → 肘上，<strong>双解由此而来</strong>。</p>
+
+            <div class="rk-step">Step 2 · 再求 θ₁（用 atan2 保证象限正确）</div>
+            <p class="rk-eq">\[ \theta_1=\operatorname{atan2}(y,x)-\operatorname{atan2}\big(l_2\sin\theta_2,\; l_1+l_2\cos\theta_2\big) \]</p>
+
+            <div class="rk-step">Step 3 · 可解性判据</div>
+            <p>当 <span class="rk-eq">\(\left|\dfrac{x^2+y^2-l_1^2-l_2^2}{2 l_1 l_2}\right|>1\)</span> 时 <span class="rk-eq">\(\arccos\)</span> 无定义 → 目标在工作空间外（<strong>无解</strong>）；等于 1 时双解重合（<strong>边界 / 奇异</strong>，手臂完全伸直，见奇异性一节）。</p>
+          </div>
+        </div>
+
+        <div class="rk-callout rk-callout-tip">
+          <i class="fas fa-lightbulb"></i>
+          <div>
+            <strong>为什么一定用 atan2 而不是 atan</strong>
+            <p><span class="rk-eq">\(\arctan(y/x)\)</span> 丢失象限信息且在 <span class="rk-eq">\(x=0\)</span> 处发散；<span class="rk-eq">\(\operatorname{atan2}(y,x)\)</span> 用两个参数的符号还原完整 <span class="rk-eq">\([-\pi,\pi]\)</span> 角度——这是所有逆解 / 姿态解算的工程铁律。</p>
+          </div>
+        </div>
+
+        <h3>2. 数值法（雅可比迭代）</h3>
+        <p>定义位姿误差 <span class="rk-eq">\(e(q)\)</span>，用雅可比做牛顿 / 最速下降迭代：</p>
+        <p class="rk-eq">\[ q_{k+1} = q_k + \alpha\, J^{\dagger}(q_k)\, e(q_k) \]</p>
+        <p>其中 <span class="rk-eq">\(J^{\dagger}\)</span> 为雅可比伪逆。靠近奇异点时需用<strong>阻尼最小二乘（DLS / Levenberg–Marquardt）</strong>提升数值稳定性：</p>
+        <p class="rk-eq">\[ J^{\dagger}_{\text{DLS}} = J^\top\big(JJ^\top + \lambda^2 I\big)^{-1} \]</p>
+      </section>
+
+      <section id="diff" class="rk-section">
+        <h2><i class="fas fa-superscript"></i> 一阶微分运动学与静力学</h2>
+
+        <h3>1. 雅可比矩阵</h3>
+        <p>对正运动学关于关节变量求导，得到把关节速度映射为末端空间速度（旋量 twist）的<strong>雅可比矩阵</strong>：</p>
+        <p class="rk-eq">\[ \mathcal{V} = \begin{bmatrix} v \\ \omega \end{bmatrix} = J(q)\,\dot q, \qquad J(q) \in \mathbb{R}^{6\times n} \]</p>
+        <p>它是连接"关节空间"与"任务空间"的桥梁，几乎所有速度级、力级控制都建立在它之上。</p>
+
+        <div class="rk-example">
+          <div class="rk-example-head"><i class="fas fa-pen-ruler"></i> 例题 · 接上例，平面二连杆臂的雅可比</div>
+          <div class="rk-example-body">
+            <p>对 FK 的位置闭式解 <span class="rk-eq">\(x,y\)</span> 分别对 <span class="rk-eq">\(\theta_1,\theta_2\)</span> 求偏导，即得位置雅可比：</p>
+            <p class="rk-eq">\[ J=\begin{bmatrix} \dfrac{\partial x}{\partial\theta_1} & \dfrac{\partial x}{\partial\theta_2}\\[2mm]
+            \dfrac{\partial y}{\partial\theta_1} & \dfrac{\partial y}{\partial\theta_2}\end{bmatrix}
+            =\begin{bmatrix} -l_1 s_1-l_2 s_{12} & -l_2 s_{12}\\ \;\;l_1 c_1+l_2 c_{12} & \;\;l_2 c_{12}\end{bmatrix} \]</p>
+            <p>其行列式 <span class="rk-eq">\(\det J = l_1 l_2 \sin\theta_2\)</span>。当 <span class="rk-eq">\(\theta_2=0\)</span> 或 <span class="rk-eq">\(\pi\)</span>（手臂完全伸直/折叠）时 <span class="rk-eq">\(\det J=0\)</span> → <strong>奇异</strong>，这与逆解中"双解重合"的边界完全一致——三者（IK 边界、<span class="rk-eq">\(\det J=0\)</span>、可操作度为零）说的是同一件事。</p>
+            <figure class="rk-fig">
+              <svg viewBox="0 0 720 280" role="img" aria-label="雅可比把关节速度映射为末端速度椭圆">
+                <!-- 关节空间 -->
+                <text x="150" y="40" font-size="14" fill="#525252" text-anchor="middle">关节速度空间</text>
+                <circle cx="150" cy="150" r="60" fill="none" stroke="#1a1a1a" stroke-width="1.6"/>
+                <line x1="150" y1="150" x2="150" y2="90" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#rkArrK)"/>
+                <line x1="150" y1="150" x2="210" y2="150" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#rkArrK)"/>
+                <text x="120" y="86" font-size="13" font-style="italic" fill="#1a1a1a">θ̇₂</text>
+                <text x="214" y="155" font-size="13" font-style="italic" fill="#1a1a1a">θ̇₁</text>
+                <text x="150" y="232" font-size="12" fill="#a3a3a3" text-anchor="middle">单位圆 ‖q̇‖=1</text>
+                <!-- 映射箭头 -->
+                <line x1="250" y1="150" x2="400" y2="150" stroke="#c2410c" stroke-width="2.4" marker-end="url(#rkArrO)"/>
+                <text x="325" y="138" font-size="15" fill="#c2410c" text-anchor="middle">V = J q̇</text>
+                <!-- 任务空间椭圆 -->
+                <text x="540" y="40" font-size="14" fill="#525252" text-anchor="middle">末端速度空间</text>
+                <ellipse cx="540" cy="150" rx="95" ry="42" transform="rotate(-22 540 150)" fill="rgba(194,65,12,0.10)" stroke="#c2410c" stroke-width="1.8"/>
+                <line x1="540" y1="150" x2="540" y2="100" stroke="#15803d" stroke-width="1.4" marker-end="url(#rkArrG2)"/>
+                <line x1="540" y1="150" x2="610" y2="150" stroke="#15803d" stroke-width="1.4" marker-end="url(#rkArrG2)"/>
+                <text x="520" y="96" font-size="13" font-style="italic" fill="#15803d">ẏ</text>
+                <text x="614" y="155" font-size="13" font-style="italic" fill="#15803d">ẋ</text>
+                <text x="540" y="232" font-size="12" fill="#a3a3a3" text-anchor="middle">可操作度椭圆</text>
+              </svg>
+              <figcaption>图 6 · 雅可比把"关节速度单位圆"映射成"末端速度椭圆"；椭圆越扁越接近奇异</figcaption>
+            </figure>
+            <p>椭圆的长短轴 = <span class="rk-eq">\(J\)</span> 的奇异值；越接近奇异，椭圆越扁，某方向上需要极大关节速度才能产生末端微动——这就是逆解在奇异点附近"爆炸"的几何解释。</p>
+          </div>
+        </div>
+
+        <h3>2. 静力学对偶（虚功原理）</h3>
+        <p>由虚功原理，关节力矩 <span class="rk-eq">\(\tau\)</span> 与末端广义力（力旋量 wrench）<span class="rk-eq">\(\mathcal{F}\)</span> 满足转置对偶关系：</p>
+        <p class="rk-eq">\[ \tau = J^\top(q)\,\mathcal{F} \]</p>
+        <div class="rk-callout rk-callout-info">
+          <i class="fas fa-scale-balanced"></i>
+          <div>
+            <strong>速度—力的对偶</strong>
+            <p><span class="rk-eq">\(J\)</span> 把关节速度推向末端速度；<span class="rk-eq">\(J^\top\)</span> 把末端力拉回关节力矩。这一对偶是阻抗控制、力控、接触估计的理论基石——也意味着 <span class="rk-eq">\(J\)</span> 的退化（奇异）会同时破坏运动能力与承力能力。</p>
+          </div>
+        </div>
+
+        <h3>3. 可操作度</h3>
+        <p>Yoshikawa 可操作度量化机器人在当前位形下的灵巧程度，越接近 0 表示越靠近奇异：</p>
+        <p class="rk-eq">\[ w(q) = \sqrt{\det\big(J(q)\,J^\top(q)\big)} \]</p>
+      </section>
+
+      <section id="singularity" class="rk-section">
+        <h2><i class="fas fa-bullseye"></i> 奇异性问题与零空间理论（WBC 数学基础）</h2>
+
+        <h3>1. 奇异性</h3>
+        <p>
+          当 <span class="rk-eq">\(\operatorname{rank} J(q) &lt; \min(6,n)\)</span> 时，机器人处于<strong>奇异位形</strong>。此时：
+        </p>
+        <ul class="rk-list">
+          <li>末端在某些方向上瞬时丧失运动能力（运动学退化）；</li>
+          <li>为产生该方向微小运动需无穷大关节速度（逆解爆炸）；</li>
+          <li>开链表现为关节轴共线 / 共面；闭链则对应环闭合雅可比降秩，分支动作不定。</li>
+        </ul>
+        <figure class="rk-fig">
+          <svg viewBox="0 0 720 220" role="img" aria-label="二连杆臂在伸直处的奇异">
+            <!-- 一般位形 -->
+            <g>
+              <circle cx="90" cy="160" r="7" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+              <line x1="90" y1="160" x2="190" y2="80" stroke="#c2410c" stroke-width="5" stroke-linecap="round"/>
+              <line x1="190" y1="80" x2="280" y2="130" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="190" cy="80" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+              <ellipse cx="280" cy="130" rx="36" ry="22" fill="rgba(21,128,61,0.12)" stroke="#15803d" stroke-width="1.6"/>
+              <text x="150" y="205" font-size="13" fill="#525252" text-anchor="middle">一般位形：可操作度椭圆饱满</text>
+            </g>
+            <!-- 奇异位形：完全伸直 -->
+            <g>
+              <circle cx="430" cy="150" r="7" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+              <line x1="430" y1="150" x2="560" y2="110" stroke="#c2410c" stroke-width="5" stroke-linecap="round"/>
+              <line x1="560" y1="110" x2="660" y2="80" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="560" cy="110" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.5"/>
+              <line x1="630" y1="93" x2="690" y2="69" stroke="#15803d" stroke-width="3" marker-end="url(#rkArrG2)"/>
+              <line x1="660" y1="80" x2="666" y2="55" stroke="#b91c1c" stroke-width="2" stroke-dasharray="3 3"/>
+              <text x="600" y="44" font-size="12" fill="#b91c1c" text-anchor="middle">此方向无法运动</text>
+              <text x="545" y="205" font-size="13" fill="#525252" text-anchor="middle">θ₂=0 完全伸直：det J = l₁l₂sinθ₂ = 0</text>
+            </g>
+          </svg>
+          <figcaption>图 7 · 二连杆臂在 θ₂=0（伸直）处奇异：椭圆退化为线段，沿伸展方向丧失瞬时运动能力</figcaption>
+        </figure>
+
+        <h3>2. 冗余与零空间</h3>
+        <p>
+          当机器人自由度 <span class="rk-eq">\(n\)</span> 大于任务维数 <span class="rk-eq">\(m\)</span> 时为<strong>运动学冗余</strong>。
+          带零空间投影的通解为：
+        </p>
+        <p class="rk-eq">\[ \dot q = J^{\dagger}\dot x \;+\; \big(I - J^{\dagger}J\big)\,\dot q_0 \]</p>
+        <p>
+          第一项以最小范数完成主任务；第二项中 <span class="rk-eq">\(N = I - J^{\dagger}J\)</span> 是<strong>零空间投影算子</strong>，
+          <span class="rk-eq">\(\dot q_0\)</span> 是任意次级目标（避障、避关节限位、保持姿态等）。
+          这正是<strong>全身控制（Whole-Body Control, WBC）</strong>实现严格<strong>任务优先级</strong>的核心：高优先级任务先占满，低优先级任务只在不破坏高优先级的零空间内运动。
+        </p>
+        <figure class="rk-fig">
+          <svg viewBox="0 0 720 240" role="img" aria-label="冗余臂的零空间自运动">
+            <!-- 固定末端点 -->
+            <circle cx="560" cy="120" r="7" fill="#15803d"/>
+            <text x="570" y="124" font-size="14" fill="#15803d">末端固定不动</text>
+            <circle cx="120" cy="170" r="7" fill="#fff" stroke="#1a1a1a" stroke-width="3"/>
+            <text x="92" y="194" font-size="12" fill="#1a1a1a">基座</text>
+            <!-- 位形 A -->
+            <polyline points="120,170 250,90 410,80 560,120" fill="none" stroke="#c2410c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="250" cy="90" r="5" fill="#fff" stroke="#c2410c" stroke-width="2.5"/>
+            <circle cx="410" cy="80" r="5" fill="#fff" stroke="#c2410c" stroke-width="2.5"/>
+            <!-- 位形 B（同末端，不同肘姿） -->
+            <polyline points="120,170 270,180 430,160 560,120" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+            <circle cx="270" cy="180" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.5" opacity="0.6"/>
+            <circle cx="430" cy="160" r="5" fill="#fff" stroke="#1a1a1a" stroke-width="2.5" opacity="0.6"/>
+            <path d="M330 95 Q 345 135 350 165" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#rkArrG2)"/>
+            <text x="300" y="50" font-size="13" fill="#7c3aed">零空间自运动：肘部可摆动而末端不动</text>
+          </svg>
+          <figcaption>图 8 · 冗余臂的零空间自运动（self-motion）：末端位姿不变，内部关节仍可重构以完成次级目标</figcaption>
+        </figure>
+        <p>
+          上图直观说明 <span class="rk-eq">\(N\dot q_0\)</span> 的物理意义：橙、灰两个位形末端点完全相同，但"手肘"位置不同——
+          沿零空间运动时，主任务（末端位姿）严格不受影响（这一点将在下一节严格证明），多出来的自由度被用于避障、避关节限位等次级目标。
+        </p>
+      </section>
+
+      <section id="nullspace-proof" class="rk-section">
+        <h2><i class="fas fa-square-root-variable"></i> 零空间理论数学证明</h2>
+        <p>下面证明上式中第二项确实<strong>不会污染主任务</strong>，且 <span class="rk-eq">\(N\)</span> 是投影到 <span class="rk-eq">\(\ker J\)</span> 的正交投影。设 <span class="rk-eq">\(J\in\mathbb{R}^{m\times n}\)</span> 行满秩，<span class="rk-eq">\(J^{\dagger}=J^\top(JJ^\top)^{-1}\)</span> 为右伪逆。</p>
+
+        <h3>命题 1：主任务不受零空间项影响</h3>
+        <p>对通解左乘 <span class="rk-eq">\(J\)</span>：</p>
+        <p class="rk-eq">\[ J\dot q = J J^{\dagger}\dot x + J\big(I - J^{\dagger}J\big)\dot q_0 \]</p>
+        <p>由右伪逆性质 <span class="rk-eq">\(JJ^{\dagger}=I_m\)</span>，故 <span class="rk-eq">\(JJ^{\dagger}\dot x=\dot x\)</span>；又</p>
+        <p class="rk-eq">\[ J\big(I - J^{\dagger}J\big) = J - (JJ^{\dagger})J = J - J = 0 \]</p>
+        <p>因此 <span class="rk-eq">\(J\dot q=\dot x\)</span> 恒成立——<strong>无论 \(\dot q_0\) 取何值，主任务速度精确实现</strong>。<span class="rk-qed">∎</span></p>
+
+        <h3>命题 2：\(N=I-J^{\dagger}J\) 是幂等的（投影算子）</h3>
+        <p class="rk-eq">\[ N^2 = (I - J^{\dagger}J)(I - J^{\dagger}J) = I - 2J^{\dagger}J + J^{\dagger}\underbrace{(JJ^{\dagger})}_{=I}J = I - 2J^{\dagger}J + J^{\dagger}J = I - J^{\dagger}J = N \]</p>
+        <p>满足 <span class="rk-eq">\(N^2=N\)</span>，故为投影算子。<span class="rk-qed">∎</span></p>
+
+        <h3>命题 3：\(N\) 是对称的（正交投影），且 \(\operatorname{range}(N)=\ker J\)</h3>
+        <p>当 <span class="rk-eq">\(J^{\dagger}\)</span> 取 Moore–Penrose 伪逆时 <span class="rk-eq">\(J^{\dagger}J\)</span> 对称，故 <span class="rk-eq">\(N^\top=N\)</span>，配合幂等即为<strong>正交投影</strong>。再证值域恰为零空间：</p>
+        <ul class="rk-list">
+          <li><strong>(⊆)</strong> 对任意 <span class="rk-eq">\(y\)</span>，<span class="rk-eq">\(JNy=(J-JJ^{\dagger}J)y=(J-J)y=0\)</span>，故 <span class="rk-eq">\(Ny\in\ker J\)</span>。</li>
+          <li><strong>(⊇)</strong> 若 <span class="rk-eq">\(z\in\ker J\)</span> 即 <span class="rk-eq">\(Jz=0\)</span>，则 <span class="rk-eq">\(Nz=z-J^{\dagger}Jz=z-0=z\)</span>，故 <span class="rk-eq">\(z\in\operatorname{range}(N)\)</span>。</li>
+        </ul>
+        <p>两向包含成立，<span class="rk-eq">\(\operatorname{range}(N)=\ker J\)</span>。<span class="rk-qed">∎</span></p>
+
+        <div class="rk-callout rk-callout-tip">
+          <i class="fas fa-key"></i>
+          <div>
+            <strong>结论的工程意义</strong>
+            <p>三条命题合起来说明：把次级目标 <span class="rk-eq">\(\dot q_0\)</span> 经 <span class="rk-eq">\(N\)</span> 投影后注入，<strong>既能尽力完成次级目标，又在数学上严格不干扰主任务</strong>。多级任务时层层嵌套零空间投影 <span class="rk-eq">\(N_1, N_1N_2,\dots\)</span>，即得到 WBC 的<strong>严格优先级分层</strong>（任务优先级反解，Siciliano &amp; Khatib 框架）。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="summary" class="rk-section">
+        <h2><i class="fas fa-flag-checkered"></i> 小结</h2>
+        <p>本文沿"机构 → 坐标 → 位形 → 速度/力 → 退化/冗余"的主线，串起了机器人运动学的完整骨架：</p>
+        <ul class="rk-list">
+          <li><strong>开链</strong>建模简单、FK 唯一；<strong>闭链</strong>靠环闭合约束分析，刚度高但 FK 需数值求解；真实机器人多为<strong>混合链</strong>。</li>
+          <li><strong>坐标变换</strong>（SO(3)/SE(3)、DH/PoE）是描述与连乘的语言。</li>
+          <li><strong>正/逆运动学</strong>互为方向，逆解存在多解、无解、冗余三种情形。</li>
+          <li><strong>雅可比</strong>统一了微分运动学与静力学的转置对偶关系。</li>
+          <li><strong>奇异性</strong>是雅可比降秩；<strong>零空间</strong>则被严格证明可在不干扰主任务的前提下承载次级目标，构成 WBC 的数学根基。</li>
+        </ul>
+        <p class="rk-back"><a href="/docs/"><i class="fas fa-arrow-left"></i> 返回知识库</a></p>
+      </section>
+
+    </article>
+  </div>
+</div>
+
+<!-- MathJax 加载器（配置与揭示逻辑已在页首声明） -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+<script>
+// 目录高亮：滚动时同步当前章节
+(function () {
+  const links = document.querySelectorAll('.rk-toc-link');
+  const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href')));
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => s && obs.observe(s));
+})();
+</script>

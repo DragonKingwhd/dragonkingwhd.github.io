@@ -39,16 +39,32 @@ layout: default
             </div>
 
             <footer class="post-footer">
-                {% if page.previous or page.next %}
+                {% comment %} 上一篇/下一篇只在同一板块内导航：知识库↔知识库，博客↔博客 {% endcomment %}
+                {% if page.kb %}
+                  {% assign nav_posts = site.posts | where: "kb", true %}
+                {% else %}
+                  {% assign nav_posts = site.posts | where_exp: "p", "p.kb != true" %}
+                {% endif %}
+                {% assign nav_idx = nil %}
+                {% for p in nav_posts %}
+                  {% if p.url == page.url %}{% assign nav_idx = forloop.index0 %}{% break %}{% endif %}
+                {% endfor %}
+                {% if nav_idx %}
+                  {% assign prev_i = nav_idx | plus: 1 %}
+                  {% assign older_post = nav_posts[prev_i] %}
+                  {% assign newer_post = nil %}
+                  {% if nav_idx > 0 %}{% assign newer_i = nav_idx | minus: 1 %}{% assign newer_post = nav_posts[newer_i] %}{% endif %}
+                {% endif %}
+                {% if older_post or newer_post %}
                 <div class="post-navigation">
-                    {% if page.previous %}
-                    <a href="{{ page.previous.url | relative_url }}">
-                        ← <strong>{{ page.previous.title }}</strong>
+                    {% if older_post %}
+                    <a href="{{ older_post.url | relative_url }}">
+                        ← <strong>{{ older_post.title }}</strong>
                     </a>
                     {% else %}<span></span>{% endif %}
-                    {% if page.next %}
-                    <a href="{{ page.next.url | relative_url }}" style="text-align:right;">
-                        <strong>{{ page.next.title }}</strong> →
+                    {% if newer_post %}
+                    <a href="{{ newer_post.url | relative_url }}" style="text-align:right;">
+                        <strong>{{ newer_post.title }}</strong> →
                     </a>
                     {% endif %}
                 </div>
