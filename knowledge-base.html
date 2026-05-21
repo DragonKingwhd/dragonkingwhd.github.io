@@ -25,7 +25,7 @@ permalink: /docs/
 
     <!-- ========== 全部文章：合并固定页 + kb 博客文章，按时间从新到旧 ========== -->
     {%- capture rowblock -%}
-2026-05-18|@|机器人运动学|@|/robot-kinematics/|@|从坐标变换到零空间理论的完整推导 · 含 9 张矢量图与 4 个例题|@|机器人学,运动学,WBC|@|fas fa-link||ROW||2025-01-10|@|Isaac Sim vs MuJoCo|@|/isaac-sim-vs-mujoco/|@|4000 美元的抉择：GPU 算力 vs 物理精度 · 性能基准与部署指南|@|机器人仿真,Isaac Sim,MuJoCo|@|fas fa-robot||ROW||2025-01-09|@|Sim2Sim 部署指南|@|/sim2sim-guide/|@|从 IsaacLab 到 Mujoco 的策略迁移完全指南 · 观测对齐与抖动排查|@|强化学习,部署,sim-to-sim|@|fas fa-exchange-alt||ROW||2024-12-20|@|材料属性参考|@|/tools/material-properties/|@|常见工程材料的密度、弹性模量、泊松比、导热系数数据库|@|材料学,参考资料|@|fas fa-flask||ROW||{% for p in kb_posts %}{% assign kc = p.categories[0] %}{% case kc %}{% when "计算机科学" %}{% assign ic = "fas fa-brain" %}{% when "力学" %}{% assign ic = "fas fa-wave-square" %}{% when "工程技术" %}{% assign ic = "fas fa-sliders-h" %}{% when "机器人学" %}{% assign ic = "fas fa-robot" %}{% else %}{% assign ic = "fas fa-book-open" %}{% endcase %}{{ p.date | date: '%Y-%m-%d' }}|@|{{ p.title }}|@|{{ p.url | relative_url }}|@|{{ p.excerpt | strip_html | strip_newlines | truncate: 96 }}|@|{{ p.tags | join: ',' }}|@|{{ ic }}||ROW||{% endfor %}
+2026-05-18|@|机器人运动学|@|/robot-kinematics/|@|从坐标变换到零空间理论的完整推导 · 含 9 张矢量图与 4 个例题|@|机器人学,运动学,WBC|@|fas fa-link||ROW||2025-01-10|@|Isaac Sim vs MuJoCo|@|/isaac-sim-vs-mujoco/|@|4000 美元的抉择：GPU 算力 vs 物理精度 · 性能基准与部署指南|@|机器人仿真,Isaac Sim,MuJoCo|@|fas fa-robot||ROW||2025-01-09|@|Sim2Sim 部署指南|@|/sim2sim-guide/|@|从 IsaacLab 到 Mujoco 的策略迁移完全指南 · 观测对齐与抖动排查|@|强化学习,部署,sim-to-sim|@|fas fa-exchange-alt||ROW||2024-12-20|@|材料属性参考|@|/tools/material-properties/|@|常见工程材料的密度、弹性模量、泊松比、导热系数数据库|@|材料学,参考资料|@|fas fa-flask||ROW||{% for p in kb_posts %}{% assign kc = p.categories[0] %}{% case kc %}{% when "计算机科学" %}{% assign ic = "fas fa-brain" %}{% when "力学" %}{% assign ic = "fas fa-wave-square" %}{% when "工程技术" %}{% assign ic = "fas fa-sliders-h" %}{% when "机器人学" %}{% assign ic = "fas fa-robot" %}{% else %}{% assign ic = "fas fa-book-open" %}{% endcase %}{% if p.series %}{% assign ic = "fas fa-layer-group" %}{% endif %}{% capture sortkey %}{{ p.date | date: '%Y-%m-%d' }}{% if p.series_order %}~{{ 100 | minus: p.series_order }}{% endif %}{% endcapture %}{{ sortkey }}|@|{{ p.title }}|@|{{ p.url | relative_url }}|@|{{ p.excerpt | strip_html | strip_newlines | truncate: 96 }}|@|{{ p.tags | join: ',' }}|@|{{ ic }}|@|{{ p.series }}||ROW||{% endfor %}
     {%- endcapture -%}
     {% assign rows = rowblock | strip | split: '||ROW||' | sort | reverse %}
 
@@ -33,7 +33,9 @@ permalink: /docs/
     {% assign r = row | strip %}
     {% if r == '' %}{% continue %}{% endif %}
     {% assign c = r | split: '|@|' %}
-    <a class="kb-entry" href="{{ c[2] }}" data-key="{{ c[1] }} {{ c[4] }}">
+    {% assign datestr = c[0] | split: '~' | first %}
+    {% assign series_class = '' %}{% if c[6] and c[6] != '' %}{% assign series_class = ' kb-entry-series' %}{% endif %}
+    <a class="kb-entry{{ series_class }}" href="{{ c[2] }}" data-key="{{ c[1] }} {{ c[4] }} {{ c[6] }}">
       <span class="kb-i"><i class="{{ c[5] }}"></i></span>
       <span class="kb-body">
         <span class="kb-t">{{ c[1] }}</span>
@@ -41,7 +43,7 @@ permalink: /docs/
         <span class="kb-tags">{% assign tg = c[4] | split: ',' %}{% for t in tg limit:3 %}<i>{{ t }}</i>{% endfor %}</span>
       </span>
       <span class="kb-lead"></span>
-      <span class="kb-date">{{ c[0] }}</span>
+      <span class="kb-date">{{ datestr }}</span>
     </a>
     {% endfor %}
 
@@ -172,6 +174,18 @@ permalink: /docs/
   color: var(--text-mute); white-space: nowrap;
 }
 .kb-entry:hover .kb-date { color: var(--accent); }
+
+/* 系列文章：连续左侧色带，视觉上聚成一组 */
+.kb-entry-series {
+  border-left: 2px solid var(--accent-border);
+  padding-left: calc(0.6rem - 2px);
+  background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 6%);
+}
+.kb-entry-series + .kb-entry:not(.kb-entry-series) {
+  margin-top: 0.25rem;
+}
+.kb-entry-series:hover { border-left-color: var(--accent); }
+.kb-entry-series .kb-i { color: var(--accent); opacity: 0.85; }
 
 .kb-empty {
   text-align: center; color: var(--text-mute); font-size: 0.95rem;

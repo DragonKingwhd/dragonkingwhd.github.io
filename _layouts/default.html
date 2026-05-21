@@ -75,6 +75,29 @@
                 <span class="arrow">→</span>
             </a>
 
+            {% if page.layout == 'post' or page.layout == 'diary' %}
+            <nav class="sidebar-crumb" aria-label="您在这里">
+                <div class="sidebar-crumb-title">您在这里</div>
+                <ol class="sidebar-crumb-path">
+                    <li><a href="{{ '/' | relative_url }}">首页</a></li>
+                    {% if page.layout == 'diary' %}
+                        <li><a href="{{ '/floating-diary/' | relative_url }}">浮生日记</a></li>
+                    {% elsif page.kb %}
+                        <li><a href="{{ '/docs/' | relative_url }}">知识库</a></li>
+                        {% if page.categories.size > 0 %}
+                            {% for c in page.categories %}<li>{{ c }}</li>{% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <li><a href="{{ '/blog/' | relative_url }}">博客</a></li>
+                        {% if page.categories.size > 0 %}
+                            {% for c in page.categories %}<li>{{ c }}</li>{% endfor %}
+                        {% endif %}
+                    {% endif %}
+                    <li class="current">{{ page.title | truncate: 30 }}</li>
+                </ol>
+            </nav>
+            {% endif %}
+
             <div class="sidebar-footer">
                 <div class="row">
                     <a href="{{ '/about/' | relative_url }}">About</a>
