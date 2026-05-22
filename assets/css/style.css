@@ -671,7 +671,6 @@ img, video, iframe { border-radius: var(--radius); margin: 1.25rem 0; }
 /* ─────── Misc ─────── */
 
 .no-scroll { overflow: hidden; }
-#busuanzi_container_site_pv { display: none; }
 
 /* ─────── Responsive ─────── */
 

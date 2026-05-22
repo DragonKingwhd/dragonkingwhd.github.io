@@ -16,3 +16,19 @@ resources:
       - 工程学
       - 课程资源
       - 开源教材
+
+  - title: "机器人学系统教程"
+    title_en: "Robotics Tutorial"
+    description: "系统化机器人学教学文档，覆盖数学、工程基础、SLAM、规划控制、运动控制与具身智能。"
+    description_en: "Systematic robotics tutorial covering mathematics, engineering fundamentals, SLAM, planning & control, motion control, and embodied intelligence."
+    url: "http://robotics-tutorial.dmbot.cn/"
+    category: "机器人学"
+    icon: "🤖"
+    source: "dmbot.cn"
+    date: "2026-05-22"
+    tags:
+      - 机器人学
+      - SLAM
+      - 运动控制
+      - 具身智能
+      - 教程
