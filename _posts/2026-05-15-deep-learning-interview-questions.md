@@ -7,6 +7,7 @@ tags: [深度学习, 神经网络, CNN, RNN, LSTM, GAN, 面试]
 author: "Dragonking"
 excerpt: "系统整理深度学习领域的常见面试问题与基础知识，覆盖神经网络、CNN、RNN、LSTM、反向传播、GAN、超参数调整七大核心模块约 100 个子问题。"
 kb: true
+kb_cat: misc
 ---
 
 <div class="dl-doc">

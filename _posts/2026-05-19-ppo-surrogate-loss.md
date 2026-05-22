@@ -7,6 +7,7 @@ tags: [PPO, Surrogate Loss, Clip, 策略梯度, 强化学习]
 author: "Dragonking"
 excerpt: "PPO 真正在最小化的策略损失叫 surrogate loss，写成那个长长的 min-clip 公式。这一篇拆开讲它每个部件在干什么，以及训练曲线里的尖峰意味着什么。"
 kb: true
+kb_cat: rl
 series: "PPO 调参笔记"
 series_order: 2
 ---

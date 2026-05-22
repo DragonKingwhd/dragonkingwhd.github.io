@@ -7,6 +7,7 @@ tags: [PPO, Entropy, 策略梯度, 强化学习, 探索, 正则化]
 author: "Dragonking"
 excerpt: "PPO 总损失三块里，能不能学起来常常是 entropy 在背后管事。这篇拆开讲它是什么、为什么要放进 loss、训练曲线该怎么读，以及连续控制里那条最重要的 clamp。"
 kb: true
+kb_cat: rl
 series: "PPO 调参笔记"
 series_order: 1
 ---

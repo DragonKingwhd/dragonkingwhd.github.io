@@ -7,6 +7,7 @@ tags: [深度学习, CNN, GRU, 强化学习, 机器人感知, 表征学习]
 author: "Dragonking"
 excerpt: "逐层拆解一个把深度图压缩成 32 维隐向量的编码器：CNN 找局部 pattern、MLP 全局融合、GRU 时序记忆，并用人类视觉皮层做类比。"
 kb: true
+kb_cat: rl
 ---
 
 <div class="de-doc">

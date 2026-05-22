@@ -7,6 +7,7 @@ tags: [PPO, KL Divergence, 策略梯度, 强化学习]
 author: "Dragonking"
 excerpt: "KL 不在 PPO 的 loss 里，但它是判断「这次更新步子是不是太大」的核心指标，也是 KL-adaptive learning rate 的依据。"
 kb: true
+kb_cat: rl
 series: "PPO 调参笔记"
 series_order: 3
 ---

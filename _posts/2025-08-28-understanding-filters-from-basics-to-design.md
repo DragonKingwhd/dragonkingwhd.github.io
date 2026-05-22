@@ -7,6 +7,7 @@ tags: [滤波器, 信号处理, 电子工程, MATLAB]
 author: Dragonking
 excerpt: "从零开始深入理解滤波器的工作原理、分类、设计方法和实际应用。本文将带你从基础概念出发，逐步掌握滤波器的核心技术。"
 kb: true
+kb_cat: control
 ---
 
 ## 🎯 引言

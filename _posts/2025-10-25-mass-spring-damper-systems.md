@@ -6,6 +6,7 @@ categories: [力学, 控制系统]
 tags: [振动力学, 动力学系统, PDF资料]
 author: "Dragonking"
 kb: true
+kb_cat: control
 ---
 
 质量-弹簧-阻尼系统是经典力学和控制系统中的基础模型，广泛应用于工程分析、振动控制、悬架设计等领域。

@@ -7,6 +7,7 @@ tags: [PPO, Learning Rate, KL-Adaptive, 强化学习]
 author: "Dragonking"
 excerpt: "为什么 PPO 的学习率会跑着跑着归零？讲清楚 KL-adaptive LR 的工作机制、各种调度方式的取舍，以及看到 lr 失常时该怎么排查。"
 kb: true
+kb_cat: rl
 series: "PPO 调参笔记"
 series_order: 4
 ---
