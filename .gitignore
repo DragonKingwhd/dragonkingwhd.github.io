@@ -15,3 +15,6 @@ vendor/
 Thumbs.db
 *.swp
 *~
+
+# Claude Code project instructions (local only)
+CLAUDE.md
