@@ -6,6 +6,7 @@ description: >-
 
 baseurl: ""
 url: "https://dragonkingai.com"
+timezone: Asia/Shanghai
 
 # 构建设置
 markdown: kramdown
