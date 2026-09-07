@@ -26,6 +26,10 @@ exclude:
   - README.md
   - vendor/
 
+# 静态原样输出（不经 Jekyll 处理），用于加密页面等
+include:
+  - num
+
 # 作者信息
 author:
   name: Dragonking

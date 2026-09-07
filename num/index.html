@@ -1,0 +1,556 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12123 选号沙盘</title>
+<style>
+:root{
+ --blue:#1a6fc4; --blue-d:#155a9f; --blue-l:#e8f1fa;
+ --ink:#1a1a1a; --ink2:#666; --ink3:#999;
+ --bg:#eef0f2; --card:#fff; --line:#e3e6e9;
+ --warn:#e8a33d; --warn-bg:#fdf6e8;
+ --red:#d0342c; --red-bg:#fdf1f0;
+ --green:#0b8a43; --green-bg:#eaf6ef;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --blue:#4a9ae8; --blue-d:#3a86d0; --blue-l:#152534;
+ --ink:#e8ebed; --ink2:#a0a8ae; --ink3:#7a8288;
+ --bg:#12161a; --card:#1a2026; --line:#2a323a;
+ --warn:#e0aa5a; --warn-bg:#2a2115;
+ --red:#f08078; --red-bg:#2b1614;
+ --green:#4caf72; --green-bg:#16281d;
+}}
+:root[data-theme="dark"]{
+ --blue:#4a9ae8; --blue-d:#3a86d0; --blue-l:#152534;
+ --ink:#e8ebed; --ink2:#a0a8ae; --ink3:#7a8288;
+ --bg:#12161a; --card:#1a2026; --line:#2a323a;
+ --warn:#e0aa5a; --warn-bg:#2a2115;
+ --red:#f08078; --red-bg:#2b1614;
+ --green:#4caf72; --green-bg:#16281d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+ font-variant-numeric:tabular-nums}
+.page{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+.hd{margin-bottom:16px}
+.hd .eb{font-size:10.5px;font-weight:700;letter-spacing:2.4px;color:var(--ink3)}
+.hd h1{font-size:20px;margin:3px 0 0;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.tagsim{font-size:10.5px;font-weight:700;letter-spacing:.8px;background:var(--warn);color:#fff;
+ padding:2px 8px;border-radius:20px}
+.hd p{color:var(--ink2);font-size:12.8px;margin:8px 0 0;max-width:70ch}
+
+.cols{display:grid;grid-template-columns:392px 1fr;gap:18px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+
+/* ── 手机外壳 ── */
+.phone{background:#0d0d0f;border-radius:34px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.28);
+ position:sticky;top:16px}
+.screen{background:#fff;border-radius:27px;overflow:hidden;height:660px;display:flex;flex-direction:column;
+ color:#1a1a1a;
+ /* 屏幕内固定浅色，不跟随系统暗色 —— 真机 12123 就是白底 */
+ --line:#e3e6e9; --blue:#1a6fc4; --blue-l:#e8f1fa;
+ --green:#0b8a43; --green-bg:#eaf6ef; --red:#d0342c}
+.sbar{background:var(--blue);color:#fff;font-size:11.5px;padding:7px 16px 3px;display:flex;
+ justify-content:space-between;align-items:center}
+.nav{background:var(--blue);color:#fff;padding:6px 14px 11px;display:flex;align-items:center;gap:8px}
+.nav .bk{font-size:14px;cursor:pointer;opacity:.95}
+.nav .ti{flex:1;text-align:center;font-size:16px;font-weight:600;margin-right:26px}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--line);flex:none}
+.tabs button{flex:1;background:none;border:none;padding:12px 0;font-size:15px;color:#555;
+ cursor:pointer;border-bottom:2.5px solid transparent;font-weight:500}
+.tabs button.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tabs button:disabled{color:#c4c4c4;cursor:not-allowed}
+.body{flex:1;overflow-y:auto;background:#f7f8fa}
+
+/* 随机页 */
+.rowbar{background:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;
+ border-bottom:1px solid var(--line);font-size:13.5px;gap:10px;flex-wrap:wrap}
+.rowbar>span{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rowbar label{display:flex;align-items:center;gap:6px;color:#555;font-size:13px;cursor:pointer}
+.btn-batch{background:var(--blue);color:#fff;border:none;border-radius:16px;padding:5px 14px;
+ font-size:13px;font-weight:500;cursor:pointer}
+.btn-batch:disabled{background:#c8ccd0;cursor:not-allowed}
+.expire{background:#fef8e8;padding:7px 14px;font-size:12.5px;color:#8a6d3b;display:flex;
+ justify-content:space-between;border-bottom:1px solid #f3e6c8}
+.expire b{background:var(--red);color:#fff;padding:0 5px;border-radius:3px;margin:0 2px;
+ font-family:ui-monospace,monospace}
+.plates{padding:12px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.pl{border:1px solid #dcdfe3;border-radius:6px;background:#fff;padding:11px 4px;text-align:center;
+ font-size:14px;cursor:pointer;transition:.12s;color:#333;letter-spacing:.3px}
+.pl:hover{border-color:var(--blue)}
+.pl.on{border-color:var(--blue);background:var(--blue-l);color:var(--blue);font-weight:600}
+.pl.dim{opacity:.45;cursor:not-allowed}
+.sechd{padding:11px 14px 7px;font-size:14.5px;font-weight:600;background:#fff;
+ border-top:1px solid var(--line)}
+.slots{background:#fff;padding:4px 10px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.slot{border:1px dashed #d0d4d8;border-radius:6px;padding:11px 3px;text-align:center;
+ font-size:12px;color:#aaa;min-height:42px;display:flex;align-items:center;justify-content:center}
+.slot.full{border-style:solid;border-color:var(--green);background:var(--green-bg);
+ color:var(--green);font-size:13.5px;font-weight:600;cursor:pointer}
+.slot.full.sel{border-width:2px;border-color:var(--blue);background:var(--blue-l);color:var(--blue);
+ box-shadow:0 0 0 3px rgba(26,111,196,.14)}
+.cfm{padding:12px 14px;background:#fff;border-top:1px solid var(--line)}
+.btn-cfm{width:100%;background:var(--blue);color:#fff;border:none;border-radius:5px;padding:13px;
+ font-size:16px;font-weight:600;cursor:pointer}
+.btn-cfm:disabled{background:#c8ccd0;cursor:not-allowed}
+
+/* 自编页 */
+.selfhd{padding:10px 14px 4px;font-size:12.5px;color:var(--ink3);background:#fff}
+.selfhd b{color:var(--red);font-weight:600}
+.wish{background:#fff;padding:0 14px}
+.wi{padding:10px 0;border-bottom:1px solid #f0f2f4}
+.wi .lb{font-size:12.5px;color:#888;display:flex;justify-content:space-between;align-items:center}
+.wi .lb .del{color:var(--blue);font-size:12.5px;cursor:pointer}
+.wi .vl{font-size:19px;letter-spacing:.6px;padding:5px 0 2px;min-height:30px;color:#222;font-weight:500}
+.wi.hit{background:var(--green-bg)}
+.wi.miss{opacity:.5}
+.wi .rs{font-size:12px;font-weight:600}
+.wi.hit .rs{color:var(--green)}
+.wi.miss .rs{color:#999}
+.addbtn{margin:12px 14px;border:1px dashed #c8ccd0;border-radius:6px;padding:13px;text-align:center;
+ font-size:14px;color:#666;cursor:pointer;background:#fff}
+.notice{margin:0 14px 12px;font-size:11.8px;color:var(--blue);line-height:1.65;display:flex;gap:6px}
+.notice i{font-style:normal;flex:none}
+
+/* 键盘 */
+.kb{background:#d3d6db;padding:7px 5px 10px;border-top:1px solid #b8bcc2}
+.kbhd{display:flex;justify-content:space-between;padding:0 8px 6px;font-size:13px;color:#333}
+.kbhd span{cursor:pointer}
+.krow{display:flex;gap:5px;justify-content:center;margin-bottom:6px}
+.key{flex:1;max-width:34px;background:#fff;border:none;border-radius:5px;padding:9px 0;font-size:15px;
+ cursor:pointer;box-shadow:0 1px 0 #9a9ea3;color:#111;font-weight:500}
+.key:disabled{background:#b8bcc2;color:#8d9297;box-shadow:none;cursor:not-allowed}
+.key.wide{max-width:none;flex:1.6;font-size:13px}
+
+/* 结果 */
+.done{padding:26px 18px;text-align:center;background:#fff;flex:1;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:11px}
+.done .big{font-size:26px;font-weight:700;letter-spacing:1.5px;color:var(--green)}
+.done p{font-size:12.8px;color:#777;margin:0;line-height:1.7}
+
+/* ── 右侧讲解 ── */
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h2{font-size:13.5px;margin:0 0 9px;display:flex;align-items:center;gap:8px}
+.card h2 .d{width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
+.card p{margin:0 0 7px;font-size:12.8px;color:var(--ink2);line-height:1.75}
+.card p:last-child{margin-bottom:0}
+.card b{color:var(--ink)}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+ border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.hud div{background:var(--card);padding:8px 10px}
+.hud dt{font-size:9.8px;letter-spacing:1.3px;color:var(--ink3);font-weight:700;margin:0}
+.hud dd{margin:2px 0 0;font-size:19px;font-weight:700;line-height:1.15}
+.hud dd small{font-size:11px;color:var(--ink3);font-weight:600;margin-left:2px}
+.alert{border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.7}
+.alert.r{background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
+.alert.w{background:var(--warn-bg);border:1px solid var(--warn);color:#8a6520}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .alert.w{color:var(--warn)}}
+:root[data-theme="dark"] .alert.w{color:var(--warn)}
+.alert b{font-weight:700}
+.seg{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px}
+select{font:inherit;font-size:12.5px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+ background:var(--card);color:var(--ink);max-width:100%}
+.pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px}
+.pill.ok{background:var(--green-bg);color:var(--green)}
+.pill.no{background:var(--blue-l);color:var(--blue)}
+.log{font-size:11.8px;color:var(--ink2);display:flex;flex-direction:column;gap:3px;
+ max-height:200px;overflow-y:auto;border-left:2px solid var(--line);padding-left:10px}
+.log b{color:var(--ink)}
+.mini{background:none;border:1px solid var(--line);color:var(--ink2);border-radius:6px;
+ padding:6px 12px;font-size:12.3px;cursor:pointer;font-weight:600}
+.foot{font-size:11.3px;color:var(--ink3);margin-top:20px;text-align:center;line-height:1.8}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.tolink{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 15px;
+ background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-size:13px;
+ font-weight:600;transition:background .15s}
+.tolink:hover{background:#047857}
+</style>
+<div class="page">
+ <div class="hd">
+  <div class="eb">北京 · 小型新能源</div>
+  <h1>12123 选号沙盘 <span class="tagsim">模拟练习 · 不连真实系统</span></h1>
+  <p>按真实 12123「新车选号」复刻：随机<b>跨号段混合出号</b>，自编<b>4 轮 × 5 个</b>。
+     号池来自你录屏里的 <b id="sc">—</b> 个真实号段。号码占用为本地模拟。</p>
+  <a class="tolink" href="./helper.html">🔒 打开选号助手（需密码）</a>
+ </div>
+
+ <div class="cols">
+  <div class="phone"><div class="screen">
+    <div class="sbar"><span id="clk">15:26</span><span>••• ᯤ ▮</span></div>
+    <div class="nav"><span class="bk" id="bk">‹ 返回</span><span class="ti">新车选号</span></div>
+    <div class="tabs">
+      <button id="tab-r">随机</button>
+      <button id="tab-s">自编</button>
+    </div>
+    <div class="body" id="scr"></div>
+  </div></div>
+
+  <div class="side">
+    <dl class="hud">
+      <div><dt>自编额度</dt><dd id="h3">20<small>个</small></dd></div>
+      <div><dt>自编轮次</dt><dd id="h5">1<small>/4</small></dd></div>
+      <div><dt>随机批次</dt><dd id="h1">0<small>/5</small></dd></div>
+      <div><dt>随机总时限</dt><dd id="h6">300<small>秒</small></dd></div>
+    </dl>
+
+    <div class="alert w" style="margin-bottom:0">
+      💡 <b>标签顺序和真机一致（随机在左、自编在右），但沙盘默认停在「自编」</b>——
+      因为自编不计时、随机一进就跑 300 秒表。真机上也建议先自编磨好再进随机。
+    </div>
+    <div id="tip"></div>
+
+    <div class="card">
+      <h2><span class="d"></span>自编的目标号段</h2>
+      <div class="seg">
+        <select id="f"><option value="ok">已解锁（≥7天 · 可自编）</option><option value="no">保护期（&lt;7天 · 不可自编）</option></select>
+        <select id="s" style="flex:1;min-width:180px"></select>
+      </div>
+      <div class="seg" id="sm" style="margin-top:9px"></div>
+      <p style="margin-top:9px;font-size:11.8px"><b>随机不看这个</b>——随机是全池混合出号，你控制不了。
+         这里只决定<b>自编往哪个方向编</b>：号段公布是自编的"弹药清单"。</p>
+    </div>
+
+    <div class="alert r">
+      <b>⚠️ 不可逆 / 易踩坑（真实规则）</b><br>
+      1. 自编<b>验证可用的，无法回退更改</b>（App 原话）。<br>
+      2. 备选池点<b>「确认选号」</b>→ 选号结束，另一种方式关闭。<br>
+      3. 预选成功后<b>3 个工作日内</b>必须到车管所办注册登记，逾期取消并<b>2 年内禁止互联网预选</b>。
+    </div>
+
+    <div class="alert w" id="unv">
+      <b>🟡 以下机制来自小红书攻略，我未能从官方或实拍画面证实，请你上号当天实测确认：</b><br>
+      · 随机页<b>总限时 300 秒</b>，单轮 120 秒，<b>切到自编页计时继续走</b><br>
+      · 每轮<b>必须选 1 个</b>，不选则该轮 10 个全部作废<br>
+      · 加入备选的号<b>不能删除</b>，只能从 5 个里选 1 个<br>
+      · 超时未选，系统<b>默认选第一个备选</b>
+    </div>
+
+    <div class="card">
+      <h2><span class="d"></span>操作记录</h2>
+      <div class="log" id="lg"><div>等待开始…</div></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="mini" id="rs">重置沙盘</button>
+        <button class="mini" id="au">按推荐分填满本轮 5 个</button>
+      </div>
+    </div>
+  </div>
+ </div>
+
+ <p class="foot">
+   界面参考：备胎说车《新车选号攻略》、billy电车日记《车牌自编号规则》B站视频实拍的 12123 截图。<br>
+   号段数据：你的录屏 OCR 提取（2026-06-16 → 09-07，共 <span id="sc2">—</span> 个）。号码占用为本地模拟，不代表实际可选状态。
+ </p>
+</div>
+<script>
+const SEGS=[["京APX",9100,4,"2026-09-07 17:59"],["京AP",70300,5,"2026-09-07 17:59"],["京APY",3300,4,"2026-09-07 15:12"],["京APX",6700,4,"2026-09-07 15:12"],["京APY",6700,4,"2026-09-07 11:30"],["京APY",0,4,"2026-09-06 23:16"],["京AGQ",8000,4,"2026-09-06 23:15"],["京AGQ",4500,4,"2026-09-06 23:14"],["京APY",1900,4,"2026-09-06 23:14"],["京AGR",9300,4,"2026-09-06 23:14"],["京AP",56600,5,"2026-09-06 23:14"],["京AP",82500,5,"2026-09-06 23:14"],["京APY",2900,4,"2026-09-06 17:47"],["京AGN",3000,4,"2026-09-06 17:47"],["京APY",2400,4,"2026-09-06 16:53"],["京AGN",4500,4,"2026-09-06 16:53"],["京APY",6600,4,"2026-09-06 09:12"],["京APX",9000,4,"2026-09-06 09:12"],["京AP",80200,5,"2026-09-06 09:12"],["京APY",3500,4,"2026-09-05 18:34"],["京APY",700,4,"2026-09-05 18:34"],["京AP",78300,5,"2026-09-05 18:34"],["京AGL",3700,4,"2026-09-05 18:14"],["京APS",6900,4,"2026-09-05 18:14"],["京AP",64300,5,"2026-09-05 18:14"],["京AP",96200,5,"2026-09-05 18:14"],["京APY",2700,4,"2026-09-05 15:49"],["京APT",0,4,"2026-09-05 15:49"],["京AGL",3800,4,"2026-09-05 15:49"],["京APY",3100,4,"2026-09-05 09:57"],["京AGR",200,4,"2026-09-05 09:57"],["京AGR",9100,4,"2026-09-05 09:57"],["京AP",68700,5,"2026-09-05 09:57"],["京AGR",2200,4,"2026-09-04 14:35"],["京AGL",6100,4,"2026-09-04 14:35"],["京AP",94900,5,"2026-09-04 09:19"],["京AP",95200,5,"2026-09-03 19:50"],["京APY",8300,4,"2026-09-03 16:33"],["京AGQ",7900,4,"2026-09-03 16:33"],["京AP",96700,5,"2026-09-03 16:33"],["京AP",95600,5,"2026-09-03 16:33"],["京AP",95900,5,"2026-09-03 16:33"],["京AP",71700,5,"2026-09-03 16:06"],["京APY",1200,4,"2026-09-02 14:37"],["京APX",8800,4,"2026-09-02 14:37"],["京AP",73700,5,"2026-09-02 14:37"],["京AP",94000,5,"2026-09-02 14:37"],["京APT",6100,4,"2026-09-02 09:00"],["京AGL",4800,4,"2026-09-02 09:00"],["京APX",8400,4,"2026-09-02 08:54"],["京APT",5900,4,"2026-09-02 08:54"],["京AP",79400,5,"2026-09-02 08:54"],["京AP",32700,5,"2026-09-01 21:11"],["京APT",6700,4,"2026-09-01 21:09"],["京APP",1200,4,"2026-09-01 18:45"],["京APX",8500,4,"2026-09-01 13:48"],["京APP",2300,4,"2026-09-01 13:48"],["京AP",78400,5,"2026-09-01 13:48"],["京AP",63700,5,"2026-09-01 10:45"],["京AP",48600,5,"2026-08-31 22:28"],["京APP",2200,4,"2026-08-31 20:29"],["京AP",61600,5,"2026-08-31 20:29"],["京APX",9700,4,"2026-08-31 15:41"],["京APY",1400,4,"2026-08-31 15:36"],["京APP",3700,4,"2026-08-31 15:36"],["京AP",71400,5,"2026-08-31 15:36"],["京APX",8700,4,"2026-08-31 10:49"],["京AP",58900,5,"2026-08-31 10:49"],["京AP",47000,5,"2026-08-31 10:49"],["京AGQ",3700,4,"2026-08-30 21:24"],["京AP",49000,5,"2026-08-30 21:24"],["京APP",600,4,"2026-08-30 20:43"],["京AP",93100,5,"2026-08-30 20:43"],["京AP",87200,5,"2026-08-30 20:43"],["京AP",26500,5,"2026-08-30 20:43"],["京APY",1600,4,"2026-08-30 18:37"],["京AGN",5000,4,"2026-08-30 18:37"],["京APT",9400,4,"2026-08-30 17:54"],["京AP",71000,5,"2026-08-30 17:54"],["京APT",8300,4,"2026-08-30 15:30"],["京AP",68800,5,"2026-08-30 15:30"],["京APY",300,4,"2026-08-30 11:13"],["京AP",75800,5,"2026-08-30 11:13"],["京APY",1800,4,"2026-08-29 21:46"],["京AP",84100,5,"2026-08-29 21:46"],["京AP",96000,5,"2026-08-29 17:36"],["京AP",68400,5,"2026-08-29 17:36"],["京APX",5500,4,"2026-08-29 14:49"],["京AP",97200,5,"2026-08-29 14:49"],["京APT",9300,4,"2026-08-29 13:24"],["京AGL",3500,4,"2026-08-29 13:24"],["京APY",500,4,"2026-08-28 22:21"],["京AP",93500,5,"2026-08-28 22:21"],["京AP",71600,5,"2026-08-28 22:21"],["京AGR",2000,4,"2026-08-28 16:40"],["京AP",71500,5,"2026-08-28 16:40"],["京APT",9600,4,"2026-08-28 16:16"],["京APX",8100,4,"2026-08-28 12:50"],["京APY",400,4,"2026-08-27 22:49"],["京AP",96100,5,"2026-08-27 22:49"],["京APX",8200,4,"2026-08-27 19:50"],["京AP",97100,5,"2026-08-27 19:50"],["京APX",9600,4,"2026-08-27 14:07"],["京APX",8000,4,"2026-08-27 09:52"],["京APY",200,4,"2026-08-26 15:18"],["京AGQ",5800,4,"2026-08-26 15:11"],["京AP",89000,5,"2026-08-26 15:11"],["京APX",6800,4,"2026-08-26 12:42"],["京AP",94100,5,"2026-08-26 12:42"],["京APY",100,4,"2026-08-25 23:04"],["京AGR",9700,4,"2026-08-25 17:13"],["京APT",100,4,"2026-08-25 16:54"],["京APT",9500,4,"2026-08-25 13:41"],["京AP",34000,5,"2026-08-25 13:41"],["京APX",9500,4,"2026-08-25 09:07"],["京APX",7400,4,"2026-08-25 08:59"],["京APT",200,4,"2026-08-24 20:46"],["京AGS",4300,4,"2026-08-24 20:41"],["京AP",46400,5,"2026-08-24 20:41"],["京AGR",5700,4,"2026-08-24 20:00"],["京AP",52000,5,"2026-08-24 20:00"],["京APT",300,4,"2026-08-24 16:11"],["京APX",5800,4,"2026-08-24 13:21"],["京APX",7900,4,"2026-08-24 09:19"],["京APT",500,4,"2026-08-23 20:15"],["京AP",63500,5,"2026-08-23 20:15"],["京AGR",500,4,"2026-08-23 18:23"],["京AP",49500,5,"2026-08-23 18:23"],["京APX",9300,4,"2026-08-23 16:23"],["京AP",30000,5,"2026-08-23 16:23"],["京APX",6100,4,"2026-08-23 13:20"],["京AP",27900,5,"2026-08-23 13:20"],["京APS",7700,4,"2026-08-22 23:21"],["京APX",6400,4,"2026-08-22 23:21"],["京AP",63600,5,"2026-08-22 23:21"],["京APX",7500,4,"2026-08-22 18:52"],["京APX",7600,4,"2026-08-22 18:52"],["京AP",88200,5,"2026-08-22 18:52"],["京AP",53100,5,"2026-08-22 18:52"],["京AP",26900,5,"2026-08-22 18:52"],["京AGR",9900,4,"2026-08-22 16:04"],["京AGS",6800,4,"2026-08-22 16:04"],["京AGL",300,4,"2026-08-22 16:04"],["京AP",52400,5,"2026-08-22 16:04"],["京AGP",8300,4,"2026-08-22 16:04"],["京AGP",9400,4,"2026-08-22 15:17"],["京APX",6300,4,"2026-08-22 13:02"],["京APX",6000,4,"2026-08-22 13:02"],["京AP",85300,5,"2026-08-22 13:02"],["京AP",55200,5,"2026-08-22 13:02"],["京AFS",9800,4,"2026-08-22 13:02"],["京APX",7800,4,"2026-08-21 23:30"],["京AP",55300,5,"2026-08-21 23:30"],["京AFP",7000,4,"2026-08-21 23:30"],["京APX",7300,4,"2026-08-21 17:39"],["京AGN",4300,4,"2026-08-21 17:39"],["京AP",66400,5,"2026-08-21 17:39"],["京AFT",6600,4,"2026-08-21 17:39"],["京AGR",9200,4,"2026-08-21 12:18"],["京AP",89700,5,"2026-08-21 12:18"],["京AP",52500,5,"2026-08-21 12:18"],["京APS",6700,4,"2026-08-21 08:34"],["京APX",7000,4,"2026-08-21 08:34"],["京AP",69100,5,"2026-08-21 08:34"],["京AP",97600,5,"2026-08-21 08:34"],["京AFT",700,4,"2026-08-21 08:34"],["京APT",7900,4,"2026-08-20 20:28"],["京APX",6500,4,"2026-08-20 20:28"],["京AP",52900,5,"2026-08-20 20:28"],["京AP",79900,5,"2026-08-20 20:28"],["京AP",80000,5,"2026-08-20 20:28"],["京AF",96400,5,"2026-08-20 20:28"],["京APY",2000,4,"2026-08-20 19:57"],["京AP",96300,5,"2026-08-20 19:57"],["京AFX",200,4,"2026-08-20 19:57"],["京AP",72000,5,"2026-08-20 14:33"],["京AFN",3200,4,"2026-08-20 14:33"],["京AGR",1900,4,"2026-08-20 11:50"],["京AP",36000,5,"2026-08-20 11:50"],["京APS",6800,4,"2026-08-20 11:46"],["京AP",55500,5,"2026-08-20 11:46"],["京AP",26600,5,"2026-08-18 15:30"],["京APS",9900,4,"2026-08-18 13:17"],["京AP",28600,5,"2026-08-18 13:17"],["京APT",9700,4,"2026-08-17 23:05"],["京APT",8400,4,"2026-08-17 23:00"],["京APP",1100,4,"2026-08-17 23:00"],["京APT",8100,4,"2026-08-17 22:57"],["京APP",1500,4,"2026-08-17 22:57"],["京APT",8000,4,"2026-08-17 22:56"],["京APX",5300,4,"2026-08-17 22:51"],["京APT",7600,4,"2026-08-17 22:51"],["京APP",3500,4,"2026-08-17 22:51"],["京APT",7400,4,"2026-08-17 22:45"],["京APT",8600,4,"2026-08-17 22:43"],["京APT",7700,4,"2026-08-17 22:43"],["京APX",5200,4,"2026-08-17 22:43"],["京APP",1700,4,"2026-08-17 22:43"],["京AGR",9800,4,"2026-08-17 22:43"],["京AP",98400,5,"2026-08-17 22:43"],["京AP",67100,5,"2026-08-17 22:43"],["京AP",84600,5,"2026-08-17 22:43"],["京AP",89200,5,"2026-08-17 22:36"],["京AP",56900,5,"2026-08-17 22:33"],["京AP",68600,5,"2026-08-17 22:33"],["京APT",8500,4,"2026-08-17 22:28"],["京AGN",8200,4,"2026-08-17 22:28"],["京AP",74700,5,"2026-08-17 22:28"],["京AP",59300,5,"2026-08-17 22:28"],["京AP",99800,5,"2026-08-17 22:28"],["京APT",8200,4,"2026-08-17 22:27"],["京AP",93900,5,"2026-08-17 22:27"],["京AP",67300,5,"2026-08-17 22:27"],["京AP",80400,5,"2026-08-17 22:27"],["京AP",91400,5,"2026-08-17 22:24"],["京AP",70900,5,"2026-08-17 22:24"],["京APX",5100,4,"2026-08-17 22:17"],["京AGS",4100,4,"2026-08-17 22:17"],["京AP",97000,5,"2026-08-17 22:17"],["京AP",64100,5,"2026-08-17 22:17"],["京APT",7500,4,"2026-08-17 22:14"],["京AGM",6900,4,"2026-08-17 22:14"],["京AP",74800,5,"2026-08-17 22:14"],["京AP",83700,5,"2026-08-17 22:14"],["京AP",83100,5,"2026-08-17 22:14"],["京AGN",2700,4,"2026-08-17 21:58"],["京APX",7200,4,"2026-08-17 21:50"],["京APT",7200,4,"2026-08-17 21:50"],["京APT",6800,4,"2026-08-17 21:48"],["京APT",6600,4,"2026-08-17 21:39"],["京AP",51600,5,"2026-08-17 21:39"],["京APP",3400,4,"2026-08-17 21:36"],["京APT",6000,4,"2026-08-17 21:35"],["京AGR",4000,4,"2026-08-17 21:30"],["京APT",6400,4,"2026-08-17 21:30"],["京APT",8700,4,"2026-08-17 21:24"],["京APT",8800,4,"2026-08-17 21:23"],["京APP",1400,4,"2026-08-17 21:23"],["京APT",6500,4,"2026-08-17 21:16"],["京APT",7800,4,"2026-08-17 21:15"],["京APP",2800,4,"2026-08-17 21:15"],["京APP",2100,4,"2026-08-17 21:13"],["京APX",5700,4,"2026-08-17 21:12"],["京APT",7100,4,"2026-08-17 21:12"],["京AP",92900,5,"2026-08-17 21:12"],["京APT",7000,4,"2026-08-17 21:11"],["京AP",92600,5,"2026-08-17 21:10"],["京APP",1900,4,"2026-08-17 21:08"],["京AP",92000,5,"2026-08-17 21:08"],["京APP",1800,4,"2026-08-17 21:07"],["京AGP",9000,4,"2026-08-17 21:07"],["京APP",700,4,"2026-08-17 21:05"],["京AP",98000,5,"2026-08-17 21:05"],["京APT",6900,4,"2026-08-17 21:01"],["京AGN",4100,4,"2026-08-17 21:01"],["京AGS",2600,4,"2026-08-17 12:04"],["京AP",88800,5,"2026-08-17 12:04"],["京AGR",4500,4,"2026-08-17 12:01"],["京AP",92700,5,"2026-08-17 12:01"],["京AGM",9800,4,"2026-08-15 18:17"],["京AP",98600,5,"2026-08-15 18:17"],["京AGS",5500,4,"2026-08-14 17:10"],["京AP",98900,5,"2026-08-14 17:10"],["京AGS",8800,4,"2026-08-13 12:54"],["京AGL",6900,4,"2026-08-12 13:54"],["京APX",5400,4,"2026-08-10 15:48"],["京AP",99000,5,"2026-08-10 15:48"],["京AP",69600,5,"2026-08-10 15:48"],["京APT",8900,4,"2026-08-09 09:49"],["京AP",56400,5,"2026-08-09 09:49"],["京AP",74500,5,"2026-08-09 09:49"],["京AP",65700,5,"2026-08-09 09:49"],["京AP",50500,5,"2026-08-09 09:49"],["京AGL",5700,4,"2026-08-06 11:15"],["京AP",93000,5,"2026-08-06 11:15"],["京AGS",8300,4,"2026-08-04 23:43"],["京AP",92800,5,"2026-08-03 22:24"],["京AP",72100,5,"2026-08-03 22:24"],["京APT",6300,4,"2026-08-03 21:58"],["京AGS",4900,4,"2026-08-03 21:58"],["京APP",1300,4,"2026-08-02 17:28"],["京AGM",9900,4,"2026-08-02 17:28"],["京AP",75700,5,"2026-08-02 17:28"],["京AP",99300,5,"2026-08-02 17:28"],["京APT",5700,4,"2026-08-01 17:42"],["京AP",82200,5,"2026-08-01 17:42"],["京AP",85700,5,"2026-08-01 17:42"],["京APP",1000,4,"2026-07-31 16:05"],["京AGS",7100,4,"2026-07-31 16:05"],["京AP",39100,5,"2026-07-31 16:05"],["京AP",67800,5,"2026-07-31 16:05"],["京AP",89100,5,"2026-07-31 16:05"],["京APP",3000,4,"2026-07-30 13:30"],["京AGS",7600,4,"2026-07-30 13:30"],["京AP",63900,5,"2026-07-30 13:30"],["京AP",60700,5,"2026-07-30 13:30"],["京AGM",0,4,"2026-07-26 14:30"],["京AGM",800,4,"2026-07-26 14:30"],["京AGM",1100,4,"2026-07-25 14:16"],["京APX",5600,4,"2026-07-25 13:57"],["京AGL",6200,4,"2026-07-25 13:57"],["京AP",84800,5,"2026-07-25 13:57"],["京AP",60400,5,"2026-07-25 13:57"],["京AP",94600,5,"2026-07-25 13:34"],["京AP",96800,5,"2026-07-24 20:53"],["京AP",78900,5,"2026-07-24 17:20"],["京AP",92500,5,"2026-07-24 12:36"],["京AP",96900,5,"2026-07-24 09:16"],["京AGL",3600,4,"2026-07-23 21:29"],["京AP",89800,5,"2026-07-23 16:09"],["京AP",93400,5,"2026-07-23 12:25"],["京AP",93300,5,"2026-07-23 12:18"],["京AP",95100,5,"2026-07-22 21:59"],["京AGS",7200,4,"2026-07-22 17:47"],["京AP",98300,5,"2026-07-22 17:00"],["京AP",63100,5,"2026-07-22 13:30"],["京AP",91300,5,"2026-07-22 11:14"],["京AGM",2100,4,"2026-07-21 21:43"],["京AP",99200,5,"2026-07-21 21:35"],["京AP",99100,5,"2026-07-21 15:19"],["京AP",92300,5,"2026-07-21 15:19"],["京AGS",7500,4,"2026-07-21 10:31"],["京AGN",8000,4,"2026-07-21 10:31"],["京AP",95000,5,"2026-07-20 21:15"],["京AP",75300,5,"2026-07-20 21:15"],["京AP",92200,5,"2026-07-20 16:50"],["京AP",96500,5,"2026-07-20 14:56"],["京AP",92100,5,"2026-07-20 14:56"],["京AP",94500,5,"2026-07-20 14:11"],["京AP",63000,5,"2026-07-20 14:11"],["京AP",98500,5,"2026-07-20 11:22"],["京AGS",5300,4,"2026-07-20 11:22"],["京AGS",8700,4,"2026-07-20 10:04"],["京AP",59600,5,"2026-07-20 10:04"],["京AP",98100,5,"2026-07-19 19:08"],["京AP",97500,5,"2026-07-19 19:08"],["京AP",78600,5,"2026-07-19 16:40"],["京AP",90800,5,"2026-07-19 16:40"],["京AP",95800,5,"2026-07-19 13:28"],["京AF",96000,5,"2026-07-19 13:28"],["京AP",98800,5,"2026-07-19 09:54"],["京AP",62300,5,"2026-07-19 09:54"],["京AP",89900,5,"2026-07-18 15:24"],["京AGR",1600,4,"2026-07-18 15:24"],["京AGP",9200,4,"2026-07-18 15:24"],["京AP",92400,5,"2026-07-18 10:56"],["京AP",93700,5,"2026-07-18 10:56"],["京AP",64400,5,"2026-07-18 10:56"],["京AP",93200,5,"2026-07-17 21:44"],["京APT",5800,4,"2026-07-17 21:32"],["京AP",94200,5,"2026-07-17 21:32"],["京APP",400,4,"2026-07-17 13:48"],["京AGS",8400,4,"2026-07-17 13:48"],["京AP",75000,5,"2026-07-16 20:38"],["京AP",95700,5,"2026-07-16 20:38"],["京AP",90600,5,"2026-07-15 22:08"],["京AP",58000,5,"2026-07-15 12:28"],["京AP",94800,5,"2026-07-14 19:55"],["京APY",2300,4,"2026-07-13 11:50"],["京AP",79200,5,"2026-07-13 11:50"],["京APY",600,4,"2026-07-12 19:09"],["京AP",67000,5,"2026-07-12 19:09"],["京AGQ",7800,4,"2026-07-12 16:32"],["京AGN",9700,4,"2026-07-12 16:32"],["京AP",98200,5,"2026-07-12 16:32"],["京AP",53300,5,"2026-07-12 16:32"],["京APT",9100,4,"2026-07-12 16:31"],["京AP",63200,5,"2026-07-12 16:31"],["京AP",90700,5,"2026-07-12 16:31"],["京AP",52300,5,"2026-07-12 16:31"],["京AP",50300,5,"2026-07-12 16:31"],["京AP",75100,5,"2026-07-12 13:26"],["京AP",81200,5,"2026-07-12 13:26"],["京AP",54200,5,"2026-07-12 13:26"],["京APX",8300,4,"2026-07-12 10:44"],["京AGP",1000,4,"2026-07-12 10:20"],["京AP",45900,5,"2026-07-12 10:20"],["京APX",7700,4,"2026-07-11 20:14"],["京AP",78800,5,"2026-07-11 20:14"],["京AP",87600,5,"2026-07-11 17:35"],["京AP",88300,5,"2026-07-11 14:21"],["京AP",71900,5,"2026-07-11 14:21"],["京AP",66900,5,"2026-07-11 14:21"],["京AGN",7900,4,"2026-07-11 12:27"],["京AP",76100,5,"2026-07-11 12:27"],["京AP",79800,5,"2026-07-11 12:27"],["京AP",99900,5,"2026-07-11 11:55"],["京AP",80300,5,"2026-07-11 11:55"],["京AP",88900,5,"2026-07-10 22:02"],["京AGL",7000,4,"2026-07-10 22:02"],["京AP",53200,5,"2026-07-10 22:02"],["京AP",54400,5,"2026-07-10 17:46"],["京AP",90400,5,"2026-07-10 14:08"],["京AP",91100,5,"2026-07-10 14:08"],["京AP",57100,5,"2026-07-10 14:08"],["京AP",77500,5,"2026-07-10 14:08"],["京APX",9800,4,"2026-07-09 21:43"],["京AP",93600,5,"2026-07-09 21:43"],["京APX",6600,4,"2026-07-09 13:48"],["京AGM",2300,4,"2026-07-09 13:48"],["京APS",6600,4,"2026-07-09 13:25"],["京APS",7500,4,"2026-07-09 13:24"],["京APS",9800,4,"2026-07-09 13:24"],["京AGM",4300,4,"2026-07-09 13:24"],["京AP",56300,5,"2026-07-09 13:24"],["京AFT",6500,4,"2026-07-09 13:24"],["京AGQ",5300,4,"2026-07-09 13:11"],["京AF",60200,5,"2026-07-09 13:11"],["京APX",7100,4,"2026-07-08 17:16"],["京AP",97400,5,"2026-07-08 17:16"],["京AP",95400,5,"2026-07-08 14:41"],["京AGL",4500,4,"2026-07-08 14:41"],["京AP",60300,5,"2026-07-08 14:41"],["京AP",91500,5,"2026-07-08 14:20"],["京AGL",4100,4,"2026-07-08 14:20"],["京AP",64200,5,"2026-07-07 17:46"],["京AP",81900,5,"2026-07-07 17:46"],["京AP",79700,5,"2026-07-07 17:46"],["京AGL",2700,4,"2026-07-07 14:34"],["京AP",56100,5,"2026-07-07 14:34"],["京AP",61800,5,"2026-07-07 13:44"],["京AP",66500,5,"2026-07-07 13:44"],["京AP",79000,5,"2026-07-06 15:37"],["京AP",64000,5,"2026-07-06 15:04"],["京AP",50100,5,"2026-07-06 10:58"],["京AP",75900,5,"2026-07-05 22:03"],["京AP",26700,5,"2026-07-05 22:03"],["京APT",7300,4,"2026-07-05 16:15"],["京AGS",4200,4,"2026-07-05 16:15"],["京AP",57600,5,"2026-07-05 16:15"],["京AP",83300,5,"2026-07-05 16:15"],["京AP",27100,5,"2026-07-05 11:10"],["京AP",59900,5,"2026-07-04 23:19"],["京AP",62500,5,"2026-07-04 23:19"],["京APX",6200,4,"2026-07-04 13:38"],["京AP",78000,5,"2026-07-04 13:38"],["京AGQ",5500,4,"2026-07-04 10:52"],["京AP",57700,5,"2026-07-03 12:08"],["京AP",87400,5,"2026-07-03 11:40"],["京APS",7600,4,"2026-07-02 20:37"],["京AFP",8200,4,"2026-07-02 18:14"],["京AP",89400,5,"2026-07-02 16:53"],["京AP",89600,5,"2026-07-02 12:45"],["京AP",96400,5,"2026-07-01 21:57"],["京AP",94700,5,"2026-07-01 18:59"],["京AP",87700,5,"2026-07-01 15:04"],["京AP",56200,5,"2026-07-01 12:21"],["京AP",82000,5,"2026-06-30 23:05"],["京APY",1000,4,"2026-06-30 12:37"],["京AGL",2100,4,"2026-06-30 12:37"],["京AP",81100,5,"2026-06-29 12:31"],["京AP",78500,5,"2026-06-29 08:43"],["京AP",69800,5,"2026-06-28 19:34"],["京AGS",6500,4,"2026-06-28 17:33"],["京AP",85000,5,"2026-06-28 17:33"],["京AGL",5800,4,"2026-06-28 15:12"],["京AP",82700,5,"2026-06-28 12:27"],["京AP",88400,5,"2026-06-28 10:28"],["京AP",87100,5,"2026-06-27 22:11"],["京AP",87500,5,"2026-06-27 19:02"],["京AP",86800,5,"2026-06-27 16:28"],["京AP",82300,5,"2026-06-27 15:16"],["京AP",88100,5,"2026-06-27 13:17"],["京AP",87300,5,"2026-06-27 10:37"],["京AGL",2400,4,"2026-06-27 09:15"],["京AGR",9500,4,"2026-06-27 08:44"],["京AP",95500,5,"2026-06-26 22:32"],["京AP",94300,5,"2026-06-26 20:57"],["京AP",89500,5,"2026-06-26 20:38"],["京AP",80900,5,"2026-06-26 17:07"],["京AP",91900,5,"2026-06-26 14:28"],["京AP",87800,5,"2026-06-26 12:06"],["京AGL",2800,4,"2026-06-26 09:24"],["京AP",86000,5,"2026-06-25 22:55"],["京AP",72600,5,"2026-06-25 11:04"],["京AP",81800,5,"2026-06-24 21:24"],["京APP",900,4,"2026-06-24 18:26"],["京AP",96600,5,"2026-06-24 18:26"],["京AP",86700,5,"2026-06-24 15:07"],["京AP",60500,5,"2026-06-24 12:55"],["京AP",82800,5,"2026-06-24 10:31"],["京AP",82400,5,"2026-06-24 10:06"],["京AP",85400,5,"2026-06-24 09:54"],["京AP",81700,5,"2026-06-23 22:14"],["京AP",80700,5,"2026-06-23 19:59"],["京AP",97900,5,"2026-06-23 16:46"],["京AP",76500,5,"2026-06-23 15:47"],["京AP",81000,5,"2026-06-23 12:46"],["京AP",60900,5,"2026-06-22 14:33"],["京AP",76900,5,"2026-06-21 17:01"],["京AP",78700,5,"2026-06-21 14:32"],["京AP",73000,5,"2026-06-21 11:13"],["京APT",9000,4,"2026-06-19 20:09"],["京AP",39200,5,"2026-06-19 20:09"],["京AGN",6000,4,"2026-06-19 20:09"],["京AP",67200,5,"2026-06-19 20:09"],["京AP",80500,5,"2026-06-19 09:58"],["京AGQ",3500,4,"2026-06-18 21:25"],["京AP",72400,5,"2026-06-18 21:25"],["京APP",2400,4,"2026-06-18 17:31"],["京AGL",4700,4,"2026-06-18 17:31"],["京AP",93800,5,"2026-06-18 17:31"],["京AP",72700,5,"2026-06-18 17:31"],["京AP",97800,5,"2026-06-18 17:31"],["京AP",33400,5,"2026-06-17 21:44"],["京AP",29400,5,"2026-06-17 20:54"],["京AP",45600,5,"2026-06-17 20:47"],["京AP",71800,5,"2026-06-17 15:35"],["京AGN",9300,4,"2026-06-17 15:35"],["京AP",73400,5,"2026-06-17 15:35"],["京AP",86500,5,"2026-06-17 15:11"],["京APY",800,4,"2026-06-17 15:08"],["京AP",90000,5,"2026-06-17 15:08"],["京AP",55000,5,"2026-06-17 15:08"],["京AP",33800,5,"2026-06-17 15:03"],["京AP",33200,5,"2026-06-17 13:18"],["京AP",35900,5,"2026-06-17 13:17"],["京AP",63400,5,"2026-06-17 13:17"],["京AP",80100,5,"2026-06-17 13:14"],["京AP",89300,5,"2026-06-17 13:11"],["京AP",78100,5,"2026-06-17 13:08"],["京AP",51700,5,"2026-06-17 13:07"],["京AP",87000,5,"2026-06-17 13:06"],["京AP",30500,5,"2026-06-17 13:06"],["京APP",3200,4,"2026-06-17 13:02"],["京AP",30100,5,"2026-06-17 13:02"],["京APP",1600,4,"2026-06-17 12:56"],["京AP",69700,5,"2026-06-17 12:43"],["京AP",30200,5,"2026-06-17 12:43"],["京AGN",2900,4,"2026-06-17 12:36"],["京AP",47700,5,"2026-06-17 12:34"],["京AP",79300,5,"2026-06-17 12:30"],["京AP",69200,5,"2026-06-17 12:29"],["京AP",70800,5,"2026-06-17 12:29"],["京AP",49600,5,"2026-06-17 12:29"],["京AGP",9300,4,"2026-06-16 10:23"]];
+const NOW=new Date(2026,8,7,19,0), DAY=864e5;
+const segs=SEGS.map(([p,st,w,t],i)=>{const rt=new Date(t.replace(/-/g,"/"));
+  return{i,prefix:p,start:st,width:w,rt,unlocked:(NOW-rt)>=7*DAY,age:Math.floor((NOW-rt)/DAY)}});
+const UNLOCKED=segs.filter(z=>z.unlocked);
+sc.textContent=sc2.textContent=segs.length;
+
+const pad=(n,w)=>String(n).padStart(w,"0");
+const full=(sg,n)=>sg.prefix+pad(n,sg.width);
+const CN=["一","二","三","四","五"];
+
+let S={};
+function reset(){
+  clearInterval(S.tm);
+  S={seg:null,tab:"s",
+     // 自编：4轮 × 5个 = 20 额度
+     selfRound:1, selfLeft:20, wl:[{v:""}], wlSel:0,
+     // 随机：5批 × 10个，全池混合
+     batch:0, cur:null, seen:new Set(), pool:[], pick:0,
+     total:300, roundLeft:0, tm:null, started:false,
+     done:null, taken:new Map()};
+  lg.innerHTML="<div>等待开始…</div>"; fillSeg(); draw();
+}
+function log(m){ if(lg.firstChild&&lg.textContent.includes("等待"))lg.innerHTML="";
+  const d=document.createElement("div"); d.innerHTML=m; lg.prepend(d); }
+
+function taken(sg,n){
+  const k=sg.i+":"+n; if(S.taken.has(k))return S.taken.get(k);
+  let h=2166136261; for(const c of k){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}
+  const r=((h>>>0)%1e4)/1e4;
+  const base=sg.unlocked?.55+Math.min(sg.age,60)/60*.3:.12;
+  const v=r<Math.min(base+(score(pad(n,sg.width))>=55?.35:0),.985);
+  S.taken.set(k,v); return v;
+}
+function score(s){let x=0;const d=[...s].map(Number);
+  if(d.every(y=>y===d[0]))x+=100;else if(/(\d)\1{2}/.test(s))x+=60;
+  if(d.every((y,i)=>!i||y===d[i-1]+1))x+=80;
+  if(s.length>=4){const l=s.slice(-4);
+    if(l[0]===l[2]&&l[1]===l[3]&&l[0]!==l[1])x+=45;
+    else if(l[0]===l[1]&&l[2]===l[3]&&l[0]!==l[2])x+=50;
+    else if(l[0]===l[3]&&l[1]===l[2]&&l[0]!==l[1])x+=40;}
+  if(/0{3}$/.test(s))x+=45;else if(/00$/.test(s))x+=25;
+  if(s.includes("168"))x+=35;
+  if(s.includes("4"))x-=30;
+  if(/8$/.test(s))x+=12;else if(/6$/.test(s))x+=9;
+  return x;}
+// 三连号禁止（攻略：自编不能编三连）
+// 自编禁止：同一数字出现 3 次及以上（不管是否相连）
+// 111 ❌  1x1x1 ❌  123 ✅  321 ✅  1122 ✅
+const hasTriple=s=>{const c={};for(const ch of s){if(!/\d/.test(ch))continue;
+  if((c[ch]=(c[ch]||0)+1)>=3)return true;}return false;};
+const dupCount=(s,d)=>[...s].filter(x=>x===d).length;
+
+function fillSeg(){
+  const v=f.value, L=segs.filter(z=>v==="ok"?z.unlocked:!z.unlocked);
+  s.innerHTML=L.map(z=>`<option value="${z.i}">${z.prefix}${pad(z.start,z.width)}~${pad(z.start+99,z.width)} · ${z.rt.toISOString().slice(5,10)}</option>`).join("");
+  if(L.length){S.seg=L[0];s.value=L[0].i;}
+}
+
+const tabR=document.getElementById("tab-r"), tabS=document.getElementById("tab-s");
+
+function draw(){
+  const sg=S.seg;
+  h3.innerHTML=S.selfLeft+"<small>个</small>";
+  h5.innerHTML=Math.min(S.selfRound,4)+"<small>/4</small>";
+  h1.innerHTML=S.batch+"<small>/5</small>";
+  h6.innerHTML=S.total+"<small>秒</small>";
+  h6.style.color=S.started&&S.total<=60?"var(--red)":"";
+  if(sg)sm.innerHTML=`<span class="pill ${sg.unlocked?"ok":"no"}">${sg.unlocked?"≥7天 · 可自编":"<7天 · 不可自编"}</span>
+    <span style="color:var(--ink3)">投放 ${sg.rt.toISOString().slice(5,16).replace("T"," ")} · 已 ${sg.age} 天</span>`;
+  tabR.className=S.tab==="r"?"on":""; tabS.className=S.tab==="s"?"on":"";
+  tip.innerHTML=tipFor();
+  scr.innerHTML=S.done?doneHtml():(S.tab==="r"?randHtml():selfHtml());
+  if(!S.done)bind();
+}
+
+function tipFor(){
+  if(S.done)return `<div class="card"><h2><span class="d"></span>已锁定</h2>
+    <p>流程结束，另一种方式已关闭。接下来 <b>3 个工作日</b>内必须去车管所办注册登记。</p></div>`;
+  if(S.tab==="s")return `<div class="card"><h2><span class="d"></span>自编：先在这里磨，别急着提交</h2>
+    <p><b>无时间限制</b>，可随时退出；<b>只要没提交，额度就还在</b>。</p>
+    <p>共 <b>20 个额度 = 4 轮 × 每轮 5 个</b>。<b>提交一次消耗一整轮</b>，所以每轮务必填满 5 个，填 1 个就提交等于浪费 4 个。</p>
+    <p>系统<b>从第一意向顺序验证</b>，命中即锁、无法回退 → <b>最想要的放第一位</b>（失败没代价，只是往下走一格）。</p>
+    <p>键盘<b>逐位锁死</b>：号段字母固定，数字只能在该段范围内；
+       且<b>同一数字最多出现 2 次</b>——按满 2 次后该键自动变灰。</p>
+    <p style="font-size:11.5px;color:var(--ink3)">✅ 1234 / 4321 / 1212 可以　❌ 1112 / 1101（1 出现 3 次）不行</p></div>`;
+  return `<div class="card"><h2><span class="d"></span>随机：全池混合，且在计时</h2>
+    <p>号池是<b>所有已解锁号段混在一起</b>（共 ${UNLOCKED.length} 个段），所以一批 10 个号<b>前缀各不相同</b>——你控制不了出什么。</p>
+    <p><b>进入随机页就开始跑 300 秒总表</b>，切回自编页也<b>继续走</b>。所以：先把自编磨好，最后再进随机。</p>
+    <p>每轮<b>必须选 1 个</b>存备选，不选则这 10 个作废。
+       <b>本轮倒计时内可反复改选</b>，一旦换下一批就锁死。</p>
+    <p>最后在 5 个备选之间<b>自由切换确认目标</b>，点「确认选号」才真正结束。</p></div>`;
+}
+
+/* ── 自编页 ── */
+function selfHtml(){
+  const sg=S.seg;
+  if(!sg)return `<div style="padding:40px 22px;text-align:center;color:#999;font-size:13px">
+    未选择目标号段<br><span style="font-size:12px;color:#bbb">请在右侧「自编的目标号段」里选一个</span></div>`;
+  if(!sg.unlocked)return `<div class="selfhd">剩余自编次数 <b>${S.selfLeft}</b></div>
+    <div style="padding:40px 22px;text-align:center;color:#999;font-size:13px;line-height:1.9">
+      ⛔ 该号段投放不足 7 天<br>自编入口未开放，只能用随机<br>
+      <span style="font-size:12px;color:#bbb">（左侧切到「已解锁」号段即可练自编）</span></div>`;
+  let h=`<div class="selfhd">剩余自编次数 <b>${S.selfLeft}</b>　
+    <span style="float:right;color:#888">第 ${S.selfRound} / 4 轮</span></div><div class="wish">`;
+  S.wl.forEach((w,i)=>{
+    h+=`<div class="wi ${w.st||""}" data-sel="${i}">
+      <div class="lb"><span>第${CN[i]}意向号牌</span>
+      ${w.st?`<span class="rs">${w.st==="hit"?"✅ 验证可用 · 已锁定":"× 已被占用"}</span>`
+            :(S.wl.length>1?`<span class="del" data-del="${i}">🗑 删除</span>`:"")}</div>
+      <div class="vl">${w.v||sg.prefix.slice(0,2)}${S.wlSel===i&&!w.v?'<span style="color:#bbb">|</span>':""}</div></div>`});
+  h+=`</div>`;
+  if(S.wl.length<5)h+=`<div class="addbtn" id="ad">＋ 添加意向号牌（${S.wl.length}/5）</div>`;
+  h+=`<div class="notice"><i>ⓘ</i><span>您最多可同时录入 5 个意向号牌，系统会从第一意向开始顺序依次验证号牌的可用性，验证可用的，无法回退更改。</span></div>`;
+  const n=S.wl.filter(w=>w.v).length;
+  h+=`<div class="cfm"><button class="btn-cfm" id="sb" ${n?"":"disabled"}>提交验证${n<5&&n?`（仅 ${n} 个，将浪费 ${5-n} 个额度）`:""}</button></div>`;
+  h+=kbHtml();
+  return h;
+}
+function kbHtml(){
+  const sg=S.seg, w=S.wl[S.wlSel];
+  if(!w||w.st||!sg.unlocked)return "";
+  const cur=(w.v||"").replace(sg.prefix.slice(0,2),"");
+  const pos=cur.length, body=sg.prefix.slice(2);
+  const lo=pad(sg.start,sg.width), hi=pad(sg.start+99,sg.width);
+  let allowed=[];
+  if(pos<body.length) allowed=[body[pos]];
+  else{ const dp=pos-body.length;              // 第几位数字
+    const typed=cur.slice(body.length);         // 已输入的数字部分
+    for(let d=0;d<=9;d++){ const t=(typed+d);
+      const lop=lo.slice(0,dp+1), hip=hi.slice(0,dp+1);
+      if(t<lop||t>hip) continue;                // 超出号段范围
+      if(dupCount(typed,String(d))>=2) continue;// 该数字已出现2次 → 再按就是第3次
+      allowed.push(String(d)); } }
+  const rows=[["1","2","3","4","5","6","7","8","9","0"],
+              ["Q","W","E","R","T","Y","U","P"],
+              ["A","S","D","F","G","H","J","K","L"],
+              ["Z","X","C","V","B","N","M"]];
+  const done=pos>=body.length+sg.width;
+  const typedD=cur.slice(body.length);
+  const near=[...new Set(typedD)].filter(d=>dupCount(typedD,d)>=2);
+  let why=done?"已输满 6 位序号":"第 "+(pos+1)+" 位 · 仅亮起可选";
+  if(!done&&near.length)why+=` · ${near.join("/")} 已用 2 次，禁第 3 次`;
+  let h=`<div class="kb"><div class="kbhd"><span>${why}</span><span id="kdone">完成</span></div>`;
+  rows.forEach(r=>{h+=`<div class="krow">`+r.map(k=>
+    `<button class="key" data-k="${k}" ${allowed.includes(k)&&!done?"":"disabled"}>${k}</button>`).join("")+`</div>`});
+  h+=`<div class="krow"><button class="key wide" data-k="BS">⌫ 删除</button></div></div>`;
+  return h;
+}
+
+/* ── 随机页（全池混合） ── */
+function randHtml(){
+  let h=`<div class="rowbar"><span>号牌库 <label><input type="checkbox" id="n4" checked> 不含 4</label></span>
+    <button class="btn-batch" id="nb" ${S.batch>=5||S.total<=0?"disabled":""}>${
+      S.batch>=5?"已用完":S.total<=0?"已超时":"换一批 ("+(5-S.batch)+")"}</button></div>`;
+  h+=`<div class="expire"><span>${S.started?`总限时 <b>${S.total}</b> 秒`:"进入即开始计时"}</span>
+      <span>${S.cur?`本轮剩 <b id="lf">${S.roundLeft}</b> 秒`:""}</span></div>`;
+  if(S.cur){
+    const picked=S.pool.find(z=>z.batch===S.batch);
+    h+=`<div style="padding:7px 14px 0;font-size:12.5px;color:#666">第${CN[S.batch-1]}批号牌 · ${
+      picked?"已选 <b>"+full(picked.sg,picked.n)+"</b>，本轮内可点其它号改选":"必须选 1 个，否则作废"}</div><div class="plates">`;
+    h+=S.cur.map(o=>{const on=S.pool.some(z=>z.n===o.n&&z.s===o.sg.i);
+      return `<div class="pl ${on?"on":""}" data-i="${o.k}">${full(o.sg,o.n)}</div>`}).join("")+`</div>`;
+  }else h+=`<div style="padding:36px 18px;text-align:center;color:#aaa;font-size:13px">
+    ${S.batch>=5?"5 批已用完":S.total<=0?"总时限已到":"点「换一批」开始摇号"}</div>`;
+  h+=`<div class="sechd">备选 <span style="font-size:11.5px;font-weight:400;color:#999">· 点任一格切换确认目标</span></div><div class="slots">`;
+  for(let i=0;i<5;i++){const it=S.pool.find(z=>z.batch===i+1);
+    h+=it?`<div class="slot full ${S.pick===i+1?"sel":""}" data-rm="${i+1}" title="点击选为确认目标">${full(it.sg,it.n)}</div>`
+         :`<div class="slot">第${CN[i]}批次预选</div>`}
+  const tg=S.pool.find(z=>z.batch===S.pick)||S.pool[0];
+  h+=`</div><div class="cfm"><button class="btn-cfm" id="cf" ${S.pool.length?"":"disabled"}>${
+    tg?"确认选号 · "+full(tg.sg,tg.n):"确认选号"}</button></div>`;
+  return h;
+}
+
+function startTimer(){
+  if(S.started)return; S.started=true;
+  log("⏱ <b>进入随机页，300 秒总时限开始</b>（切回自编也继续走）");
+  S.tm=setInterval(()=>{
+    S.total--; if(S.roundLeft>0)S.roundLeft--;
+    const l=document.getElementById("lf"); if(l)l.textContent=S.roundLeft;
+    h6.innerHTML=S.total+"<small>秒</small>";
+    h6.style.color=S.total<=60?"var(--red)":"";
+    if(S.roundLeft===0&&S.cur){S.cur=null;log("⏱ 本轮 120 秒到，未选的 10 个号作废");draw();}
+    if(S.total<=0){clearInterval(S.tm);S.cur=null;
+      if(S.pool.length){const it=S.pool[0];
+        S.done={sg:it.sg,n:it.n,via:"超时 · 系统默认选第一个备选"};
+        log("⛔ <b>总时限到，系统默认锁定第一个备选</b>");}
+      else log("⛔ 总时限到，且备选为空 —— 只能去车管所 50 选 1");
+      draw();}
+  },1000);
+}
+
+function roll(){
+  startTimer();
+  if(S.batch>0&&!S.pool.some(z=>z.batch===S.batch)){
+    log(`⚠️ 第 ${S.batch} 批未选任何号 —— 这 10 个号已作废`);}
+  else if(S.batch>0){
+    const it=S.pool.find(z=>z.batch===S.batch);
+    log(`🔒 第 ${S.batch} 批 <b>${full(it.sg,it.n)}</b> 已锁定，不能再改`);}
+  S.batch++;
+  const no4=document.getElementById("n4")?.checked;
+  const out=[]; let guard=0;
+  while(out.length<10&&guard++<4000){
+    const sg=UNLOCKED[Math.floor(Math.random()*UNLOCKED.length)];
+    const n=sg.start+Math.floor(Math.random()*100);
+    const k=sg.i+":"+n;
+    if(S.seen.has(k))continue;
+    if(no4&&pad(n,sg.width).includes("4"))continue;
+    if(taken(sg,n))continue;
+    S.seen.add(k); out.push({sg,n,k});
+  }
+  S.cur=out; S.roundLeft=120;
+  log(`🎲 第 <b>${S.batch}</b> 批：10 个号（跨 ${new Set(out.map(o=>o.sg.prefix)).size} 个号段），120 秒内<b>必须选 1 个</b>`);
+  draw();
+}
+
+function bind(){
+  const nb=document.getElementById("nb"); if(nb)nb.onclick=roll;
+  const cf=document.getElementById("cf"); if(cf)cf.onclick=confirmPick;
+  const ad=document.getElementById("ad"); if(ad)ad.onclick=()=>{
+    if(S.wl.length>=5)return; S.wl.push({v:""}); S.wlSel=S.wl.length-1; draw();};
+  const sb=document.getElementById("sb"); if(sb)sb.onclick=verify;
+  const kd=document.getElementById("kdone"); if(kd)kd.onclick=()=>{S.wlSel=-1;draw()};
+  scr.querySelectorAll("[data-i]").forEach(e=>e.onclick=()=>bank(e.dataset.i));
+  scr.querySelectorAll("[data-rm]").forEach(e=>e.onclick=()=>{
+    const b=+e.dataset.rm; if(!S.pool.some(z=>z.batch===b))return;
+    S.pick=b; log(`🎯 选中第 ${b} 批的号作为确认目标`); draw();});
+  scr.querySelectorAll("[data-sel]").forEach(e=>e.onclick=ev=>{
+    if(ev.target.dataset.del!==undefined)return; S.wlSel=+e.dataset.sel; draw();});
+  scr.querySelectorAll("[data-del]").forEach(e=>e.onclick=ev=>{
+    ev.stopPropagation(); S.wl.splice(+e.dataset.del,1);
+    if(!S.wl.length)S.wl=[{v:""}]; S.wlSel=0; draw();});
+  scr.querySelectorAll("[data-k]").forEach(e=>e.onclick=()=>key(e.dataset.k));
+}
+
+function bank(k){
+  const o=S.cur.find(z=>z.k===k); if(!o)return;
+  const i=S.pool.findIndex(z=>z.batch===S.batch);
+  if(i>=0){
+    const old=S.pool[i];
+    if(old.n===o.n&&old.s===o.sg.i){            // 点的是同一个 → 无操作
+      log("已是本轮所选，可点其它号改选");return;}
+    S.pool[i]={sg:o.sg,s:o.sg.i,n:o.n,batch:S.batch};   // 本轮内改选
+    log(`🔄 第 ${S.batch} 批改选：${full(old.sg,old.n)} → <b>${full(o.sg,o.n)}</b>（本轮倒计时内可反复改）`);
+  }else{
+    S.pool.push({sg:o.sg,s:o.sg.i,n:o.n,batch:S.batch});
+    log(`➕ 第 ${S.batch} 批选中 <b>${full(o.sg,o.n)}</b>　<span style="color:var(--ink3)">本轮 ${S.roundLeft}s 内可改选，进入下一批后锁定</span>`);
+  }
+  if(!S.pick)S.pick=S.batch;
+  draw();                                        // ← 不再清空本批，10 个号继续显示
+}
+
+function confirmPick(){
+  const it=S.pool.find(z=>z.batch===S.pick)||S.pool[0]; if(!it)return;
+  if(!confirm(`确认选号 ${full(it.sg,it.n)}？\n\n不可逆：确认后选号立即结束，自编方式关闭，无法反悔。\n且须在 3 个工作日内到车管所办理，逾期拉黑 2 年。`))return;
+  clearInterval(S.tm);
+  S.done={sg:it.sg,n:it.n,via:"随机选号 → 备选确认"};
+  log(`🔒 已确认 <b>${full(it.sg,it.n)}</b> —— 流程结束`); draw();
+}
+
+function key(k){
+  const sg=S.seg,w=S.wl[S.wlSel]; if(!w||w.st)return;
+  const pre=sg.prefix.slice(0,2);
+  let cur=(w.v||pre).replace(pre,"");
+  if(k==="BS")cur=cur.slice(0,-1);
+  else{ if(cur.length>=sg.prefix.length-2+sg.width)return; cur+=k; }
+  w.v=cur?pre+cur:""; draw();
+}
+
+function verify(){
+  const sg=S.seg;
+  const list=S.wl.filter(w=>w.v&&w.v.length===sg.prefix.length+sg.width);
+  if(!list.length){log("⚠️ 意向号牌未填完整（京A + 号段字母 + 数字 = 6 位序号）");return;}
+  const bad=list.find(w=>hasTriple(w.v.slice(-sg.width)));
+  if(bad){log(`⛔ <b>${bad.v}</b> 有数字出现 3 次，自编禁止 —— 请改掉再提交`);return;}
+  S.selfLeft=Math.max(0,S.selfLeft-5);           // 提交一次 = 消耗一整轮 5 个
+  log(`✍️ 第 ${S.selfRound} 轮提交 <b>${list.length}</b> 个（消耗 <b>5</b> 个额度）…`);
+  if(list.length<5)log(`　⚠️ 只填了 ${list.length} 个，<b>浪费 ${5-list.length} 个额度</b>`);
+  let hit=null; S.wl.forEach(w=>w.st=null);
+  for(const w of S.wl){
+    if(!w.v)continue;
+    const n=+w.v.slice(-sg.width);
+    if(taken(sg,n)){w.st="miss";log(`　${w.v} 已被占用`);}
+    else{w.st="hit";hit={n};log(`　<b>${w.v}</b> 验证可用 → <b>立即锁定</b>，后面不再验证`);break;}
+  }
+  if(hit){clearInterval(S.tm);S.done={sg,n:hit.n,via:"自编选号"};}
+  else{
+    S.selfRound++;
+    if(S.selfRound>4||S.selfLeft<=0)log("　4 轮额度已用尽 —— 自编结束，只能转随机");
+    else{log(`　全部被占用。可开始<b>第 ${S.selfRound} 轮</b>（剩 ${S.selfLeft} 个额度）`);
+         setTimeout(()=>{S.wl=[{v:""}];S.wlSel=0;draw()},1400);}
+  }
+  draw();
+}
+
+f.onchange=()=>{fillSeg();S.taken=new Map();S.wl=[{v:""}];S.wlSel=0;draw()};
+s.onchange=e=>{S.seg=segs[+e.target.value];S.taken=new Map();S.wl=[{v:""}];S.wlSel=0;draw()};
+tabS.onclick=()=>{S.tab="s";S.wlSel=0;draw()};
+tabR.onclick=()=>{S.tab="r";startTimer();draw()};
+rs.onclick=()=>{reset();log("🔄 沙盘已重置")};
+au.onclick=()=>{
+  const sg=S.seg; if(!sg||!sg.unlocked){log("⚠️ 请先切到已解锁号段");return}
+  const all=[]; for(let n=sg.start;n<=sg.start+99;n++){const t=pad(n,sg.width);
+    if(t.includes("4")||hasTriple(t))continue; all.push({n,x:score(t)})}
+  all.sort((a,b)=>b.x-a.x);
+  S.wl=all.slice(0,5).map(z=>({v:full(sg,z.n)})); S.wlSel=-1; S.tab="s";
+  log("📋 已填满本轮 5 个意向号牌（最想要的在第一意向，已排除含4和三连号）"); draw()};
+document.getElementById("bk").onclick=()=>{reset();log("↩︎ 返回并重置")};
+setInterval(()=>{const d=new Date();clk.textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")},1000);
+reset();
+</script>
