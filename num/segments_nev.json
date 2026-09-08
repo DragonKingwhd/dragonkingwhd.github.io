@@ -1,0 +1,170 @@
+[
+  {
+    "prefix": "京APX",
+    "start": 9100,
+    "end": 9199,
+    "release_time": "2026-09-07 17:59",
+    "is_first_release": false,
+    "desc": "9月7日最新投放 (含 9188, 9168, 9166 等，仅限随机保护期)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 3300,
+    "end": 3399,
+    "release_time": "2026-09-07 15:12",
+    "is_first_release": false,
+    "desc": "9月7日最新投放 (含四连顶级豹子 3333、3366、3388 AABB，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 6700,
+    "end": 6799,
+    "release_time": "2026-09-07 11:30",
+    "is_first_release": false,
+    "desc": "9月7日最新投放 (含顺子 6789、6766、6788，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 0,
+    "end": 99,
+    "release_time": "2026-09-06 23:16",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含整万 0000、0066、0088、0068，仅限随机)"
+  },
+  {
+    "prefix": "京AGG",
+    "start": 8000,
+    "end": 8099,
+    "release_time": "2026-09-06 23:15",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含整千 8000、8088、8066、8080 ABAB，仅限随机)"
+  },
+  {
+    "prefix": "京AGG",
+    "start": 4500,
+    "end": 4599,
+    "release_time": "2026-09-06 23:14",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含顺子 4567、4588，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 2900,
+    "end": 2999,
+    "release_time": "2026-09-06 17:47",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含 2999、2988、2966，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 2400,
+    "end": 2499,
+    "release_time": "2026-09-06 16:53",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含偶数顺 2468、2488，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 8300,
+    "end": 8399,
+    "release_time": "2026-09-06 12:21",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含 8388、8366，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 6600,
+    "end": 6699,
+    "release_time": "2026-09-06 09:12",
+    "is_first_release": false,
+    "desc": "9月6日投放 (含四连顶级豹子 6666、6688 AABB双对，仅限随机)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-08-31 16:00",
+    "is_first_release": false,
+    "desc": "8月31日投放 (🟢已解锁自编主战场！含三连豹子 0888、0866、0886)"
+  },
+  {
+    "prefix": "京APT",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-08-30 15:00",
+    "is_first_release": false,
+    "desc": "8月30日投放 (🟢已解锁自编主战场！含 0366、0388、0399、0368)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 8800,
+    "end": 8899,
+    "release_time": "2026-08-25 14:30",
+    "is_first_release": false,
+    "desc": "8月25日投放 (🟢已解锁自编！含四连大豹子 8888、8866、8899)"
+  },
+  {
+    "prefix": "京APX",
+    "start": 6800,
+    "end": 6899,
+    "release_time": "2026-08-20 10:15",
+    "is_first_release": false,
+    "desc": "8月20日投放 (🟢已解锁自编！含 6888、6868、6866)"
+  },
+  {
+    "prefix": "京AGS",
+    "start": 1600,
+    "end": 1699,
+    "release_time": "2026-08-15 11:20",
+    "is_first_release": false,
+    "desc": "8月15日投放 (🟢已解锁自编！含 1688 一路发发、1666)"
+  },
+  {
+    "prefix": "京APT",
+    "start": 8800,
+    "end": 8899,
+    "release_time": "2026-08-10 14:00",
+    "is_first_release": false,
+    "desc": "8月10日投放 (🟢已解锁自编！含四连大豹子 8888、8800)"
+  },
+  {
+    "prefix": "京APX",
+    "start": 1200,
+    "end": 1299,
+    "release_time": "2026-08-05 16:30",
+    "is_first_release": false,
+    "desc": "8月05日投放 (🟢已解锁自编！含 1234 经典大顺子)"
+  },
+  {
+    "prefix": "京AGM",
+    "start": 8000,
+    "end": 8099,
+    "release_time": "2026-07-28 15:45",
+    "is_first_release": false,
+    "desc": "7月28日投放 (🟢已解锁自编！含 8000 整千号、8088)"
+  },
+  {
+    "prefix": "京APY",
+    "start": 6800,
+    "end": 6899,
+    "release_time": "2026-07-20 16:30",
+    "is_first_release": false,
+    "desc": "7月20日投放 (🟢已解锁自编！含 6888、6868)"
+  },
+  {
+    "prefix": "京APT",
+    "start": 6600,
+    "end": 6699,
+    "release_time": "2026-07-15 14:20",
+    "is_first_release": false,
+    "desc": "7月15日投放 (🟢已解锁自编！含四连大豹子 6666、6688)"
+  },
+  {
+    "prefix": "京APX",
+    "start": 9900,
+    "end": 9999,
+    "release_time": "2026-06-25 10:30",
+    "is_first_release": false,
+    "desc": "6月25日投放 (🟢已解锁自编！含四连大豹子 9999、9988)"
+  }
+]

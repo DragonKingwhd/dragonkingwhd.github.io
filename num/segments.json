@@ -1,0 +1,352 @@
+[
+  {
+    "prefix": "京CHK",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-09-06 14:39",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京CHJ",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-09-04 11:16",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFX",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-09-02 22:38",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFX",
+    "start": 900,
+    "end": 999,
+    "release_time": "2026-09-02 22:09",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京ALW",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-09-02 21:54",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京LDB",
+    "start": 0,
+    "end": 99,
+    "release_time": "2026-09-01 17:47",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJW",
+    "start": 200,
+    "end": 299,
+    "release_time": "2026-08-31 19:24",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJE",
+    "start": 900,
+    "end": 999,
+    "release_time": "2026-08-30 15:28",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京CHH",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-08-28 17:48",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京LDD",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-08-28 17:47",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京HDA",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-08-28 17:46",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京ALU",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-08-27 16:12",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京JCN",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-08-26 08:38",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京ALV",
+    "start": 0,
+    "end": 99,
+    "release_time": "2026-08-24 21:26",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京LDR",
+    "start": 200,
+    "end": 299,
+    "release_time": "2026-08-23 12:57",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFY",
+    "start": 100,
+    "end": 199,
+    "release_time": "2026-08-21 16:12",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJF",
+    "start": 900,
+    "end": 999,
+    "release_time": "2026-08-20 15:50",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AHF",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-08-19 15:42",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京ALU",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-08-18 15:16",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJX",
+    "start": 100,
+    "end": 199,
+    "release_time": "2026-08-17 11:33",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFW",
+    "start": 100,
+    "end": 199,
+    "release_time": "2026-08-14 18:45",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京ALU",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-08-13 14:01",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京KDE",
+    "start": 100,
+    "end": 199,
+    "release_time": "2026-08-11 17:33",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJE",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-08-10 15:47",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京FCV",
+    "start": 900,
+    "end": 999,
+    "release_time": "2026-08-08 15:27",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京MCA",
+    "start": 700,
+    "end": 799,
+    "release_time": "2026-08-06 19:11",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFW",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-08-05 16:04",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFZ",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-08-04 16:25",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJE",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-08-04 15:59",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJX",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-08-03 14:07",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFX",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-08-01 15:48",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJE",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-07-30 20:31",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京JCT",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-07-29 20:54",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJX",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-07-28 18:11",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京JDB",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-07-27 15:07",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFW",
+    "start": 700,
+    "end": 799,
+    "release_time": "2026-07-25 16:07",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AJJ",
+    "start": 300,
+    "end": 399,
+    "release_time": "2026-07-23 23:19",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AEJ",
+    "start": 200,
+    "end": 299,
+    "release_time": "2026-07-22 16:21",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AHD",
+    "start": 400,
+    "end": 499,
+    "release_time": "2026-07-21 15:24",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京HCQ",
+    "start": 800,
+    "end": 899,
+    "release_time": "2026-07-21 14:44",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFY",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-07-20 14:33",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京HDD",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-07-18 14:03",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京JDT",
+    "start": 0,
+    "end": 99,
+    "release_time": "2026-07-16 23:22",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京CHH",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-07-15 17:52",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AHD",
+    "start": 700,
+    "end": 799,
+    "release_time": "2026-07-14 19:02",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京LDB",
+    "start": 700,
+    "end": 799,
+    "release_time": "2026-07-13 17:08",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AHE",
+    "start": 600,
+    "end": 699,
+    "release_time": "2026-07-11 22:10",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFW",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-07-10 15:17",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京CHJ",
+    "start": 200,
+    "end": 299,
+    "release_time": "2026-07-09 12:23",
+    "is_first_release": false
+  },
+  {
+    "prefix": "京AFX",
+    "start": 500,
+    "end": 599,
+    "release_time": "2026-07-08 13:11",
+    "is_first_release": false
+  }
+]
