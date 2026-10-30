@@ -1,0 +1,9 @@
+#!name=Dragonking Private Translation
+#!desc=Route the private translation service through Shadowrocket's built-in Tailscale. Requires Tailscale enabled and global routing set to Configuration.
+
+[Rule]
+DOMAIN,home-ubuntu.tailc3bd07.ts.net,TAILSCALE
+IP-CIDR,100.86.2.68/32,TAILSCALE,no-resolve
+
+[Host]
+home-ubuntu.tailc3bd07.ts.net = 100.86.2.68
